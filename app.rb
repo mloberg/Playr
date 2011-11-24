@@ -3,6 +3,7 @@ require './database'
 require './auth'
 require 'rack-flash'
 require 'sinatra/redirect_with_flash'
+require 'active_support/secure_random'
 
 #use Rack::Session::Pool, :expire_after => 2592000
 enable :sessions
@@ -14,6 +15,9 @@ use Rack::Flash, :sweep => true
 set(:auth) do |val|
 	condition do
 		redirect '/login' unless @auth and @auth.is_valid?
+		if val == :admin and session[:user_id] != 1
+			redirect '/'
+		end
 	end
 end
 
@@ -27,6 +31,29 @@ end
 get "/", :auth => true do
 	#UserAuth.crypt "admin"
 	"authenticated"
+end
+
+get "/user/add", :auth => :admin do
+	erb :add_user
+end
+
+post "/user/add", :auth => :admin do
+	if User.first(:username => params[:username])
+		redirect '/user/add', :error => "Username is already taken."
+	else
+		u = User.new
+		u.attributes = {
+			:username => params[:username],
+			:password => Auth.hash_password(params[:password]),
+			:secret => ActiveSupport::SecureRandom.hex(16),
+			:name => params[:name]
+		}
+		if u.save
+			redirect '/', :notice => "User #{params[:username]} added"
+		else
+			redirect '/user/add', :error => "Could not add user"
+		end
+	end
 end
 
 # Login/Logout
