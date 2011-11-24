@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
-	<title><%= @title %></title>
+	<title><%= "#{@title} | #{SITE_TITLE}" %></title>
+	<link rel="stylesheet" href="/css/style.css" />
 	<!--[if lt IE 9]>
 		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
@@ -16,5 +17,11 @@
 <div id="wrapper">
 	<%= yield %>
 </div>
+<script src="/js/mootools-1.4.1.min.js"></script>
+<%= @script %>
+<script src="/js/main.js"></script>
+<% if @ready %>
+<script>window.addEvent('domready', function(){<%= @ready %>});</script>
+<% end %>
 </body>
 </html>
