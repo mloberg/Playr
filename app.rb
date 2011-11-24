@@ -1,13 +1,12 @@
 require 'sinatra'
 require './database'
 require './auth'
-#require 'database'
-#require 'rack-flash'
-#require 'sinatra/redirect_with_flash'
+require 'rack-flash'
+require 'sinatra/redirect_with_flash'
 
 #use Rack::Session::Pool, :expire_after => 2592000
 enable :sessions
-#use Rack::Flash, :sweep => true
+use Rack::Flash, :sweep => true
 
 #SITE_TITLE = ""
 #SITE_DESCRIPTION = ""
@@ -29,12 +28,14 @@ end
 
 get "/", :auth => true do
 	#UserAuth.crypt "admin"
+	"authenticated"
 end
 
 # Login/Logout
-get '/logout' do
+get "/logout" do
 	session[:user_id] = nil
 	session[:fingerprint] = nil
+	redirect '/login'
 end
 
 get "/login" do
@@ -47,9 +48,13 @@ end
 
 post "/login" do
 	username = params[:username]
+	password = params[:password]
 	user = User.first(:username => username)
-	session[:user_id] = user.id
 	@auth = Auth.new(user.password, user.secret)
-	Auth.validate
-	redirect '/'
+	if @auth.validate(password)
+		session[:user_id] = user.id
+		redirect '/'
+	else
+		redirect '/login', :error => "Invalid username/password combination."
+	end
 end
