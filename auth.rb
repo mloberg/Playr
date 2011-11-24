@@ -7,14 +7,16 @@ class Auth
 		BCrypt::Password.create(password)
 	end
 	
-	def initialize(pass, secret)
+	def initialize(pass, secret, session, server)
 		@hash = pass
 		@secret = secret
+		@session = session
+		@server = server
 	end
 	
 	def validate(pass)
 		if BCrypt::Password.new(@hash) == pass
-			$_SESSION[:fingerprint] = BCrypt::Password.create(Digest::MD5.hexdigest($_SERVER['HTTP_USER_AGENT']) + @secret)
+			@session[:fingerprint] = BCrypt::Password.create(Digest::MD5.hexdigest(@server['HTTP_USER_AGENT']) + @secret)
 			return true
 		else
 			return false
@@ -22,8 +24,8 @@ class Auth
 	end
 	
 	def is_valid?
-		fingerprint_value = Digest::MD5.hexdigest($_SERVER['HTTP_USER_AGENT']) + @secret
-		if BCrypt::Password.new($_SESSION[:fingerprint]) == fingerprint_value
+		fingerprint_value = Digest::MD5.hexdigest(@server['HTTP_USER_AGENT']) + @secret
+		if BCrypt::Password.new(@session[:fingerprint]) == fingerprint_value
 			return true
 		else
 			return false

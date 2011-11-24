@@ -18,11 +18,9 @@ set(:auth) do |val|
 end
 
 before do
-	$_SERVER = request.env
-	$_SESSION = session
 	if session[:user_id]
 		@user = User.get session[:user_id]
-		@auth = Auth.new(@user.password, @user.secret)
+		@auth = Auth.new(@user.password, @user.secret, session, request.env)
 	end
 end
 
@@ -50,7 +48,7 @@ post "/login" do
 	username = params[:username]
 	password = params[:password]
 	user = User.first(:username => username)
-	@auth = Auth.new(user.password, user.secret)
+	@auth = Auth.new(user.password, user.secret, session, request.env)
 	if @auth.validate(password)
 		session[:user_id] = user.id
 		redirect '/'
