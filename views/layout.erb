@@ -3,25 +3,52 @@
 <head>
 	<meta charset="utf-8" />
 	<title><%= "#{@title} | #{SITE_TITLE}" %></title>
+	<link rel="stylesheet" href="/css/bootstrap.min.css" />
 	<link rel="stylesheet" href="/css/style.css" />
 	<!--[if lt IE 9]>
 		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
 </head>
 <body>
-<% if flash[:error] %>
-<div class="error"><%= flash[:error] %></div>
-<% elsif flash[:notice] %>
-<div class="notice"><%= flash[:notice] %></div>
-<% end %>
-<div id="wrapper">
-	<%= yield %>
+<div class="topbar">
+	<div class="fill">
+		<div class="container">
+			<a class="brand" href="/">Playr</a>
+			<% if @user %>
+			<ul class="nav">
+				<li><a href="/add">Upload</a></li>
+				<li><a href="/browse">Browse</a></li>
+			</ul>
+			<p class="pull-right">Logged in as <a href="/logout"><%= @user.username %></a></p>
+			<% else %>
+			<p class="pull-right"><a href="/login">Login</a></p>
+			<% end %>
+		</div>
+	</div>
+</div>
+<div class="container">
+	<% if flash[:error] %>
+		<div class="alert-message warning">
+			<p><%= flash[:error] %></p>
+		</div>
+	<% end %>
+	<% if flash[:notice] %>
+		<div class="alert-message success">
+			<p><%= flash[:notice] %></p>
+		</div>
+	<% end %>
+	<div class="content">
+		<%= yield %>
+	</div>
 </div>
 <script src="/js/mootools-1.4.1.min.js"></script>
 <%= @script %>
 <script src="/js/main.js"></script>
-<% if @ready %>
-<script>window.addEvent('domready', function(){<%= @ready %>});</script>
-<% end %>
+<script>
+window.addEvent('domready', function(){
+	Playr.init();
+	<%= @ready %>
+});
+</script>
 </body>
 </html>

@@ -18,6 +18,8 @@ Playr = {
 	},
 	
 	browse: function(){
+		Browse.artist();
+/*
 		$$("li").addEvent("click", function(){
 			var $this = this,
 				siblings = this.getSiblings(),
@@ -31,6 +33,60 @@ Playr = {
 					left: "100px"
 				});
 			}, 500);
+		});
+*/
+	}
+
+};
+
+Browse = {
+
+	info: {},
+	currentStep: null,
+	
+	artist: function(){
+		$$(".artist").addEvent("click", function(){
+			if(Browse.currentStep != null){
+				$("album-list").set("html", "");
+				$("song-list").set("html", "");
+			}
+			Browse.currentStep = "artist";
+			Browse.info["artist"] = this.get("text");
+			$("artists").removeClass("span6").addClass("span4");
+			$("albums").removeClass("span4").addClass("span6");
+			new Request({
+				method: 'get',
+				url: '/browse/' + Browse.info["artist"],
+				onRequest: function(){
+					$("album-list").set("html", "<li>loading...</li>");
+				},
+				onComplete: function(resp){
+					$("album-list").set("html", resp);
+					Browse.album();
+				}
+			}).send();
+		});
+	},
+	
+	album: function(){
+		$$(".album").addEvent("click", function(){
+			if(Browse.currentStep != "artist"){
+				$("song-list").set("html", "");
+			}
+			Browse.currentStep = "album";
+			Browse.info["album"] = this.get("text");
+			$("albums").removeClass("span6").addClass("span4");
+			$("songs").removeClass("span4").addClass("span6");
+			new Request({
+				method: 'get',
+				url: '/browse/' + Browse.info["artist"] + '/' + Browse.info["album"],
+				onRequest: function(){
+					$("song-list").set("html", "<li>loading...</li>");
+				},
+				onComplete: function(resp){
+					$("song-list").set("html", resp);
+				}
+			}).send();
 		});
 	}
 

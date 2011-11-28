@@ -50,11 +50,14 @@ get "/browse", :auth => true do
 end
 
 get "/browse/:artist", :auth => true do
-	params[:artist]
+	@albums = redis.smembers params[:artist].gsub(" ", "") + ":albums"
+	@albums.sort!
+	erb :artist, :layout => :none
 end
 
 get "/browse/:artist/:album", :auth => true do
-	params[:album]
+	@songs = Song.all(:artist => params[:artist], :album => params[:album], :order => [ :tracknum.asc ])
+	erb :album, :layout => :none
 end
 
 get "/add", :auth => true do
@@ -153,6 +156,7 @@ get "/logout" do
 end
 
 get "/login" do
+	@title = "Login"
 	if @auth and @auth.is_valid?
 		redirect '/'
 	else

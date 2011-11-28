@@ -1,5 +1,21 @@
-<ul>
-<% @artists.each do |artist| %>
-	<li><%= artist %></li>
-<% end %>
-</ul>
+<div class="page-header">
+	<h1>Browse</h1>
+</div>
+<div class="row">
+	<div class="span6" id="artists">
+		<h2>Artists</h2>
+		<ul id="artist-list">
+			<% @artists.each do |artist| %>
+			<li class="artist"><%= artist %></li>
+			<% end %>
+		</ul>
+	</div>
+	<div class="span4" id="albums">
+		<h2>Albums</h2>
+		<ul id="album-list"></ul>
+	</div>
+	<div class="span6" id="songs">
+		<h2>Songs</h2>
+		<ul id="song-list"></ul>
+	</div>
+</div>
