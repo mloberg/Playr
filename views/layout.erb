@@ -16,9 +16,13 @@
 			<a class="brand" href="/">Playr</a>
 			<% if @user %>
 			<ul class="nav">
-				<li><a href="/add">Upload</a></li>
+				<li><a href="/queue">Queue</a></li>
 				<li><a href="/browse">Browse</a></li>
+				<li><a href="/add">Upload</a></li>
 			</ul>
+			<form class="pull-left" action="">
+				<input type="text" placeholder="Search" />
+			</form>
 			<p class="pull-right">Logged in as <a href="/logout"><%= @user.username %></a></p>
 			<% else %>
 			<p class="pull-right"><a href="/login">Login</a></p>
