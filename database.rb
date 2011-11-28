@@ -34,6 +34,13 @@ class User
 	property :name, String
 end
 
+class Queue
+	include DataMapper::Resource
+	property :song_id, Serial
+	property :added_by, Integer
+	property :created_at, DateTime
+end
+
 #zoos = repository(:default).adapter.select('SELECT name, open FROM zoos WHERE name = ?', 'Awesome Zoo')
 
-DataMapper.finalize.auto_upgrade!
+DataMapper.auto_upgrade!

@@ -20,6 +20,15 @@ SITE_TITLE = "Playr"
 # SMEMBERS => array of redis set
 # array.sort! => sort array alphabetically
 
+def in_queue(id)
+	queue = Queue.get(id)
+	if queue
+		return true
+	else
+		return false
+	end
+end
+
 set(:auth) do |val|
 	condition do
 		redirect '/login' unless @auth and @auth.is_valid?
@@ -41,10 +50,39 @@ get "/", :auth => true do
 	erb :index
 end
 
+get "/queue", :auth => true do
+	@title = "Queue"
+	queue = Queue.all(:order => [ :created_at.asc ])
+	@songs = []
+	queue.each do |q|
+		s = Song.get(q.song_id)
+		@songs << s
+	end
+	@songs
+	erb :queue
+end
+
+post "/queue/add", :auth => true do
+	if not in_queue params[:id]
+		q = Queue.new
+		q.attributes = {
+			:song_id => params[:id],
+			:added_by => @user.id,
+			:created_at => Time.now
+		}
+		q.save
+	end
+end
+
+get "/queue/search/:id", :auth => true do
+	return in_queue(params[:id]).to_json
+end
+
 get "/browse", :auth => true do
 	@title = 'Browse'
 	@artists = redis.smembers "artists"
 	@artists.sort!
+	@script = '<script src="/js/simple-modal.js"></script>'
 	@ready = 'Playr.browse();'
 	erb :browse
 end

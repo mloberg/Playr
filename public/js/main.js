@@ -78,14 +78,39 @@ Browse = {
 	song: function(){
 		$$(".song").addEvent("click", function(){
 			Browse.currentStep = "song";
-			new Request({
+			new Request.JSON({
 				method: 'get',
 				url: '/info/song/' + this.get("id"),
 				onComplete: function(song){
-					console.log(song);
+					var sm = new SimpleModal({draggable:false});
+					sm.addButton("Action Button", "btn primary", function(){
+						//Queue.add(song.id);
+						this.hide();
+					});
+					sm.addButton("Cancel", "btn");
+					sm.show({
+						"model": "modal",
+						"title": "Title",
+						"contents": "your message..."
+					});
 				}
 			}).send();
 		});
+	}
+
+};
+
+Queue = {
+
+	add: function(id){
+		var req = new Request({
+			method: 'post',
+			url: '/queue/add',
+			data: { 'id' : id },
+			onComplete: function(){
+				
+			}
+		}).send();
 	}
 
 };
