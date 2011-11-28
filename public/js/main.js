@@ -19,22 +19,6 @@ Playr = {
 	
 	browse: function(){
 		Browse.artist();
-/*
-		$$("li").addEvent("click", function(){
-			var $this = this,
-				siblings = this.getSiblings(),
-				artist = new Element("p").inject(document.body);
-			siblings.fade("out");
-			setTimeout(function(){
-				artist.set("text", $this.get("text")).setPosition($this.getPosition()).setStyle("position", "absolute");
-				$this.getParent().destroy();
-				artist.morph({
-					top: "10px",
-					left: "100px"
-				});
-			}, 500);
-		});
-*/
 	}
 
 };
@@ -85,6 +69,20 @@ Browse = {
 				},
 				onComplete: function(resp){
 					$("song-list").set("html", resp);
+					Browse.song();
+				}
+			}).send();
+		});
+	},
+	
+	song: function(){
+		$$(".song").addEvent("click", function(){
+			Browse.currentStep = "song";
+			new Request({
+				method: 'get',
+				url: '/info/song/' + this.get("id"),
+				onComplete: function(song){
+					console.log(song);
 				}
 			}).send();
 		});

@@ -60,6 +60,11 @@ get "/browse/:artist/:album", :auth => true do
 	erb :album, :layout => :none
 end
 
+get "/info/song/:id", :auth => true do
+	@song = Song.get(params[:id])
+	@song.to_json
+end
+
 get "/add", :auth => true do
 	@title = "Upload Songs"
 	@script = '<script src="/js/fileuploader.js"></script>'
