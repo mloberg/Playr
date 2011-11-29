@@ -77,18 +77,6 @@ get "/queue", :auth => true do
 	erb :queue
 end
 
-post "/queue/add", :auth => true do
-	if not in_queue params[:id]
-		q = Queue.new
-		q.attributes = {
-			:song_id => params[:id],
-			:added_by => @user.id,
-			:created_at => Time.now
-		}
-		q.save
-	end
-end
-
 get "/queue/search/:id", :auth => true do
 	return in_queue(params[:id]).to_json
 end
@@ -110,11 +98,15 @@ end
 ###################
 
 get "/api/list/artists" do
-	
+	@artists = redis.smembers "artists"
+	@artists.sort!
+	return @artists.to_json
 end
 
 get "/api/list/albums" do
-	
+	@albums = redis.smembers "albums"
+	@albums.sort!
+	return @albums.to_json
 end
 
 # ?artist=:artist
@@ -206,10 +198,30 @@ post "/api/song/add", :auth => true do
 	}
 	s.save
 	redis.sadd "artists", mp3.tag.artist
+	redis.sadd "albums", mp3.tag.album
 	redis.sadd mp3.tag.artist.gsub(" ", "") + ":albums", mp3.tag.album
 	
 	# must return for file uploader to mark as success
 	return {:success => true}.to_json
+end
+
+post "/api/queue/add", :auth => true do
+	if not params[:id]
+		return { :error => true, :message => "Requires song id." }.to_json
+	end
+	if not in_queue params[:id]
+		q = Queue.new
+		q.attributes = {
+			:song_id => params[:id],
+			:added_by => @user.id,
+			:created_at => Time.now
+		}
+		if q.save
+			return { :success => true, :message => "Song added to end of the queue." }.to_json
+		else
+			return { :error => true, :message => "Could not add song to queue." }.to_json
+		end
+	end
 end
 
 ####################
