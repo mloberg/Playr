@@ -14,27 +14,17 @@ enable :sessions
 use Rack::Flash, :sweep => true
 
 SITE_TITLE = "Playr"
-#SITE_DESCRIPTION = ""
-
-# SADD => add to redis set
-# SMEMBERS => array of redis set
-# array.sort! => sort array alphabetically
 
 def in_queue(id)
 	queue = Queue.get(id)
-	if queue
-		return true
-	else
-		return false
-	end
+	return true if queue
+	return false
 end
 
 set(:auth) do |val|
 	condition do
 		redirect '/login' unless @auth and @auth.is_valid?
-		if val == :admin and session[:user_id] != 1
-			redirect '/'
-		end
+		redirect '/' if val == :admin and session[:user_id] != 1
 	end
 end
 
@@ -100,6 +90,7 @@ end
 
 get "/info/song/:id", :auth => true do
 	@song = Song.get(params[:id])
+	@song["in_queue"] = in_queue params[:id]
 	@song.to_json
 end
 

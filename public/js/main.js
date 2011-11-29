@@ -83,17 +83,25 @@ Browse = {
 				method: 'get',
 				url: '/info/song/' + this.get("id"),
 				onComplete: function(song){
-					var sm = new SimpleModal({draggable:false});
-					sm.addButton("Action Button", "btn primary", function(){
-						//Queue.add(song.id);
-						this.hide();
+					var sm = new SimpleModal({
+						offsetTop: 100,
+						draggable:false,
+						width: 700
 					});
-					sm.addButton("Cancel", "btn");
-					sm.show({
-						"model": "modal",
-						"title": "Title",
-						"contents": "your message..."
-					});
+					if(song.in_queue){
+						alert("song is in queue!");
+					}else{
+						sm.addButton("Add To Queue", "btn primary", function(){
+							//Queue.add(song.id);
+							this.hide();
+						});
+						sm.addButton("Cancel", "btn");
+						sm.show({
+							model: "modal",
+							title: "Add Song To Queue?",
+							contents: "<p>Song: " + song.title + "</p><p>Artist: " + song.artist + "</p><p>Album: " + song.album + "</p>"
+						});
+					}
 				}
 			}).send();
 		});
