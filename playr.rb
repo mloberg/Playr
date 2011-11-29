@@ -10,6 +10,7 @@ require 'json'
 require 'mp3info'
 
 require 'lib/app'
+require 'lastfm_api_key'
 
 class Playr
 
@@ -40,6 +41,7 @@ pid = fork do
 		Signal.trap("INT") do
 			puts "Stop playing the current song."
 			puts "Some other cleanup stuff."
+			Process.exit # do a clean exit
 		end
 	end
 end

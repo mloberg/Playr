@@ -1,5 +1,6 @@
 require 'lib/database'
 require 'lib/auth'
+require 'lib/lastfm'
 
 enable :sessions
 use Rack::Flash, :sweep => true
@@ -7,7 +8,19 @@ use Rack::Flash, :sweep => true
 SITE_TITLE = "Playr"
 
 helpers do
-	
+	def album_artwork(album, artist)
+		return redis.hget "album:artwork", album + ":" + artist if redis.hexists "album:artwork", album + ":" + artist
+		artwork = @lastfm.album_artwork album, artist
+		redis.hset "album:artwork", album + ":" + artist, artwork
+		artwork
+	end
+	def artist_info(artist)
+		return redis.hget "artist:info", artist if redis.hexists "artist:info", artist
+		info = @lastfm.artist artist
+		info["image"].each{ |i| info["image"] = i["#text"] if i["size"] == "large" }
+		redis.hset "artist:info", artist, info.to_json
+		info.to_json
+	end
 end
 
 set(:auth) do |val|
@@ -22,6 +35,7 @@ before do
 		@user = User.get session[:user_id]
 		@auth = Auth.new(@user.password, @user.secret, session, request.env)
 	end
+	@lastfm = LastFM.new(LASTFM_API_KEY)
 end
 
 get "/", :auth => true do
@@ -98,46 +112,52 @@ end
 ###################
 
 get "/api/list/artists" do
-	@artists = redis.smembers "artists"
-	@artists.sort!
-	return @artists.to_json
+	artists = redis.smembers "artists"
+	artists.sort!
+	return artists.to_json
 end
 
 get "/api/list/albums" do
-	@albums = redis.smembers "albums"
-	@albums.sort!
-	return @albums.to_json
+	albums = redis.smembers "albums"
+	albums.sort!
+	return albums.to_json
 end
 
 # ?artist=:artist
 get "/api/artist/info" do
-	
+	return { :error => true, :message => "Must provide artist." }.to_json unless params[:artist]
+	return artist_info params[:artist]
 end
 
 # ?artist=:artist
 get "/api/artist/albums" do
-	@albums = redis.smembers params[:artist].gsub(" ", "") + ":albums"
-	@albums.sort!
-	return @albums.to_json
+	return { :error => true, :message => "Must provide artist." }.to_json unless params[:artist]
+	albums = redis.smembers params[:artist].gsub(" ", "") + ":albums"
+	albums.sort!
+	return albums.to_json
 end
 
+# return album artwork
 # ?artist=:artist&album=:album
-get "/api/album/info" do
-	
+get "/api/album/artwork" do
+	return { :error => true, :message => "Must provide artist and album," }.to_json unless params[:artist] and params[:album]
+	artwork = album_artwork params[:album], params[:artist]
+	return artwork.to_json
 end
 
 # ?artist=:artist&album=:album
 get "/api/album/tracks" do
-	@songs = Song.all(:artist => params[:artist], :album => params[:album], :order => [ :tracknum.asc ])
-	return @songs.to_json
+	return { :error => true, :message => "Must provide artist and album." }.to_json unless params[:artist] and params[:album]
+	songs = Song.all(:artist => params[:artist], :album => params[:album], :order => [ :tracknum.asc ])
+	return songs.to_json
 end
 
 # ?id=:id or ?artist=:artist&album=:album&song=:song_title
 get "/api/song/info" do
 	if params[:id]
-		@song = Song.get(params[:id])
-		@song["in_queue"] = in_queue params[:id]
-		return @song.to_json
+		song = Song.get(params[:id])
+		song["in_queue"] = in_queue params[:id]
+		return song.to_json
 	end
 end
 
@@ -206,9 +226,7 @@ post "/api/song/add", :auth => true do
 end
 
 post "/api/queue/add", :auth => true do
-	if not params[:id]
-		return { :error => true, :message => "Requires song id." }.to_json
-	end
+	return { :error => true, :message => "Requires song id." }.to_json unless params[:id]
 	if not in_queue params[:id]
 		q = Queue.new
 		q.attributes = {

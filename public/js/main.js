@@ -18,7 +18,7 @@ Playr = {
 	},
 	
 	browse: function(options){
-		console.log(options);
+		if(typeof options == "undefined") options = {};
 		Browse.artist();
 		if(options.artist != ""){
 			$$('.artist:contains("' + options.artist + '")').fireEvent('click');
@@ -43,14 +43,19 @@ Browse = {
 	artist: function(){
 		$$(".artist").addEvent("click", function(){
 			if(Browse.currentStep != null){
+				$("artist-info").set("html", "");
+				$("album-artwork").fade("out");
 				$("album-list").getChildren().fade("out");
 				$("song-list").getChildren().fade("out");
-				setTimeout('$("song-list").set("html", "");', 300);
+				setTimeout('$("song-list").set("html", "");$("album-artwork").set("html", "");', 300);
 			}
 			Browse.currentStep = "artist";
 			Browse.info["artist"] = this.get("text");
 			$("artists").morph(".span4");
 			$("albums").morph(".span6");
+			new Request.JSON({url: '/api/artist/info', onSuccess: function(artist){
+				$("artist-info").set("html", '<img src="' + artist.image + '" alt="' + Browse.info["artist"] + '" />');
+			}}).get({ artist: Browse.info["artist"] });
 			new Request.JSON({
 				method: 'get',
 				url: '/api/artist/albums',
@@ -75,12 +80,16 @@ Browse = {
 	album: function(){
 		$$(".album").addEvent("click", function(){
 			if(Browse.currentStep != "artist"){
+				$("album-artwork").set("html", "");
 				$("song-list").set("html", "");
 			}
 			Browse.currentStep = "album";
 			Browse.info["album"] = this.get("text");
 			$("albums").morph(".span4");
 			$("songs").morph(".span6");
+			new Request.JSON({url: '/api/album/artwork', onSuccess: function(artwork){
+				$("album-artwork").set("html", '<img src="' + artwork + '" alt="' + Browse.info["album"] + '" />').fade("in");
+			}}).get({ artist: Browse.info["artist"], album: Browse.info["album"] });
 			new Request.JSON({
 				method: 'get',
 				url: '/api/album/tracks',

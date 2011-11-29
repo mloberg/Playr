@@ -14,15 +14,18 @@ body {
 	margin: -20px -20px 20px;
 	padding: 20px 20px 10px;
 }
-.content .row div {
+.content .row .list {
 	border-left: 1px solid #eee;
 	margin-left: 0px;
 	padding-left: 19px;
 }
-.content .row div:first-child {
+.content .row .list:first-child {
 	border-left: none;
 	margin-left: 20px;
 	padding-left: 0;
+}
+.artist, .album, .song {
+	cursor: pointer;
 }
 
 /* Modal */
