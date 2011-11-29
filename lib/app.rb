@@ -1,25 +1,11 @@
-require 'sinatra'
-require './database'
-require './auth'
-require 'rack-flash'
-require 'sinatra/redirect_with_flash'
-require 'active_support/secure_random'
-require 'sinatra/redis'
-require 'fileutils'
-require 'json'
-require 'mp3info'
+require 'lib/database'
+require 'lib/auth'
+require 'lib/functions'
 
-#use Rack::Session::Pool, :expire_after => 2592000
 enable :sessions
 use Rack::Flash, :sweep => true
 
 SITE_TITLE = "Playr"
-
-def in_queue(id)
-	queue = Queue.get(id)
-	return true if queue
-	return false
-end
 
 set(:auth) do |val|
 	condition do
@@ -41,6 +27,7 @@ get "/", :auth => true do
 end
 
 get "/queue", :auth => true do
+	Playr.start_queue
 	@title = "Queue"
 	queue = Queue.all(:order => [ :created_at.asc ])
 	@songs = []
@@ -78,30 +65,71 @@ get "/browse", :auth => true do
 end
 
 get "/browse/:artist", :auth => true do
-	@albums = redis.smembers params[:artist].gsub(" ", "") + ":albums"
-	@albums.sort!
-	erb :artist, :layout => :none
+	
 end
 
 get "/browse/:artist/:album", :auth => true do
-	@songs = Song.all(:artist => params[:artist], :album => params[:album], :order => [ :tracknum.asc ])
-	erb :album, :layout => :none
+	
 end
 
 get "/info/song/:id", :auth => true do
-	@song = Song.get(params[:id])
-	@song["in_queue"] = in_queue params[:id]
-	@song.to_json
+	
 end
 
-get "/add", :auth => true do
+get "/add/song", :auth => true do
 	@title = "Upload Songs"
 	@script = '<script src="/js/fileuploader.js"></script>'
 	@ready = 'Playr.upload();'
 	erb :upload
 end
 
-post "/add", :auth => true do
+###################
+##    Public     ##
+## API Functions ##
+###################
+
+get "/api/list/artists" do
+	
+end
+
+# ?artist=:artist
+get "/api/artist/info" do
+	
+end
+
+# ?artist=:artist
+get "/api/artist/albums" do
+	@albums = redis.smembers params[:artist].gsub(" ", "") + ":albums"
+	@albums.sort!
+	return @albums.to_json
+end
+
+# ?artist=:artist&album=:album
+get "/api/album/info" do
+	
+end
+
+# ?artist=:artist&album=:album
+get "/api/album/tracks" do
+	@songs = Song.all(:artist => params[:artist], :album => params[:album], :order => [ :tracknum.asc ])
+	return @songs.to_json
+end
+
+# ?id=:id or ?artist=:artist&album=:album&song=:song_title
+get "/api/song/info" do
+	if params[:id]
+		@song = Song.get(params[:id])
+		@song["in_queue"] = in_queue params[:id]
+		return @song.to_json
+	end
+end
+
+###################
+##   Priavate    ##
+## API Functions ##
+###################
+
+post "/api/song/add", :auth => true do
 	# upload file to tmp folder
 	directory = './tmp/'
 	if params[:qqfile].class == String
@@ -159,6 +187,10 @@ post "/add", :auth => true do
 	return {:success => true}.to_json
 end
 
+####################
+## User Functions ##
+####################
+
 get "/user/add", :auth => :admin do
 	erb :add_user
 end
@@ -182,7 +214,10 @@ post "/user/add", :auth => :admin do
 	end
 end
 
-# Login/Logout
+##################
+## Login/Logout ##
+##################
+
 get "/logout" do
 	session[:user_id] = nil
 	session[:fingerprint] = nil
