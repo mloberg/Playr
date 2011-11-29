@@ -1,11 +1,14 @@
 require 'lib/database'
 require 'lib/auth'
-require 'lib/functions'
 
 enable :sessions
 use Rack::Flash, :sweep => true
 
 SITE_TITLE = "Playr"
+
+helpers do
+	
+end
 
 set(:auth) do |val|
 	condition do
@@ -25,6 +28,41 @@ get "/", :auth => true do
 	@title = "Home"
 	erb :index
 end
+
+############
+## Browse ##
+############
+
+get "/browse", :auth => true do
+	@title = 'Browse'
+	@artists = redis.smembers "artists"
+	@artists.sort!
+	@script = '<script src="/js/simple-modal.js"></script>'
+	@ready = 'Playr.browse();'
+	erb :browse
+end
+
+get "/browse/:artist", :auth => true do
+	@title = 'Browse'
+	@artists = redis.smembers "artists"
+	@artists.sort!
+	@script = '<script src="/js/simple-modal.js"></script>'
+	@ready = "Playr.browse({ artist: '#{params[:artist]}' });"
+	erb :browse
+end
+
+get "/browse/:artist/:album", :auth => true do
+	@title = 'Browse'
+	@artists = redis.smembers "artists"
+	@artists.sort!
+	@script = '<script src="/js/simple-modal.js"></script>'
+	@ready = "Playr.browse({ artist: '#{params[:artist]}', album: '#{params[:album]}' });"
+	erb :browse
+end
+
+###########
+## Queue ##
+###########
 
 get "/queue", :auth => true do
 	Playr.start_queue
@@ -55,23 +93,6 @@ get "/queue/search/:id", :auth => true do
 	return in_queue(params[:id]).to_json
 end
 
-get "/browse", :auth => true do
-	@title = 'Browse'
-	@artists = redis.smembers "artists"
-	@artists.sort!
-	@script = '<script src="/js/simple-modal.js"></script>'
-	@ready = 'Playr.browse();'
-	erb :browse
-end
-
-get "/browse/:artist", :auth => true do
-	
-end
-
-get "/browse/:artist/:album", :auth => true do
-	
-end
-
 get "/info/song/:id", :auth => true do
 	
 end
@@ -89,6 +110,10 @@ end
 ###################
 
 get "/api/list/artists" do
+	
+end
+
+get "/api/list/albums" do
 	
 end
 

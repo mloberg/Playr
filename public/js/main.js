@@ -17,8 +17,20 @@ Playr = {
 		});
 	},
 	
-	browse: function(){
+	browse: function(options){
+		console.log(options);
 		Browse.artist();
+		if(options.artist != ""){
+			$$('.artist:contains("' + options.artist + '")').fireEvent('click');
+			if(options.album != ""){
+				var browseAlbums = setInterval(function(){
+					if($("album-list").get("html") != "" && $("album-list").get("html") != "<li>loading...</li>"){
+						$$('.album:contains("' + options.album + '")').fireEvent('click');
+						clearInterval(browseAlbums);
+					}
+				}, 50);
+			}
+		}
 	}
 
 };
@@ -39,14 +51,21 @@ Browse = {
 			Browse.info["artist"] = this.get("text");
 			$("artists").morph(".span4");
 			$("albums").morph(".span6");
-			new Request({
+			new Request.JSON({
 				method: 'get',
-				url: '/browse/' + Browse.info["artist"],
+				url: '/api/artist/albums',
+				data: { artist: Browse.info["artist"] },
 				onRequest: function(){
 					$("album-list").set("html", "<li>loading...</li>");
 				},
-				onComplete: function(resp){
-					$("album-list").set("html", resp);
+				onComplete: function(albums){
+					$("album-list").set("html", "");
+					albums.each(function(album){
+						$("album-list").adopt(new Element('li', {
+							class: 'album',
+							text: album
+						}));
+					});
 					Browse.album();
 				}
 			}).send();
@@ -62,14 +81,24 @@ Browse = {
 			Browse.info["album"] = this.get("text");
 			$("albums").morph(".span4");
 			$("songs").morph(".span6");
-			new Request({
+			new Request.JSON({
 				method: 'get',
-				url: '/browse/' + Browse.info["artist"] + '/' + Browse.info["album"],
+				url: '/api/album/tracks',
+				data: {
+					artist: Browse.info["artist"],
+					album: Browse.info["album"]
+				},
 				onRequest: function(){
 					$("song-list").set("html", "<li>loading...</li>");
 				},
-				onComplete: function(resp){
-					$("song-list").set("html", resp);
+				onComplete: function(songs){
+					$("song-list").set("html", "");
+					songs.each(function(song){
+						$("song-list").adopt(new Element('li', {
+							class: 'song',
+							text: song.title
+						}));
+					});
 					Browse.song();
 				}
 			}).send();
