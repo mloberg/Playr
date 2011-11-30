@@ -14,6 +14,8 @@ body {
 	margin: -20px -20px 20px;
 	padding: 20px 20px 10px;
 }
+
+/* Browse */
 .content .row .list {
 	border-left: 1px solid #eee;
 	margin-left: 0px;
@@ -26,6 +28,20 @@ body {
 }
 .artist, .album, .song {
 	cursor: pointer;
+}
+
+/* Queue */
+.queue {
+	border: 1px solid #000;
+	border-radius: 3px;
+}
+.queue h3 {
+	margin-left: 20px;
+}
+.queue img {
+	border: 1px solid #eee;
+	box-shadow: 0 0 5px #000;
+	margin: 0 0 10px 20px;
 }
 
 /* Modal */

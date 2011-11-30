@@ -1,6 +1,6 @@
-require 'lib/database'
 require 'lib/auth'
 require 'lib/lastfm'
+require 'lastfm_api_key'
 
 enable :sessions
 use Rack::Flash, :sweep => true
@@ -60,7 +60,7 @@ get "/browse", :auth => true do
 	@title = 'Browse'
 	@artists = redis.smembers "artists"
 	@artists.sort!
-	@script = '<script src="/js/simple-modal.js"></script>'
+	@script = '<script src="/js/simple-modal.js"></script><script src="/js/mustache.js"></script>'
 	@ready = 'Playr.browse();'
 	erb :browse
 end
@@ -69,7 +69,7 @@ get "/browse/:artist", :auth => true do
 	@title = 'Browse'
 	@artists = redis.smembers "artists"
 	@artists.sort!
-	@script = '<script src="/js/simple-modal.js"></script>'
+	@script = '<script src="/js/simple-modal.js"></script><script src="/js/mustache.js"></script>'
 	@ready = "Playr.browse({ artist: '#{params[:artist]}' });"
 	erb :browse
 end
@@ -78,7 +78,7 @@ get "/browse/:artist/:album", :auth => true do
 	@title = 'Browse'
 	@artists = redis.smembers "artists"
 	@artists.sort!
-	@script = '<script src="/js/simple-modal.js"></script>'
+	@script = '<script src="/js/simple-modal.js"></script><script src="/js/mustache.js"></script>'
 	@ready = "Playr.browse({ artist: '#{params[:artist]}', album: '#{params[:album]}' });"
 	erb :browse
 end
@@ -89,12 +89,7 @@ end
 
 get "/queue", :auth => true do
 	@title = "Queue"
-	queue = Queue.all(:order => [ :created_at.asc ])
-	@songs = []
-	queue.each do |q|
-		s = Song.get(q.song_id)
-		@songs << s
-	end
+	@queue = Queue.all(:order => [ :created_at.asc ])
 	erb :queue
 end
 
@@ -160,10 +155,11 @@ get "/api/album/tracks" do
 end
 
 # ?id=:id or ?artist=:artist&album=:album&song=:song_title
-get "/api/song/info" do
+get "/api/song" do
 	if params[:id]
-		song = Song.get(params[:id])
+		song = Song.get(params[:id]).to_h
 		song["in_queue"] = in_queue params[:id]
+		song["artwork"] = album_artwork(song["album"], song["artist"])
 		return song.to_json
 	end
 end
@@ -234,19 +230,16 @@ end
 
 post "/api/queue/add", :auth => true do
 	return { :error => true, :message => "Requires song id." }.to_json unless params[:id]
-	if not in_queue params[:id]
-		q = Queue.new
-		q.attributes = {
-			:song_id => params[:id],
-			:added_by => @user.id,
-			:created_at => Time.now
-		}
-		if q.save
-			return { :success => true, :message => "Song added to end of the queue." }.to_json
-		else
-			return { :error => true, :message => "Could not add song to queue." }.to_json
-		end
-	end
+	return { :error => true, :message => "This song is already in the queue." }.to_json if in_queue params[:id]
+	s = Song.get(params[:id])
+	q = Queue.new
+	q.attributes = {
+		:song => s,
+		:added_by => @user.id,
+		:created_at => Time.now
+	}
+	return { :success => true, :message => "Song added to end of the queue." }.to_json if q.save
+	return { :error => true, :message => "Could not add song to queue." }.to_json
 end
 
 ####################

@@ -9,8 +9,19 @@ DataMapper::setup(:default, {
 	:database => 'playr'
 })
 
+module Helper
+	def to_h
+		hash = {}
+		self.instance_variables.each do |var|
+			hash[var.to_s.delete("@")] = self.instance_variable_get(var) if not var.to_s =~ /^@_/
+		end
+		hash
+	end
+end
+
 class Song
 	include DataMapper::Resource
+	include Helper
 	property :id, Serial
 	property :title, String, :length => 512, :required => true
 	property :artist, String, :length => 512, :required => true
@@ -20,7 +31,7 @@ class Song
 	property :genre, String
 	property :length, Float, :required => true
 	property :votes, Integer, :default => 500
-	property :plays, Integer
+	property :plays, Integer, :default => 0
 	property :uploaded_by, Integer
 	property :created_at, DateTime
 	property :updated_at, DateTime

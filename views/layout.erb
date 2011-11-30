@@ -23,9 +23,15 @@
 			<form class="pull-left" action="">
 				<input type="text" placeholder="Search" />
 			</form>
-			<p class="pull-right">Logged in as <a href="/logout"><%= @user.username %></a></p>
-			<% else %>
-			<p class="pull-right"><a href="/login">Login</a></p>
+			<ul class="nav secondary-nav">
+				<li class="dropdown">
+					<a class="dropdown-toggle" href="#"><%= @user.username %></a>
+					<ul class="dropdown-menu">
+						<li><a href="/logout">Logout</a></li>
+						<li><a href="#">Edit Profile</a></li>
+					</ul>
+				</li>
+			</ul>
 			<% end %>
 		</div>
 	</div>

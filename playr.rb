@@ -8,9 +8,11 @@ require 'sinatra/redis'
 require 'fileutils'
 require 'json'
 require 'mp3info'
+require 'digest'
 
+require 'lib/database'
 require 'lib/app'
-require 'lastfm_api_key'
+require 'lib/functions'
 
 class Playr
 

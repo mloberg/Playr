@@ -1,5 +1,4 @@
 require 'bcrypt'
-require 'digest/md5'
 
 class Auth
 

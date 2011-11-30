@@ -1,7 +1,11 @@
 Playr = {
 
 	init: function(){
-		
+		$$(".dropdown-toggle").addEvent('click', function(evnt){
+			evnt.preventDefault();
+			this.getParent("li").toggleClass("open");
+			
+		});
 	},
 	
 	upload: function(){
@@ -104,6 +108,7 @@ Browse = {
 					$("song-list").set("html", "");
 					songs.each(function(song){
 						$("song-list").adopt(new Element('li', {
+							id: song.id,
 							class: 'song',
 							text: song.title
 						}));
@@ -119,7 +124,8 @@ Browse = {
 			Browse.currentStep = "song";
 			new Request.JSON({
 				method: 'get',
-				url: '/info/song/' + this.get("id"),
+				url: '/api/song',
+				data: { id: this.get("id") },
 				onComplete: function(song){
 					var sm = new SimpleModal({
 						offsetTop: 100,
@@ -127,17 +133,20 @@ Browse = {
 						width: 700
 					});
 					if(song.in_queue){
-						alert("song is in queue!");
+						sm.show({
+							model: "alert",
+							contents: "Song is already in queue."
+						});
 					}else{
 						sm.addButton("Add To Queue", "btn primary", function(){
-							//Queue.add(song.id);
+							Queue.add(song.id);
 							this.hide();
 						});
 						sm.addButton("Cancel", "btn");
 						sm.show({
 							model: "modal",
 							title: "Add Song To Queue?",
-							contents: "<p>Song: " + song.title + "</p><p>Artist: " + song.artist + "</p><p>Album: " + song.album + "</p>"
+							contents: Templates.songPopup(song)
 						});
 					}
 				}
@@ -150,14 +159,34 @@ Browse = {
 Queue = {
 
 	add: function(id){
-		var req = new Request({
+		var req = new Request.JSON({
 			method: 'post',
-			url: '/queue/add',
+			url: '/api/queue/add',
 			data: { 'id' : id },
-			onComplete: function(){
-				
+			onComplete: function(resp){
+				if(resp.error == true) alert(resp.message);
 			}
 		}).send();
+	}
+
+};
+
+Templates = {
+
+	songPopup: function(view){
+		return Mustache.to_html('<div class="row">\
+			<div class="span4">\
+				<img src="{{artwork}}" alt="{{artist}}" />\
+			</div>\
+			<div class="span4">\
+				<p>\
+					<strong>Song</strong>: {{title}}<br />\
+					<strong>Artist</strong>: {{artist}}<br />\
+					<strong>Album</strong>: {{album}}<br />\
+					<strong>Plays</strong>: {{plays}}\
+				</p>\
+			</div>\
+		</div>', view);
 	}
 
 };
