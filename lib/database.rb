@@ -41,6 +41,38 @@ class Queue
 	property :created_at, DateTime
 end
 
+class Vote
+	include DataMapper::Resource
+	property :id, Serial
+	property :song_id, Integer, :required => true
+	property :user_id, Integer, :required => true
+	property :like, Boolean, :default => false
+	
+	def self.up(song, user)
+		v = first(:song_id => song, :user_id => user)
+		if v and v.like != true
+			v.update(:like => true)
+			repository(:default).adapter.query('UPDATE `songs` SET `votes` = `votes` + 20 WHERE id = ?', song)
+		end
+		unless v
+			create(:song_id => song, :user_id => user, :like => true)
+			repository(:default).adapter.query('UPDATE `songs` SET `votes` = `votes` + 20 WHERE id = ?', song)
+		end
+	end
+	
+	def self.down(song, user)
+		v = first(:song_id => song, :user_id => user)
+		if v and v.like != false
+			v.update(:like => false)
+			repository(:default).adapter.query('UPDATE `songs` SET `votes` = `votes` - 20 WHERE id = ?', song)
+		end
+		unless v
+			create(:song_id => song, :user_id => user, :like => true)
+			repository(:default).adapter.query('UPDATE `songs` SET `votes` = `votes` - 20 WHERE id = ?', song)
+		end
+	end
+end
+
 #zoos = repository(:default).adapter.select('SELECT name, open FROM zoos WHERE name = ?', 'Awesome Zoo')
 
-DataMapper.auto_upgrade!
+DataMapper.finalize.auto_upgrade!

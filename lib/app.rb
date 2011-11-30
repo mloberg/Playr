@@ -14,12 +14,21 @@ helpers do
 		redis.hset "album:artwork", album + ":" + artist, artwork
 		artwork
 	end
+	
 	def artist_info(artist)
 		return redis.hget "artist:info", artist if redis.hexists "artist:info", artist
 		info = @lastfm.artist artist
 		info["image"].each{ |i| info["image"] = i["#text"] if i["size"] == "large" }
 		redis.hset "artist:info", artist, info.to_json
 		info.to_json
+	end
+	
+	def thumbs_up(song)
+		Vote.up(song, @user.id)
+	end
+	
+	def thumbs_down(song)
+		Vote.down(song, @user.id)
 	end
 end
 
@@ -79,7 +88,6 @@ end
 ###########
 
 get "/queue", :auth => true do
-	Playr.start_queue
 	@title = "Queue"
 	queue = Queue.all(:order => [ :created_at.asc ])
 	@songs = []
@@ -87,7 +95,6 @@ get "/queue", :auth => true do
 		s = Song.get(q.song_id)
 		@songs << s
 	end
-	@songs
 	erb :queue
 end
 
@@ -95,11 +102,11 @@ get "/queue/search/:id", :auth => true do
 	return in_queue(params[:id]).to_json
 end
 
-get "/info/song/:id", :auth => true do
-	
-end
+#################
+## Upload Song ##
+#################
 
-get "/add/song", :auth => true do
+get "/upload", :auth => true do
 	@title = "Upload Songs"
 	@script = '<script src="/js/fileuploader.js"></script>'
 	@ready = 'Playr.upload();'
