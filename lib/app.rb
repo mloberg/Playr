@@ -23,11 +23,11 @@ helpers do
 		info.to_json
 	end
 	
-	def thumbs_up(song)
+	def like(song)
 		Vote.up(song, @user.id)
 	end
 	
-	def thumbs_down(song)
+	def dislike(song)
 		Vote.down(song, @user.id)
 	end
 end
