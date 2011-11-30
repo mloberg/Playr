@@ -196,10 +196,24 @@ Queue = {
 Info = {
 
 	artist: function(){
-		var clearfix = new Element('div', { class: 'clear'});
-		$$(".similar-artist").each(function(el, key){
+		var clearfix = new Element('div', { class: 'clear'}),
+			similarArtists = $$(".similar-artist"),
+			lastArtist = similarArtists.length - 1;
+		similarArtists.each(function(brick, key){
 			if((key + 1) % 3 === 0){
-				clearfix.inject(el, 'after');
+				clearfix.inject(brick, 'after');
+			}
+			if(key > 2){
+				var brickAbove = similarArtists[key - 3],
+					brickAboveCoords = brickAbove.getCoordinates(),
+					brickCoords = brick.getCoordinates();
+				brick.setStyle('position', 'relative').setPosition({
+					x: (brickAboveCoords.left - brickCoords.left),
+					y: (brickAboveCoords.bottom - brickCoords.top)
+				});
+				if(key === lastArtist){
+					brick.getParent().setStyle('height', brickAboveCoords.height + brickCoords.height + 50);
+				}
 			}
 		});
 	}

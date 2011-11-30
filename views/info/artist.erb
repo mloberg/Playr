@@ -36,12 +36,13 @@
 		<div class="similar-artist">
 			<% artist["image"].each {|i| artist["img"] = i["#text"] if i["size"] == "large"} %>
 			<a href="/artist/<%= artist["name"] %>"><img class="thumbnail" src="<%= artist["img"] %>" alt="<%= artist["name"] %>" /></a>
+			<p><a href="/artist/<%= artist["name"] %>"><%= artist["name"] %></a></p>
 		</div>
 		<% end %>
 	</div>
 </div>
-<div class="row">
+<div class="row" id="artist-bio">
 	<div class="span16">
-		<p><br /><%= @artist["bio"]["content"].gsub("\n", "<br />") %><br /><small>Published on <%= Time.parse(@artist["bio"]["published"]).strftime("%b %d, %Y") %> to <a href="http://last.fm">Last.fm</a></small></p>
+		<p><%= @artist["bio"]["content"].gsub("\n", "<br />") %><br /><small>Published on <%= Time.parse(@artist["bio"]["published"]).strftime("%b %d, %Y") %> to <a href="http://last.fm">Last.fm</a></small></p>
 	</div>
 </div>
