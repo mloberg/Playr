@@ -18,7 +18,7 @@ helpers do
 	def artist_info(artist)
 		return redis.hget "artist:info", artist if redis.hexists "artist:info", artist
 		info = @lastfm.artist artist
-		info["image"].each{ |i| info["image"] = i["#text"] if i["size"] == "large" }
+#		info["image"].each{ |i| info["image"] = i["#text"] if i["size"] == "large" }
 		redis.hset "artist:info", artist, info.to_json
 		info.to_json
 	end
@@ -101,18 +101,6 @@ end
 ## Artist/Album/Track ##
 ########################
 
-get "/info/:artist", :auth => true do
-
-end
-
-get "/info/:artist/:album", :auth => true do
-
-end
-
-get "/info/:artist/:album/:track", :auth => true do
-
-end
-
 get "/track/:track", :auth => true do
 	if params[:track].to_i != 0
 		@song = Song.get(params[:track])
@@ -142,8 +130,12 @@ get "/album/:album", :auth => true do
 
 end
 
-get "/artist/:id", :auth => true do
-	
+get "/artist/:artist", :auth => true do
+	@title = params[:artist]
+	@artist = JSON.parse(artist_info params[:artist])
+	@artist["image"].each { |i| @image = i["#text"] if i["size"] == "mega" }
+	@albums = redis.smembers params[:artist].gsub(" ", "") + ":albums"
+	erb :'info/artist'
 end
 
 #################
@@ -177,7 +169,9 @@ end
 # ?artist=:artist
 get "/api/artist/info" do
 	return { :error => true, :message => "Must provide artist." }.to_json unless params[:artist]
-	return artist_info params[:artist]
+	artist = JSON.parse(artist_info params[:artist])
+	artist["image"].each { |i| artist["image"] = i["#text"] if i["size"] == "large"}
+	return artist.to_json
 end
 
 # ?artist=:artist

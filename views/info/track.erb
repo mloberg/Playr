@@ -13,6 +13,8 @@
 					<li><strong>Track</strong>: <%= @song.title %></li>
 					<li><strong>Artist</strong>: <%= @song.album %></li>
 					<li><strong>Album</strong>: <%= @song.album %></li>
+					<li><strong>Genere</strong>: <%= @song.genre %></li>
+					<li><strong>Year</strong>: <%= @song.year %></li>
 					<li><strong>Plays</strong>: <%= @song.plays %></li>
 					<li><strong>Likes</strong>: <%= likes @song %></li>
 				</ul>
@@ -27,7 +29,7 @@
 			</div>
 		</div>
 		<% if @info["wiki"] %>
-		<p><%= @info["wiki"]["summary"] %> <small>Published on <%= Time.parse(@info["wiki"]["published"]).strftime("%b %d, %Y") %> to <a href="http://last.fm">last.fm</a></small></p>
+		<p><%= @info["wiki"]["summary"].gsub("\n", "<br />") %><br /><small>Published on <%= Time.parse(@info["wiki"]["published"]).strftime("%b %d, %Y") %> to <a href="http://last.fm">Last.fm</a></small></p>
 		<% end %>
 		<p class="float-right"><a class="btn">Edit</a> <a class="btn danger">Delete</a></p>
 	</div>

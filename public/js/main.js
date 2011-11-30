@@ -107,10 +107,13 @@ Browse = {
 				onComplete: function(songs){
 					$("song-list").set("html", "");
 					songs.each(function(song){
+						var text = ''
+						if(song.tracknum != null) text += song.tracknum + ": "
+						text += song.title
 						$("song-list").adopt(new Element('li', {
 							id: song.id,
 							class: 'song',
-							text: song.title
+							text: text
 						}));
 					});
 					Browse.song();

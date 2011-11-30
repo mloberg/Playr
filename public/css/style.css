@@ -60,6 +60,11 @@ body {
 	margin-top: -14px;
 }
 
+/* Info Pages */
+.artist-image {
+	text-align: center;
+}
+
 /* Modal */
 #simple-modal-overlay {
 	position: fixed ;

@@ -9,12 +9,18 @@
 			<div class="span6">
 				<h3>Song <small>by Artist</small></h3>
 				<p>
+					<strong>Album</strong>: <br />
+					<strong>Year</strong>: <br />
+					<strong>Genre</strong>: <br />
 					<strong>Plays</strong>: 1<br />
 					<strong>Likes</strong>: 1<br />
 				</p>
-				<p><a class="btn success">Like</a> <a class="btn danger">Dislike</a></p>
-				<p><a class="btn info">Download Song</a></p>
-				<p><a class="btn danger">Next</a></p>
+				<p>
+					<a class="btn success">Like</a>
+					<a class="btn danger">Dislike</a>
+					<a class="btn info">Download</a>
+					<a class="btn">Next</a>
+				</p>
 			</div>
 		</div>
 	</div>
@@ -32,8 +38,10 @@
 					<strong>Likes</strong>: <%= likes q.song %>
 				</p>
 				<p>
-					<a class="btn danger">Don't Play</a>
+					<a class="btn success">Like</a>
+					<a class="btn danger">Dislike</a>
 					<a class="btn info">Download</a>
+					<a class="btn">Don't Play</a>
 				</p>
 			</div>
 		</div>
