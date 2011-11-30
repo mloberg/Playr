@@ -129,12 +129,13 @@ Browse = {
 				onComplete: function(song){
 					var sm = new SimpleModal({
 						offsetTop: 100,
-						draggable:false,
+						draggable: false,
 						width: 700
 					});
 					if(song.in_queue){
 						sm.show({
 							model: "alert",
+							title: "Error",
 							contents: "Song is already in queue."
 						});
 					}else{
@@ -164,7 +165,19 @@ Queue = {
 			url: '/api/queue/add',
 			data: { 'id' : id },
 			onComplete: function(resp){
-				if(resp.error == true) alert(resp.message);
+				var sm = new SimpleModal({
+						offsetTop: 100,
+						draggable: false,
+						hideHeader: true,
+						closeButton: false,
+						btn_ok: "OK"
+					}),
+					message = 'Song added to queue!';
+				if(resp.error) message = resp.message;
+				sm.show({
+					model: "alert",
+					contents: message
+				});
 			}
 		}).send();
 	}

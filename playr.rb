@@ -9,6 +9,7 @@ require 'fileutils'
 require 'json'
 require 'mp3info'
 require 'digest'
+require 'time'
 
 require 'lib/database'
 require 'lib/app'

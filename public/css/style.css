@@ -1,3 +1,7 @@
+.float-right { float: right; }
+.float-left { float: left; }
+.clear { clear: both; }
+
 body {
 	padding-top: 40px;
 	background-color: #eee;
@@ -31,17 +35,29 @@ body {
 }
 
 /* Queue */
-.queue {
+.queue, .now-playing {
 	border: 1px solid #000;
 	border-radius: 3px;
+	margin-bottom: 10px;
 }
 .queue h3 {
 	margin-left: 20px;
 }
-.queue img {
+.queue img, .now-playing img {
 	border: 1px solid #eee;
 	box-shadow: 0 0 5px #000;
 	margin: 0 0 10px 20px;
+}
+.now-playing {
+	box-shadow: 0 0 10px #000;
+	margin-bottom: 15px;
+}
+.now-playing h2 {
+	text-align: center;
+	margin-bottom: 5px;
+}
+.now-playing h3 {
+	margin-top: -14px;
 }
 
 /* Modal */

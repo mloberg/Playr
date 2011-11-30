@@ -1,5 +1,6 @@
 require 'data_mapper'
 require 'dm-adjust'
+require 'dm-aggregates'
 
 DataMapper::setup(:default, {
 	:adapter => 'mysql',

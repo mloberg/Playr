@@ -30,5 +30,10 @@ class Auth
 			return false
 		end
 	end
+	
+	def invalidate
+		@session[:fingerprint] = nil
+		return true
+	end
 
 end

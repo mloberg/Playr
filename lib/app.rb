@@ -30,6 +30,10 @@ helpers do
 	def dislike(song)
 		Vote.down(song, @user.id)
 	end
+	
+	def likes(song)
+		Vote.count(:song => song, :like => true)
+	end
 end
 
 set(:auth) do |val|
@@ -93,8 +97,53 @@ get "/queue", :auth => true do
 	erb :queue
 end
 
-get "/queue/search/:id", :auth => true do
-	return in_queue(params[:id]).to_json
+########################
+## Artist/Album/Track ##
+########################
+
+get "/info/:artist", :auth => true do
+
+end
+
+get "/info/:artist/:album", :auth => true do
+
+end
+
+get "/info/:artist/:album/:track", :auth => true do
+
+end
+
+get "/track/:track", :auth => true do
+	if params[:track].to_i != 0
+		@song = Song.get(params[:track])
+		halt 404, "track not found!" unless @song
+		@title = @song.title
+		@info = @lastfm.track(@song.title, @song.artist)
+		@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
+		erb :'info/track'
+	else
+		@song = Song.all(:title => params[:track])
+		if @song.size == 0
+			halt 404, "no tracks found!"
+		elsif @song.size == 1
+			@song = @song.pop
+			@title = @song.title
+			@info = @lastfm.track(@song.title, @song.artist)
+			@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
+			erb :'info/track'
+		else
+			@title = 'Multiple Tracks'
+			erb :'info/multi_tracks'
+		end
+	end
+end
+
+get "/album/:album", :auth => true do
+
+end
+
+get "/artist/:id", :auth => true do
+	
 end
 
 #################
@@ -274,18 +323,15 @@ end
 ##################
 
 get "/logout" do
+	@auth.invalidate
 	session[:user_id] = nil
-	session[:fingerprint] = nil
 	redirect '/login'
 end
 
 get "/login" do
+	redirect '/' if @auth and @auth.is_valid?
 	@title = "Login"
-	if @auth and @auth.is_valid?
-		redirect '/'
-	else
-		erb :login
-	end
+	erb :login
 end
 
 post "/login" do

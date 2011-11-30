@@ -1,0 +1,13 @@
+<div class="page-header">
+	<h1><%= params[:track] %></h1>
+</div>
+<div class="row">
+	<div class="span16">
+		<p>We found multiple tracks matching "<%= params[:track] %>".</p>
+		<ul>
+		<% @song.each do |song| %>
+			<li><a href="/track/<%= song.id.to_s %>"><%= song.title %> by <%= song.artist %></a></li>
+		<% end %>
+		</ul>
+	</div>
+</div>
