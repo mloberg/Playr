@@ -1,3 +1,9 @@
+var Playr = {},
+	Browse = {},
+	Queue = {},
+	Info = {},
+	Templates = {};
+
 Playr = {
 
 	init: function(){
@@ -11,7 +17,7 @@ Playr = {
 	upload: function(){
 		var uploader = new qq.FileUploader({
 			element: document.getElementById("file-uploader"),
-			action: '/add',
+			action: '/api/song/add',
 			debug: false,
 			onComplete: function(id, fileName, resp){
 				if(resp.error == true){
@@ -183,6 +189,19 @@ Queue = {
 				});
 			}
 		}).send();
+	}
+
+};
+
+Info = {
+
+	artist: function(){
+		var clearfix = new Element('div', { class: 'clear'});
+		$$(".similar-artist").each(function(el, key){
+			if((key + 1) % 3 === 0){
+				clearfix.inject(el, 'after');
+			}
+		});
 	}
 
 };

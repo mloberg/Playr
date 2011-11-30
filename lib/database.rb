@@ -31,7 +31,7 @@ class Song
 	property :tracknum, Integer
 	property :genre, String
 	property :length, Float, :required => true
-	property :votes, Integer, :default => 500
+	property :vote, Integer, :default => 500
 	property :plays, Integer, :default => 0
 	property :uploaded_by, Integer
 	property :created_at, DateTime
@@ -69,12 +69,12 @@ class Vote
 	def self.up(sid, uid)
 		vote = get(sid, uid)
 		if vote and vote.like == false
-			Song.get(sid).adjust!(:votes => 20)
+			Song.get(sid).adjust!(:vote => 20)
 			vote.update(:like => true)
 		elsif not vote
 			song = Song.get(sid)
 			user = User.get(uid)
-			song.adjust!(:votes => 20)
+			song.adjust!(:vote => 20)
 			create(:user => user, :song => song, :like => true)
 		end
 	end
@@ -82,15 +82,15 @@ class Vote
 	def self.down(sid, uid)
 		vote = get(sid, uid)
 		if vote and vote.like == true
-			Song.get(sid).adjust!(:votes => -20)
+			Song.get(sid).adjust!(:vote => -20)
 			vote.update(:like => false)
 		elsif not vote
 			song = Song.get(sid)
 			user = User.get(uid)
-			song.adjust!(:votes => -20)
+			song.adjust!(:vote => -20)
 			create(:user => user, :song => song)
 		end
 	end
 end
 
-DataMapper.finalize.auto_upgrade!
+DataMapper.auto_upgrade!

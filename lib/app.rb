@@ -126,12 +126,22 @@ get "/track/:track", :auth => true do
 	end
 end
 
-get "/album/:album", :auth => true do
-
+get "/album/:album/?:artist?", :auth => true do
+	unless params[:artist]
+		@artist = repository(:default).adapter.select("SELECT DISTINCT(`artist`) FROM `songs` WHERE album=?", params[:album])
+		if @artist.count == 0
+			halt 404, "no album found!"
+		elsif @artist.count != 1
+			@title = 'Multiple Albums'
+			return erb :'info/multi_albums'
+		end
+	end
+	"#{params[:album]} by #{params[:artist]}"
 end
 
 get "/artist/:artist", :auth => true do
 	@title = params[:artist]
+	@ready = 'Info.artist();'
 	@artist = JSON.parse(artist_info params[:artist])
 	@artist["image"].each { |i| @image = i["#text"] if i["size"] == "mega" }
 	@albums = redis.smembers params[:artist].gsub(" ", "") + ":albums"

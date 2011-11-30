@@ -46,6 +46,10 @@ pid = fork do
 			puts "Some other cleanup stuff."
 			Process.exit # do a clean exit
 		end
+		
+		# if Playr.playing?
+		
+		sleep(1)
 	end
 end
 Process.detach(pid)

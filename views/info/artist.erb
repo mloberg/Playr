@@ -32,15 +32,16 @@
 	</div>
 	<div class="span8">
 		<h2>Similar Artists</h2>
-		<ul class="media-grid">
-		<% puts 'test' %>
 		<% @artist["similar"]["artist"].each do |artist| %>
-			<li>
-				<% artist["image"].each {|i| artist["img"] = i["#text"] if i["size"] == "large"} %>
-				<a href="/artist/<%= artist["name"] %>"><img class="thumbnail" src="<%= artist["img"] %>" alt="<%= artist["name"] %>" /></a>
-			</li>
+		<div class="similar-artist">
+			<% artist["image"].each {|i| artist["img"] = i["#text"] if i["size"] == "large"} %>
+			<a href="/artist/<%= artist["name"] %>"><img class="thumbnail" src="<%= artist["img"] %>" alt="<%= artist["name"] %>" /></a>
+		</div>
 		<% end %>
-		</ul>
 	</div>
 </div>
-<%= @artist %>
+<div class="row">
+	<div class="span16">
+		<p><br /><%= @artist["bio"]["content"].gsub("\n", "<br />") %><br /><small>Published on <%= Time.parse(@artist["bio"]["published"]).strftime("%b %d, %Y") %> to <a href="http://last.fm">Last.fm</a></small></p>
+	</div>
+</div>
