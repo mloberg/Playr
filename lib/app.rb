@@ -34,6 +34,24 @@ helpers do
 	def likes(song)
 		Vote.count(:song => song, :like => true)
 	end
+	
+	def cache(key, value = nil)
+		c = redis.hget "cache", key
+		unless c
+			redis.hset "cache", key, value.to_json
+			c = value.to_json
+		end
+		JSON.parse(c)
+	end
+	
+	def get_cache(key)
+		c = redis.hget "cache", key
+		return JSON.parse(c) if c
+	end
+	
+	def set_cache(key, value)
+		redis.hset "cache", key, value.to_json
+	end
 end
 
 set(:auth) do |val|
@@ -152,6 +170,28 @@ get "/artist/:artist", :auth => true do
 	@artist["image"].each { |i| @image = i["#text"] if i["size"] == "mega" }
 	@albums = redis.smembers params[:artist].gsub(" ", "") + ":albums"
 	erb :'info/artist'
+end
+
+get "/artists", :auth => true do
+	@title = "Artists"
+	artists = redis.smembers "artists"
+	artists.sort!
+	@artists = {}
+	artists.each do |artist|
+		artist_info = get_cache(artist)
+		unless artist_info
+			artist_info = @lastfm.artist artist
+			set_cache(artist, artist_info)
+		end
+		image = ''
+		artist_info["image"].each { |i| image = i["#text"] if i["size"] == "extralarge" }
+		@artists[artist] = image
+	end
+	erb :artists
+end
+
+get "/albums", :auth => true do
+	@title = "Albums"
 end
 
 #################

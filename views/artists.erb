@@ -1,0 +1,12 @@
+<div class="page-header">
+	<h1>Artists</h1>
+</div>
+<div class="row">
+	<div class="span15 offset1">
+		<ul class="media-grid artist-grid">
+			<% @artists.each do |artist,image| %>
+			<li><a class="thumbnail" href="/artist/<%= artist %>"><img src="<%= image %>" alt="<%= artist %>" /><%= artist %></a></li>
+			<% end %>
+		</ul>
+	</div>
+</div>
