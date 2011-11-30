@@ -52,6 +52,14 @@ helpers do
 	def set_cache(key, value)
 		redis.hset "cache", key, value.to_json
 	end
+	
+	def hashify(obj)
+		hash = {}
+		obj.instance_variables.each do |var|
+			hash[var.to_s.delete("@")] = obj.instance_variable_get(var) if not var.to_s =~ /^@_/
+		end
+		hash
+	end
 end
 
 set(:auth) do |val|
@@ -158,8 +166,33 @@ get "/album/:album/?:artist?", :auth => true do
 		@artist = params[:artist]
 	end
 	@title = params[:album]
-	@album = @lastfm.album(params[:album], @artist)
+	@album = get_cache(@artist + ':' + @title)
+	unless @album
+		@album = @lastfm.album(@title, @artist)
+		set_cache(@artist + ':' + @title, @album)
+	end
 	@album["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
+	songs = Song.all(:album => @title, :artist => @artist, :order => [:tracknum.asc])
+	@tracks = {}
+	if @album["tracks"]["track"].kind_of? Array
+		album_tracks = @album["tracks"]["track"]
+	else
+		album_tracks = @album["tracks"]
+	end
+	album_tracks.each do |t|
+		t = t.pop if t.kind_of? Array
+		@tracks[t["@attr"]["rank"].to_i] = {
+			:available => false,
+			:name => t["name"]
+		}
+	end
+	songs.each do |t|
+		@tracks[t.tracknum] = {
+			:available => true,
+			:id => t.id,
+			:name => t.title
+		}
+	end
 	erb :'info/album'
 end
 
@@ -178,11 +211,7 @@ get "/artists", :auth => true do
 	artists.sort!
 	@artists = {}
 	artists.each do |artist|
-		artist_info = get_cache(artist)
-		unless artist_info
-			artist_info = @lastfm.artist artist
-			set_cache(artist, artist_info)
-		end
+		artist_info = JSON.parse(artist_info(artist))
 		image = ''
 		artist_info["image"].each { |i| image = i["#text"] if i["size"] == "extralarge" }
 		@artists[artist] = image
@@ -192,6 +221,8 @@ end
 
 get "/albums", :auth => true do
 	@title = "Albums"
+	@albums = Song.all(:fields => [:artist, :album], :unique => true, :order => [:album.asc])
+	erb :albums
 end
 
 #################

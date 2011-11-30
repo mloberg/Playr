@@ -84,8 +84,11 @@ body {
 }
 
 /* List */
-.artist-grid a {
+.artist-grid a, .album-grid a {
 	text-align: center;
+}
+.album-grid a {
+	width: 174px;
 }
 
 /* Modal */
