@@ -24,7 +24,7 @@
 			<ul class="media-grid">
 			<% @albums.each do |album| %>
 				<li>
-					<a><img class="thumbnail" src="<%= album_artwork album, @artist["name"] %>" alt="<%= album %>" /></a>
+					<a href="/album/<%= album %>/<%= @artist["name"] %>"><img class="thumbnail" src="<%= album_artwork album, @artist["name"] %>" alt="<%= album %>" /></a>
 				</li>
 			<% end %>
 			</ul>

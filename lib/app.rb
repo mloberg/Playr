@@ -135,8 +135,14 @@ get "/album/:album/?:artist?", :auth => true do
 			@title = 'Multiple Albums'
 			return erb :'info/multi_albums'
 		end
+		@artist = @artist.pop
+	else
+		@artist = params[:artist]
 	end
-	"#{params[:album]} by #{params[:artist]}"
+	@title = params[:album]
+	@album = @lastfm.album(params[:album], @artist)
+	@album["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
+	erb :'info/album'
 end
 
 get "/artist/:artist", :auth => true do

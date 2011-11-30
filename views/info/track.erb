@@ -5,31 +5,31 @@
 	<div class="span6">
 		<img src="<%= @image %>" alt="<%= @info["album"]["title"] %>" />
 	</div>
-	<div class="span10">
-		<div class="row track-info">
-			<div class="span5">
-				<h4>Track Info</h4>
-				<ul>
-					<li><strong>Track</strong>: <%= @song.title %></li>
-					<li><strong>Artist</strong>: <%= @song.album %></li>
-					<li><strong>Album</strong>: <%= @song.album %></li>
-					<li><strong>Genere</strong>: <%= @song.genre %></li>
-					<li><strong>Year</strong>: <%= @song.year %></li>
-					<li><strong>Plays</strong>: <%= @song.plays %></li>
-					<li><strong>Likes</strong>: <%= likes @song %></li>
-				</ul>
-			</div>
-			<div class="span5">
-				<h4>Tags <small>from <a href="http://last.fm">Last.fm</a></small></h4>
-				<ul>
-				<% @info["toptags"]["tag"].each do |tag| %>
-					<li><%= tag["name"] %></li>
-				<% end %>
-				</ul>
-			</div>
-		</div>
+	<div class="span5">
+		<h4>Track Info</h4>
+		<ul>
+			<li><strong>Track</strong>: <%= @song.title %></li>
+			<li><strong>Artist</strong>: <a href="/artist/<%= @song.artist %>"><%= @song.artist %></a></li>
+			<li><strong>Album</strong>: <a href="/album/<%= @song.album %>/<%= @song.artist %>"><%= @song.album %></a></li>
+			<li><strong>Genere</strong>: <%= @song.genre %></li>
+			<li><strong>Year</strong>: <%= @song.year %></li>
+			<li><strong>Plays</strong>: <%= @song.plays %></li>
+			<li><strong>Likes</strong>: <%= likes @song %></li>
+		</ul>
+	</div>
+	<div class="span5">
+		<h4>Tags <small>from <a href="http://last.fm">Last.fm</a></small></h4>
+		<ul>
+		<% @info["toptags"]["tag"].each do |tag| %>
+			<li><%= tag["name"] %></li>
+		<% end %>
+		</ul>
+	</div>
+</div>
+<div class="row">
+	<div class="span 16">
 		<% if @info["wiki"] %>
-		<p><%= @info["wiki"]["summary"].gsub("\n", "<br />") %><br /><small>Published on <%= Time.parse(@info["wiki"]["published"]).strftime("%b %d, %Y") %> to <a href="http://last.fm">Last.fm</a></small></p>
+		<p><%= @info["wiki"]["content"].gsub("\n", "<br />") %><br /><small>Published on <%= Time.parse(@info["wiki"]["published"]).strftime("%b %d, %Y") %> to <a href="http://last.fm">Last.fm</a></small></p>
 		<% end %>
 		<p class="float-right"><a class="btn">Edit</a> <a class="btn danger">Delete</a></p>
 	</div>
