@@ -53,6 +53,7 @@ class User
 	property :password, String, :length => 1024, :required => true
 	property :secret, String, :length => 1024, :required => true
 	property :name, String
+	property :email, String, :default => 'admin@dkyinc.com', :format => :email_address
 	
 	has n, :votes
 end

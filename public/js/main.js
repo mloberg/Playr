@@ -17,6 +17,46 @@ Playr = {
 				setTimeout(function(){ $$(".alert-message").destroy(); }, 500);
 			}, 2000);
 		}
+		Playr.voting();
+	},
+	
+	voting: function(){
+		$$(".like").addEvent('click', function(){
+			if(!this.hasClass("disabled")){
+				var that = this,
+					sid = this.get("data-song"),
+					dislike = that.getSiblings(".dislike");
+				new Request({
+					method: 'post',
+					url: '/api/like',
+					data: {
+						song: sid
+					},
+					onComplete: function(msg){
+						if(dislike.hasClass("disabled")) dislike.removeClass("disabled");
+						that.addClass("disabled");
+					}
+				}).send();
+			}
+		});
+		$$(".dislike").addEvent('click', function(){
+			if(!this.hasClass("disabled")){
+				var that = this,
+					sid = this.get("data-song"),
+					like = that.getSiblings(".like");
+				new Request({
+					method: 'post',
+					url: '/api/dislike',
+					data: {
+						song: sid
+					},
+					onComplete: function(msg){
+						if(like.hasClass("disabled")) like.removeClass("disabled");
+						that.addClass("disabled");
+					}
+				}).send();
+			}
+		});
 	},
 	
 	upload: function(){

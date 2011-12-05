@@ -5,25 +5,43 @@
 	<div class="span6">
 		<img src="<%= @image %>" alt="<%= @song.album %>" />
 	</div>
-	<div class="span5">
-		<h4>Track Info</h4>
-		<ul>
-			<li><strong>Track</strong>: <%= @song.title %></li>
-			<li><strong>Artist</strong>: <a href="/artist/<%= @song.artist %>"><%= @song.artist %></a></li>
-			<li><strong>Album</strong>: <a href="/album/<%= @song.album %>/<%= @song.artist %>"><%= @song.album %></a></li>
-			<li><strong>Genere</strong>: <%= @song.genre %></li>
-			<li><strong>Year</strong>: <%= @song.year %></li>
-			<li><strong>Plays</strong>: <%= @song.plays %></li>
-			<li><strong>Likes</strong>: <%= likes @song %></li>
-		</ul>
-	</div>
-	<div class="span5">
-		<h4>Tags <small>from <a href="http://last.fm">Last.fm</a></small></h4>
-		<ul>
-		<% @info["toptags"]["tag"].each do |tag| %>
-			<li><%= tag["name"] %></li>
-		<% end %>
-		</ul>
+	<div class="span10">
+		<div class="row">
+			<div class="span5">
+				<h4>Track Info</h4>
+				<ul>
+					<li><strong>Track</strong>: <%= @song.title %></li>
+					<li><strong>Artist</strong>: <a href="/artist/<%= @song.artist %>"><%= @song.artist %></a></li>
+					<li><strong>Album</strong>: <a href="/album/<%= @song.album %>/<%= @song.artist %>"><%= @song.album %></a></li>
+					<li><strong>Genere</strong>: <%= @song.genre %></li>
+					<li><strong>Year</strong>: <%= @song.year %></li>
+					<li><strong>Plays</strong>: <%= @song.plays %></li>
+					<li><strong>Likes</strong>: <%= likes @song %></li>
+				</ul>
+			</div>
+			<div class="span5">
+				<h4>Tags <small>from <a href="http://last.fm">Last.fm</a></small></h4>
+				<ul>
+				<% @info["toptags"]["tag"].each do |tag| %>
+					<li><%= tag["name"] %></li>
+				<% end %>
+				</ul>
+			</div>
+		</div>
+		<div class="row">
+			<div class="span10">
+				<p class="float-left">
+					<a class="like btn success<% if likes? @song.id %> disabled<% end %>" data-song="<%= @song.id.to_s %>">Like</a>
+					<a class="dislike btn danger<% if likes?(@song.id) == false %> disabled<% end %>" data-song="<%= @song.id.to_s %>">Dislike</a>
+				</p>
+				<p class="float-right">
+					<a class="btn" href="/track/<%= @song.id.to_s %>/edit">Edit</a>
+					<a class="btn danger" id="delete" href="#">Delete</a>
+					<a class="btn success" id="queue-up">Add To Queue</a>
+				</p>
+				<div class="clear"></div>
+			</div>
+		</div>
 	</div>
 </div>
 <div class="row">
@@ -31,7 +49,6 @@
 		<% if @info["wiki"] %>
 		<p><%= @info["wiki"]["content"].gsub("\n", "<br />") %><br /><small>Published on <%= Time.parse(@info["wiki"]["published"]).strftime("%b %d, %Y") %> to <a href="http://last.fm">Last.fm</a></small></p>
 		<% end %>
-		<p class="float-right"><a class="btn" href="/track/<%= @song.id.to_s %>/edit">Edit</a> <a class="btn danger" id="delete" href="#">Delete</a> <a class="btn success" id="queue-up">Add To Queue</a></p>
 	</div>
 	<div class="clear"></div>
 </div>

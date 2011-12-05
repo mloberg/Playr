@@ -60,6 +60,12 @@ helpers do
 		end
 		hash
 	end
+	
+	def likes?(sid)
+		like = Vote.get(sid, @user.id)
+		return nil unless like
+		return like.like
+	end
 end
 
 set(:auth) do |val|
@@ -212,10 +218,10 @@ get "/artists", :auth => true do
 	artists = Song.all(:fields => [:artist], :unique => true, :order => [:artist.asc])
 	@artists = {}
 	artists.each do |artist|
-		artist_info = JSON.parse(artist_info(artist))
+		artist_info = JSON.parse(artist_info(artist.artist))
 		image = ''
 		artist_info["image"].each { |i| image = i["#text"] if i["size"] == "extralarge" }
-		@artists[artist] = image
+		@artists[artist.artist] = image
 	end
 	erb :artists
 end
@@ -400,9 +406,26 @@ delete "/api/track", :auth => true do
 	end
 end
 
+post "/api/like", :auth => true do
+	like(params[:song])
+	return { :success => true, :message => 'Liked song'}.to_json
+end
+
+post "/api/dislike", :auth => true do
+	dislike(params[:song])
+	return { :success => true, :message => 'Disliked song' }.to_json
+end
+
 ####################
 ## User Functions ##
 ####################
+
+get "/likes/?:username?", :auth => true do
+	@user = User.first(:username => params[:username]) if params[:username]
+	@title = "#{@user.name} Likes"
+	@likes = Vote.all(:user => @user)
+	erb :likes
+end
 
 get "/user/add", :auth => :admin do
 	erb :add_user

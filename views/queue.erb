@@ -38,8 +38,8 @@
 					<strong>Likes</strong>: <%= likes q.song %>
 				</p>
 				<p>
-					<a class="btn success">Like</a>
-					<a class="btn danger">Dislike</a>
+					<a class="btn success like<% if likes? q.song.id %> disabled<% end %>" data-song="<%= q.song.id.to_s %>">Like</a>
+					<a class="btn danger dislike<% if likes?(q.song.id) == false %> disabled<% end %>" data-song="<%= q.song.id.to_s %>">Dislike</a>
 					<a class="btn info">Download</a>
 					<a class="btn">Don't Play</a>
 				</p>
