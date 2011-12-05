@@ -66,6 +66,11 @@ helpers do
 		return nil unless like
 		return like.like
 	end
+	
+	def avatar(email)
+		hash = Digest::MD5.hexdigest(email.downcase)
+		img_src = "http://www.gravatar.com/avatar/#{hash}"
+	end
 end
 
 set(:auth) do |val|
@@ -136,6 +141,7 @@ get "/track/:track", :auth => true do
 		if @info["album"]
 			@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
 		end
+		@likes = Vote.all(:song => @song)
 		@ready = "Info.track(#{@song.id.to_s});"
 		erb :'info/track'
 	else
@@ -148,9 +154,8 @@ get "/track/:track", :auth => true do
 			@info = @lastfm.track(@song.title, @song.artist)
 			if @info["album"]["image"]
 				@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
-			else
-				@image = ''
 			end
+			@likes = Vote.all(:song => @song)
 			@ready = "Info.track(#{@song.id.to_s});"
 			erb :'info/track'
 		else

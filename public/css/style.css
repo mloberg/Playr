@@ -96,7 +96,7 @@ body {
 }
 
 /* List */
-.artist-grid a, .album-grid a {
+.artist-grid a, .album-grid a, .likes-grid a {
 	text-align: center;
 }
 .album-grid a {

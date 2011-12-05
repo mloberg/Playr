@@ -46,7 +46,26 @@
 </div>
 <div class="row">
 	<div class="span16">
+		<h4>Likes</h4>
+	<% if @likes.empty? %>
+		<p>There's no love for this track...</p>
+	<% else %>
+		<ul class="media-grid likes-grid">
+		<% @likes.each do |l| %>
+			<li>
+				<a>
+					<img class="thumbnail" src="<%= avatar l.user.email %>" /><%= l.user.name %>
+				</a>
+			</li>
+		<% end %>
+		</ul>
+	<% end %>
+	</div>
+</div>
+<div class="row">
+	<div class="span16">
 		<% if @info["wiki"] %>
+		<h4>Wiki</h4>
 		<p><%= @info["wiki"]["content"].gsub("\n", "<br />") %><br /><small>Published on <%= Time.parse(@info["wiki"]["published"]).strftime("%b %d, %Y") %> to <a href="http://last.fm">Last.fm</a></small></p>
 		<% end %>
 	</div>
