@@ -16,10 +16,16 @@
 			<a class="brand" href="/">Playr</a>
 			<% if @user %>
 			<ul class="nav">
+				<li class="dropdown">
+					<a class="dropdown-toggle" href="#">Browse</a>
+					<ul class="dropdown-menu">
+						<li><a href="/artists">Artists</a></li>
+						<li><a href="/albums">Albums</a></li>
+						<li><a href="/browse">All</a></li>
+					</ul>
+				</li>
 				<li><a href="/queue">Queue</a></li>
-				<li><a href="/browse">Browse</a></li>
 				<li><a href="/upload">Upload</a></li>
-				<li><a href="/artists">Artists</a></li>
 			</ul>
 			<form class="pull-left" action="/search">
 				<input type="text" name="q" placeholder="Search" />
@@ -53,6 +59,8 @@
 	</div>
 </div>
 <script src="/js/mootools-1.4.1.min.js"></script>
+<script src="/js/simple-modal.js"></script>
+<script src="/js/mustache.js"></script>
 <%= @script %>
 <script src="/js/main.js"></script>
 <script>

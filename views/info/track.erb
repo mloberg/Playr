@@ -3,7 +3,7 @@
 </div>
 <div class="row">
 	<div class="span6">
-		<img src="<%= @image %>" alt="<%= @info["album"]["title"] %>" />
+		<img src="<%= @image %>" alt="<%= @song.album %>" />
 	</div>
 	<div class="span5">
 		<h4>Track Info</h4>
@@ -31,7 +31,7 @@
 		<% if @info["wiki"] %>
 		<p><%= @info["wiki"]["content"].gsub("\n", "<br />") %><br /><small>Published on <%= Time.parse(@info["wiki"]["published"]).strftime("%b %d, %Y") %> to <a href="http://last.fm">Last.fm</a></small></p>
 		<% end %>
-		<p class="float-right"><a class="btn" href="/track/<%= @song.id.to_s %>/edit">Edit</a> <a class="btn danger" id="delete" href="#">Delete</a></p>
+		<p class="float-right"><a class="btn" href="/track/<%= @song.id.to_s %>/edit">Edit</a> <a class="btn danger" id="delete" href="#">Delete</a> <a class="btn success" id="queue-up">Add To Queue</a></p>
 	</div>
 	<div class="clear"></div>
 </div>

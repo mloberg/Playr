@@ -157,7 +157,9 @@ Browse = {
 							Queue.add(song.id);
 							this.hide();
 						});
-						sm.addButton("Cancel", "btn");
+						sm.addButton("Track Info", "btn", function(){
+							window.location.href = "/track/" + song.id
+						});
 						sm.show({
 							model: "modal",
 							title: "Add Song To Queue?",
@@ -249,6 +251,22 @@ Info = {
 				}).inject(delete_track);
 				delete_track.submit();
 			}
+		});
+		$("queue-up").addEvent('click', function(){
+			var sm = new SimpleModal({
+				offsetTop: 100,
+				draggable: false,
+				hideHeader: true
+			});
+			sm.addButton("Add To Queue", "btn primary", function(){
+				Queue.add(id);
+				this.hide();
+			})
+			sm.addButton("Cancel", "btn");
+			sm.show({
+				model: "modal",
+				contents: "Add this song to the queue?"
+			});
 		});
 	}
 

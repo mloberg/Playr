@@ -88,27 +88,21 @@ end
 
 get "/browse", :auth => true do
 	@title = 'Browse'
-	@artists = redis.smembers "artists"
-	@artists.sort!
-	@script = '<script src="/js/simple-modal.js"></script><script src="/js/mustache.js"></script>'
+	@artists = Song.all(:fields => [:artist], :unique => true, :order => [:artist.asc])
 	@ready = 'Playr.browse();'
 	erb :browse
 end
 
 get "/browse/:artist", :auth => true do
 	@title = 'Browse'
-	@artists = redis.smembers "artists"
-	@artists.sort!
-	@script = '<script src="/js/simple-modal.js"></script><script src="/js/mustache.js"></script>'
+	@artists = Song.all(:fields => [:artist], :unique => true, :order => [:artist.asc])
 	@ready = "Playr.browse({ artist: '#{params[:artist]}' });"
 	erb :browse
 end
 
 get "/browse/:artist/:album", :auth => true do
 	@title = 'Browse'
-	@artists = redis.smembers "artists"
-	@artists.sort!
-	@script = '<script src="/js/simple-modal.js"></script><script src="/js/mustache.js"></script>'
+	@artists = Song.all(:fields => [:artist], :unique => true, :order => [:artist.asc])
 	@ready = "Playr.browse({ artist: '#{params[:artist]}', album: '#{params[:album]}' });"
 	erb :browse
 end
@@ -133,7 +127,9 @@ get "/track/:track", :auth => true do
 		halt 404, "track not found!" unless @song
 		@title = @song.title
 		@info = @lastfm.track(@song.title, @song.artist)
-		@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
+		if @info["album"]
+			@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
+		end
 		@ready = "Info.track(#{@song.id.to_s});"
 		erb :'info/track'
 	else
@@ -144,7 +140,11 @@ get "/track/:track", :auth => true do
 			@song = @song.pop
 			@title = @song.title
 			@info = @lastfm.track(@song.title, @song.artist)
-			@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
+			if @info["album"]["image"]
+				@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
+			else
+				@image = ''
+			end
 			@ready = "Info.track(#{@song.id.to_s});"
 			erb :'info/track'
 		else
@@ -203,14 +203,13 @@ get "/artist/:artist", :auth => true do
 	@ready = 'Info.artist();'
 	@artist = JSON.parse(artist_info params[:artist])
 	@artist["image"].each { |i| @image = i["#text"] if i["size"] == "mega" }
-	@albums = redis.smembers params[:artist].gsub(" ", "") + ":albums"
+	@albums = repository(:default).adapter.select("SELECT DISTINCT(`album`) FROM `songs` WHERE artist=?", params[:artist])
 	erb :'info/artist'
 end
 
 get "/artists", :auth => true do
 	@title = "Artists"
-	artists = redis.smembers "artists"
-	artists.sort!
+	artists = Song.all(:fields => [:artist], :unique => true, :order => [:artist.asc])
 	@artists = {}
 	artists.each do |artist|
 		artist_info = JSON.parse(artist_info(artist))
@@ -260,14 +259,12 @@ end
 ###################
 
 get "/api/list/artists" do
-	artists = redis.smembers "artists"
-	artists.sort!
+	artists = Song.all(:fields => [:artist], :unique => true, :order => [:artist.asc])
 	return artists.to_json
 end
 
 get "/api/list/albums" do
-	albums = redis.smembers "albums"
-	albums.sort!
+	albums = Song.all(:fields => [:artist, :album], :unique => true, :order => [:album.asc])
 	return albums.to_json
 end
 
@@ -282,8 +279,7 @@ end
 # ?artist=:artist
 get "/api/artist/albums" do
 	return { :error => true, :message => "Must provide artist." }.to_json unless params[:artist]
-	albums = redis.smembers params[:artist].gsub(" ", "") + ":albums"
-	albums.sort!
+	albums = repository(:default).adapter.select("SELECT DISTINCT(`album`) FROM `songs` WHERE artist=?", params[:artist])
 	return albums.to_json
 end
 
@@ -353,7 +349,7 @@ post "/api/song/add", :auth => true do
 	target_path = './music/' + mp3.tag.artist + '/' + mp3.tag.album + '/'
 	FileUtils.mkdir_p target_path unless File.exists? target_path
 	FileUtils.mv(tmp_file, target_path + file_name)
-	# add to Redis and MySQL
+	# add to MySQL
 	s = Song.new
 	s.attributes = {
 		:title => mp3.tag.title,
@@ -368,9 +364,6 @@ post "/api/song/add", :auth => true do
 		:updated_at => Time.now
 	}
 	s.save
-	redis.sadd "artists", mp3.tag.artist
-	redis.sadd "albums", mp3.tag.album
-	redis.sadd mp3.tag.artist.gsub(" ", "") + ":albums", mp3.tag.album
 	
 	# must return for file uploader to mark as success
 	return {:success => true}.to_json
@@ -400,7 +393,6 @@ delete "/api/track", :auth => true do
 	song = Song.get(params[:song_id])
 	# check for more songs off that album
 	album_tracks = Song.all(:album => song.album, :artist => song.artist)
-	redis.srem song.artist.gsub(" ", "") + ":albums", song.album if album_tracks.size == 1
 	if song.destroy
 		redirect '/', :notice => 'Song deleted.'
 	else
