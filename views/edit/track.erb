@@ -1,0 +1,53 @@
+<div class="page-header">
+	<h1>Edit Track <small><%= @song.title %> by <%= @song.artist %></small></h1>
+</div>
+<div class="row">
+	<div class="span7 offset4">
+		<form action="/api/track" method="post">
+			<input type="hidden" name="_method" value="put" />
+			<input type="hidden" name="song_id" value="<%= @song.id.to_s %>" />
+			<div class="clearfix">
+				<label for="title">Title</label>
+				<div class="input">
+					<input type="text" name="title" id="title" value="<%= @song.title %>" />
+				</div>
+			</div>
+			<div class="clearfix">
+				<label for="artist">Artist</label>
+				<div class="input">
+					<input type="text" name="artist" id="artist" value="<%= @song.artist %>" />
+				</div>
+			</div>
+			<div class="clearfix">
+				<label for="album">Album</label>
+				<div class="input">
+					<input type="text" name="album" id="album" value="<%= @song.album %>" />
+				</div>
+			</div>
+			<div class="clearfix">
+				<label for="tracknum">Track Number</label>
+				<div class="input">
+					<input type="text" name="tracknum" id="tracknum" value="<%= @song.tracknum %>" />
+				</div>
+			</div>
+			<div class="clearfix">
+				<label for="genre">Genre</label>
+				<div class="input">
+					<input type="text" name="genre" id="genre" value="<%= @song.genre %>" />
+				</div>
+			</div>
+			<div class="clearfix">
+				<label for="year">Year</label>
+				<div class="input">
+					<input type="text" name="year" id="year" value="<%= @song.year %>" />
+				</div>
+			</div>
+			<div class="clearfix">
+				<div class="input">
+					<input class="btn primary" type="submit" value="Save Changes" />
+					<input class="btn" type="button" value="Cancel" />
+				</div>
+			</div>
+		</form>
+	</div>
+</div>

@@ -10,8 +10,13 @@ Playr = {
 		$$(".dropdown-toggle").addEvent('click', function(evnt){
 			evnt.preventDefault();
 			this.getParent("li").toggleClass("open");
-			
 		});
+		if($$(".alert-message")){
+			setTimeout(function(){
+				$$(".alert-message").fade("out");
+				setTimeout(function(){ $$(".alert-message").destroy(); }, 500);
+			}, 2000);
+		}
 	},
 	
 	upload: function(){
@@ -217,6 +222,32 @@ Info = {
 					height = bricksHeight;
 					brick.getParent().setStyle('height', bricksHeight + 50);
 				}
+			}
+		});
+	},
+	
+	track: function(id){
+		$("delete").addEvent('click', function(e){
+			e.preventDefault();
+			if(confirm("Are you sure?")){
+				var delete_track = new Element('form', {
+					action: '/api/track',
+					method: 'post',
+					styles: {
+						display: 'none'
+					}
+				}).inject(document.body);
+				new Element('input', {
+					type: 'hidden',
+					name: '_method',
+					value: 'delete'
+				}).inject(delete_track);
+				new Element('input', {
+					type: 'hidden',
+					name: 'song_id',
+					value: id
+				}).inject(delete_track);
+				delete_track.submit();
 			}
 		});
 	}

@@ -134,6 +134,7 @@ get "/track/:track", :auth => true do
 		@title = @song.title
 		@info = @lastfm.track(@song.title, @song.artist)
 		@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
+		@ready = "Info.track(#{@song.id.to_s});"
 		erb :'info/track'
 	else
 		@song = Song.all(:title => params[:track])
@@ -144,6 +145,7 @@ get "/track/:track", :auth => true do
 			@title = @song.title
 			@info = @lastfm.track(@song.title, @song.artist)
 			@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
+			@ready = "Info.track(#{@song.id.to_s});"
 			erb :'info/track'
 		else
 			@title = 'Multiple Tracks'
@@ -223,6 +225,12 @@ get "/albums", :auth => true do
 	@title = "Albums"
 	@albums = Song.all(:fields => [:artist, :album], :unique => true, :order => [:album.asc])
 	erb :albums
+end
+
+get "/track/:id/edit", :auth => true do
+	@title = "Edit Track"
+	@song = Song.get(params[:id])
+	erb :'edit/track'
 end
 
 #################
@@ -370,6 +378,24 @@ post "/api/queue/add", :auth => true do
 	}
 	return { :success => true, :message => "Song added to end of the queue." }.to_json if q.save
 	return { :error => true, :message => "Could not add song to queue." }.to_json
+end
+
+put "/api/track", :auth => true do
+	song = Song.get(params[:song_id])
+	song.update(:title => params[:title], :artist => params[:artist], :album => params[:album], :tracknum => params[:tracknum], :year => params[:year], :genre => params[:genre], :updated_at => Time.now)
+	redirect "/track/#{params[:song_id]}", :notice => "Track info updated."
+end
+
+delete "/api/track", :auth => true do
+	song = Song.get(params[:song_id])
+	# check for more songs off that album
+	album_tracks = Song.all(:album => song.album, :artist => song.artist)
+	redis.srem song.artist.gsub(" ", "") + ":albums", song.album if album_tracks.size == 1
+	if song.destroy
+		redirect '/', :notice => 'Song deleted.'
+	else
+		redirect "/track/#{params[:song_id]}", :error => 'Could not delete song.'
+	end
 end
 
 ####################
