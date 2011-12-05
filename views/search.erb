@@ -1,0 +1,29 @@
+<div class="page-header">
+	<h1>Search Results <small>for <%= params[:q] %></small></h1>
+</div>
+<div class="row">
+<% if @results.empty? %>
+	<div class="span16">
+		<p>Nothing found for "<%= params[:q] %>".</p>
+	</div>
+<% else %>
+	<% @results.each do |song| %>
+		<div class="span8 search">
+			<h3><a href="/track/<%= song.id.to_s %>"><%= song.title %></a> <small>by <a href="/artist/<%= song.artist %>"><%= song.artist %></a></small></h3>
+			<div class="row">
+				<div class="span4">
+					<a href="/track/<%= song.id.to_s %>"><img src="<%= album_artwork(song.album, song.artist) %>" alt="<%= song.album %>" /></a>
+				</div>
+				<div class="span4">
+					<p>
+						<strong>Song</strong>: <a href="/track/<%= song.id.to_s %>"><%= song.title %></a><br />
+						<strong>Artist</strong>: <a href="/artist/<%= song.artist %>"><%= song.artist %></a><br />
+						<strong>Album</strong>: <a href="/browse/<%= song.artist %>/<%= song.album %>"><%= song.album %></a><br />
+						<strong>Genre</strong>: <%= song.genre %>
+					</p>
+				</div>
+			</div>
+		</div>
+	<% end %>
+<% end %>
+</div>

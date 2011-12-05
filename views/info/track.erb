@@ -27,10 +27,11 @@
 	</div>
 </div>
 <div class="row">
-	<div class="span 16">
+	<div class="span16">
 		<% if @info["wiki"] %>
 		<p><%= @info["wiki"]["content"].gsub("\n", "<br />") %><br /><small>Published on <%= Time.parse(@info["wiki"]["published"]).strftime("%b %d, %Y") %> to <a href="http://last.fm">Last.fm</a></small></p>
 		<% end %>
 		<p class="float-right"><a class="btn" href="/track/<%= @song.id.to_s %>/edit">Edit</a> <a class="btn danger" id="delete" href="#">Delete</a></p>
 	</div>
+	<div class="clear"></div>
 </div>

@@ -233,6 +233,16 @@ get "/track/:id/edit", :auth => true do
 	erb :'edit/track'
 end
 
+############
+## Search ##
+############
+
+get "/search", :auth => true do
+	@title = "Search"
+	@results = Song.search(params[:q])
+	erb :search
+end
+
 #################
 ## Upload Song ##
 #################

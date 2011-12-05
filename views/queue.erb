@@ -32,7 +32,7 @@
 			<div class="span6">
 				<p>
 					<strong>Song</strong>: <a href="/track/<%= q.song.id.to_s %>"><%= q.song.title %></a><br />
-					<strong>Artist</strong>: <%= q.song.artist %><br />
+					<strong>Artist</strong>: <a href="/artist/<%= q.song.artist %>"><%= q.song.artist %></a><br />
 					<strong>Album</strong>: <a href="/browse/<%= q.song.artist %>/<%= q.song.album %>"><%= q.song.album %></a><br />
 					<strong>Plays</strong>: <%= q.song.plays %><br />
 					<strong>Likes</strong>: <%= likes q.song %>
