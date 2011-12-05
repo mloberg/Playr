@@ -67,9 +67,9 @@ helpers do
 		return like.like
 	end
 	
-	def avatar(email)
+	def avatar(email, size = 80)
 		hash = Digest::MD5.hexdigest(email.downcase)
-		img_src = "http://www.gravatar.com/avatar/#{hash}"
+		img_src = "http://www.gravatar.com/avatar/#{hash}?s=#{size}&d=mm"
 	end
 end
 
@@ -426,6 +426,28 @@ end
 ####################
 
 get "/likes/?:username?", :auth => true do
+	@user = User.first(:username => params[:username]) if params[:username]
+	@title = "#{@user.name} Likes"
+	@likes = Vote.all(:user => @user)
+	erb :likes
+end
+
+get "/profile", :auth => true do
+	@title = "Profile"
+	erb :profile
+end
+
+get "/profile/likes", :auth => true do
+	@title = "#{@user.name} Likes"
+	@likes = Vote.all(:user => @user)
+	erb :likes
+end
+
+get "/user/:username", :auth => true do
+	
+end
+
+get "/user/:username/likes", :auth => true do
 	@user = User.first(:username => params[:username]) if params[:username]
 	@title = "#{@user.name} Likes"
 	@likes = Vote.all(:user => @user)
