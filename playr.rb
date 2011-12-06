@@ -20,16 +20,15 @@ class Playr
 	class << self; attr_accessor :pause_file end
 	@@pause_file = '/tmp/playr_is_paused'
 	
-	def self.start
-		if self.play
-			puts "start the queue"
-		else
-			puts "not playing"
-		end
+	def self.next_song
+		# check queue
+		
+		# if queue is empty, pick one at random preferring those with a higher vote
+		
 	end
 	
-	def self.play
-		
+	def self.play(next_song)
+		system "afplay -q 1 #{next_song}"
 	end
 	
 	def self.pause
@@ -48,6 +47,15 @@ class Playr
 	def self.paused?
 		File.exist?(@@pause_file)
 	end
+	
+	def self.volume=(num)
+		system "osascript -e 'set volume output volume #{num}' 2>/dev/null"
+	end
+	
+	def self.volume
+		vol = `osascript -e 'get output volume of (get volume settings)'`
+		vol.to_i
+	end
 
 end
 
@@ -60,10 +68,13 @@ pid = fork do
 			Process.exit # do a clean exit
 		end
 		
-		if Playr.paused?
+		if Playr.paused? or Playr.playing?
 			sleep(1)
 		else
-			sleep(1)
+			# get the next song
+			# next_song = Playr.next_song
+			# play the song
+			# Playr.play(next_song)
 		end
 	end
 end
