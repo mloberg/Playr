@@ -50,11 +50,11 @@
 	<% if @likes.empty? %>
 		<p>There's no love for this track...</p>
 	<% else %>
-		<ul class="media-grid likes-grid">
+		<ul class="media-grid user-likes-grid">
 		<% @likes.each do |l| %>
 			<li>
-				<a>
-					<img class="thumbnail" src="<%= avatar l.user.email %>" /><%= l.user.name %>
+				<a href="/likes/<%= l.user.username %>">
+					<img class="thumbnail" src="<%= avatar l.user.email, 64 %>" /><%= l.user.name %>
 				</a>
 			</li>
 		<% end %>

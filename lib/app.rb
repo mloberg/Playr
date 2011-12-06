@@ -85,8 +85,13 @@ before do
 		@user = User.get session[:user_id]
 		@auth = Auth.new(@user.password, @user.secret, session, request.env)
 	end
-	@lastfm = LastFM.new(LASTFM_API_KEY)
+	@lastfm = LastFM.new(LASTFM_API_KEY, LASTFM_SECRET)
+	@lastfm.session = LASTFM_SESSION
 end
+
+############
+## ROUTES ##
+############
 
 get "/", :auth => true do
 	@title = "Home"
@@ -426,28 +431,6 @@ end
 ####################
 
 get "/likes/?:username?", :auth => true do
-	@user = User.first(:username => params[:username]) if params[:username]
-	@title = "#{@user.name} Likes"
-	@likes = Vote.all(:user => @user)
-	erb :likes
-end
-
-get "/profile", :auth => true do
-	@title = "Profile"
-	erb :profile
-end
-
-get "/profile/likes", :auth => true do
-	@title = "#{@user.name} Likes"
-	@likes = Vote.all(:user => @user)
-	erb :likes
-end
-
-get "/user/:username", :auth => true do
-	
-end
-
-get "/user/:username/likes", :auth => true do
 	@user = User.first(:username => params[:username]) if params[:username]
 	@title = "#{@user.name} Likes"
 	@likes = Vote.all(:user => @user)

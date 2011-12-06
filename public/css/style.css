@@ -96,11 +96,14 @@ body {
 }
 
 /* List */
-.artist-grid a, .album-grid a, .likes-grid a {
+.artist-grid a, .album-grid a, .user-likes-grid a, .likes-grid a {
 	text-align: center;
 }
 .album-grid a {
 	width: 174px;
+}
+.user-likes-grid a {
+	width: 64px;
 }
 
 /* Modal */
