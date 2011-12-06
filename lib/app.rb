@@ -368,6 +368,7 @@ post "/api/song/add", :auth => true do
 	# add to MySQL
 	s = Song.new
 	s.attributes = {
+		:path => target_path + file_name,
 		:title => mp3.tag.title,
 		:artist => mp3.tag.artist,
 		:album => mp3.tag.album,
@@ -407,9 +408,8 @@ end
 
 delete "/api/track", :auth => true do
 	song = Song.get(params[:song_id])
-	# check for more songs off that album
-	album_tracks = Song.all(:album => song.album, :artist => song.artist)
 	if song.destroy
+		`rm -f #{song.path}`
 		redirect '/', :notice => 'Song deleted.'
 	else
 		redirect "/track/#{params[:song_id]}", :error => 'Could not delete song.'

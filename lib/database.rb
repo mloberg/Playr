@@ -24,6 +24,7 @@ class Song
 	include DataMapper::Resource
 	include Helper
 	property :id, Serial
+	property :path, FilePath, :required => true
 	property :title, String, :length => 512, :required => true
 	property :artist, String, :length => 512, :required => true
 	property :album, String, :length => 512

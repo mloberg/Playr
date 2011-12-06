@@ -75,6 +75,7 @@ pid = fork do
 			# next_song = Playr.next_song
 			# play the song
 			# Playr.play(next_song)
+			sleep(1)
 		end
 	end
 end
