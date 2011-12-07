@@ -52,7 +52,10 @@ body {
 	box-shadow: 0 0 10px #000;
 	margin-bottom: 15px;
 }
-.now-playing h2 {
+.paused {
+	margin-bottom: 30px;
+}
+.paused h2, .paused p, .now-playing h2 {
 	text-align: center;
 	margin-bottom: 5px;
 }

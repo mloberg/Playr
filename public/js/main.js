@@ -20,6 +20,33 @@ Playr = {
 		Playr.voting();
 	},
 	
+	controls: function(){
+		$("play-next").addEvent("click", function(){
+			if(confirm("Are you sure?")){
+				new Request({
+					method: 'post',
+					url: '/api/next',
+					onComplete: function(msg){
+					
+					}
+				}).send();
+			}
+		});
+	},
+	
+	test: function(){
+		new Request({
+			method: 'post',
+			url: '/api/volume',
+			data: {
+				level: 30
+			},
+			onComplete: function(msg){
+				console.log(msg);
+			}
+		}).send();
+	},
+	
 	voting: function(){
 		$$(".like").addEvent('click', function(){
 			if(!this.hasClass("disabled")){

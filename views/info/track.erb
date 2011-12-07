@@ -37,7 +37,7 @@
 				<p class="float-right">
 					<a class="btn" href="/track/<%= @song.id.to_s %>/edit">Edit</a>
 					<a class="btn danger" id="delete" href="#">Delete</a>
-					<a class="btn success" id="queue-up">Add To Queue</a>
+					<a class="btn success<% if in_queue @song %> disabled<% end %>" id="queue-up">Add To Queue</a>
 				</p>
 				<div class="clear"></div>
 			</div>

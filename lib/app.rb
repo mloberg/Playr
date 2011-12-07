@@ -71,6 +71,12 @@ helpers do
 		hash = Digest::MD5.hexdigest(email.downcase)
 		img_src = "http://www.gravatar.com/avatar/#{hash}?s=#{size}&d=mm"
 	end
+	
+	def in_queue(song)
+		q = Queue.all(:song => song)
+		return false if q.empty?
+		return true
+	end
 end
 
 set(:auth) do |val|
@@ -129,6 +135,7 @@ end
 
 get "/queue", :auth => true do
 	@title = "Queue"
+	@playing = History.last.song
 	@queue = Queue.all(:order => [ :created_at.asc ])
 	erb :queue
 end
@@ -424,6 +431,24 @@ end
 post "/api/dislike", :auth => true do
 	dislike(params[:song])
 	return { :success => true, :message => 'Disliked song' }.to_json
+end
+
+post "/api/pause", :auth => true do
+
+end
+
+post "/api/next", :auth => true do
+	Playr.skip
+	return { :success => true }.to_json
+end
+
+post "/api/volume", :auth => true do
+	Playr.volume = params[:level]
+	return { :success => true, :message => "Volume set to #{params[:level]}." }.to_json
+end
+
+get "/api/volume", :auth => true do
+	return { :volume => Playr.volume }.to_json
 end
 
 ####################

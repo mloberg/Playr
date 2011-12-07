@@ -40,6 +40,7 @@ class Song
 	
 	has n, :votes
 	has n, :queues
+	has n, :histories
 	
 	def self.search(query)
 		q = '%' + query + '%'
@@ -98,6 +99,14 @@ class Vote
 			create(:user => user, :song => song)
 		end
 	end
+end
+
+class History
+	include DataMapper::Resource
+	property :id, Serial
+	property :started_at, DateTime
+	
+	belongs_to :song
 end
 
 DataMapper.auto_upgrade!

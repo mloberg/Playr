@@ -22,13 +22,21 @@ class Playr
 	
 	def self.next_song
 		# check queue
-		
-		# if queue is empty, pick one at random preferring those with a higher vote
+		queued = Queue.first
+		if queued
+			queued.destroy
+			return queued.song
+		else
+			# if queue is empty, pick one at random preferring those with a higher vote
+			tmpid = repository(:default).adapter.select("SELECT `id` FROM `songs` WHERE vote > 300 ORDER BY RAND() LIMIT 1").pop
+			song = Song.get(tmpid)
+			return song
+		end
 		
 	end
 	
 	def self.play(next_song)
-		system "afplay -q 1 #{next_song}"
+		fork { system "afplay -q 1 #{next_song}" }
 	end
 	
 	def self.pause
@@ -37,11 +45,17 @@ class Playr
 	end
 	
 	def self.stop
-		self.play = false
+		`rm -f #{@@pause_file}`
+		`killall afplay > /dev/null 2>&1`
+	end
+	
+	def self.skip
+		pause
+		pause unless paused?
 	end
 	
 	def self.playing?
-		`ps aux | grep afplay | grep -v grep | wc -l | tr -d ' '`.chomp != 0
+		`ps aux | grep afplay | grep -v grep | wc -l | tr -d ' '`.chomp != "0"
 	end
 	
 	def self.paused?
@@ -59,12 +73,14 @@ class Playr
 
 end
 
+Playr.pause
+
 pid = fork do
 	while true
 		Signal.trap("INT") do
-			`rm -f #{Playr.pause_file}` # remove tmp pause file
-			puts "Stop playing the current song."
-			puts "Some other cleanup stuff."
+			puts "Stopping the currently played song."
+			Playr.stop
+			puts "Exiting Playr..."
 			Process.exit # do a clean exit
 		end
 		
@@ -72,10 +88,12 @@ pid = fork do
 			sleep(1)
 		else
 			# get the next song
-			# next_song = Playr.next_song
+			next_song = Playr.next_song
+			next_song.adjust!(:plays => 1)
+			# add song to play table
+			History.create(:song => next_song, :started_at => Time.now)
 			# play the song
-			# Playr.play(next_song)
-			sleep(1)
+			Playr.play(next_song.path)
 		end
 	end
 end

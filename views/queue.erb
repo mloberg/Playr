@@ -2,28 +2,35 @@
 	<h1>Playr Queue</h1>
 </div>
 <div class="row">
+<% if not Playr.paused? %>
+	<div class="span16 paused">
+		<h2>Paused</h2>
+		<p>Playr is currently paused.</p>
+	</div>
+<% else #elsif Playr.playing? %>
 	<div class="span16 now-playing">
 		<h2>Now Playing</h2>
 		<div class="row">
-			<div class="span4 offset4"><img src="http://placehold.it/174x174" alt="album" /></div>
+			<div class="span4 offset4"><img src="<%= album_artwork @playing.album, @playing.artist %>" alt="<%= @playing.title %>" /></div>
 			<div class="span6">
-				<h3>Song <small>by Artist</small></h3>
+				<h3><%= @playing.title %> <small>by <%= @playing.artist %></small></h3>
 				<p>
-					<strong>Album</strong>: <br />
-					<strong>Year</strong>: <br />
-					<strong>Genre</strong>: <br />
-					<strong>Plays</strong>: 1<br />
-					<strong>Likes</strong>: 1<br />
+					<strong>Album</strong>: <%= @playing.album %><br />
+					<strong>Year</strong>: <%= @playing.year %><br />
+					<strong>Genre</strong>: <%= @playing.genre %><br />
+					<strong>Plays</strong>: <%= @playing.plays %><br />
+					<strong>Likes</strong>: <%= likes @playing %><br />
 				</p>
 				<p>
-					<a class="btn success">Like</a>
-					<a class="btn danger">Dislike</a>
+					<a class="btn success like<% if likes? @playing.id %> disabled<% end %>" data-song="<%= @playing.id.to_s %>">Like</a>
+					<a class="btn danger dislike<% if likes?(@playing.id) == false %> disabled<% end %>" data-song="<%= @playing.id.to_s %>">Dislike</a>
 					<a class="btn info">Download</a>
-					<a class="btn">Next</a>
+					<a class="btn" id="play-next">Next</a>
 				</p>
 			</div>
 		</div>
 	</div>
+<% end %>
 	<% @queue.each do |q| %>
 	<div class="span10 offset3 queue">
 		<h3><%= q.song.title %> <small>by <%= q.song.artist %></small></h3>
