@@ -18,47 +18,44 @@ Playr = {
 			}, 2000);
 		}
 		Playr.voting();
+		Playr.controls();
 	},
 	
 	controls: function(){
-		$("play-next").addEvent("click", function(){
-			if(confirm("Are you sure?")){
-				new Request({
-					method: "post",
-					url: "/api/next",
-					onComplete: function(msg){
-						
-					}
-				}).send();
-			}
-		});
+		if($("play-next")){
+			$("play-next").addEvent("click", function(){
+				if(confirm("Are you sure?")){
+					new Request({
+						method: "post",
+						url: "/api/next",
+						onComplete: function(msg){
+							$$(".now-playing").fade("out");
+							setTimeout(function(){
+								$$(".now-playing").destroy();
+							}, 500);
+						}
+					}).send();
+				}
+			});
+		}
 		$$(".dont-play").addEvent("click", function(){
 			if(confirm("Are you sure?")){
+				var sid = this.get("data-song");
 				new Request({
 					method: "post",
 					url: "/api/skip",
 					data: {
-						song: this.get("data-song")
+						song: sid
 					},
 					onComplete: function(msg){
-						
+						$("song-" + sid).fade("out");
+						setTimeout(function(){
+							$("song-" + sid).destroy();
+						}, 500);
 					}
 				}).send();
 			}
 		});
-	},
-	
-	test: function(){
-		new Request({
-			method: "post",
-			url: "/api/volume",
-			data: {
-				level: 30
-			},
-			onComplete: function(msg){
-				console.log(msg);
-			}
-		}).send();
 	},
 	
 	voting: function(){

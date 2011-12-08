@@ -36,7 +36,7 @@ class Playr
 	end
 	
 	def self.play(next_song)
-		fork { system "afplay -q 1 #{next_song}" }
+		fork { system "afplay -q 1 '#{next_song}'" }
 	end
 	
 	def self.pause
@@ -50,8 +50,9 @@ class Playr
 	end
 	
 	def self.skip
+		was_paused = paused?
 		pause
-		pause unless paused?
+		pause unless was_paused
 	end
 	
 	def self.playing?
@@ -72,8 +73,6 @@ class Playr
 	end
 
 end
-
-Playr.pause
 
 pid = fork do
 	while true

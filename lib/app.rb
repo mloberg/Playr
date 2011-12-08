@@ -482,6 +482,9 @@ end
 # remove a song from the queue
 post "/api/skip", :auth => true do
 	# params[:song]
+	q = Queue.first(:song => Song.get(params[:song]))
+	return { :success => true }.to_json if q.destroy
+	return { :error => true, :message => "Could not remove track from queue." }.to_json
 end
 
 post "/api/volume", :auth => true do
