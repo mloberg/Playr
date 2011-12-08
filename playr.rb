@@ -13,7 +13,7 @@ require 'time'
 
 require 'lib/database'
 require 'lib/app'
-require 'lib/functions'
+require 'lib/aacinfo'
 
 class Playr
 	

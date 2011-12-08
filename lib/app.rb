@@ -204,12 +204,15 @@ get "/album/:album/?:artist?", :auth => true do
 	else
 		album_tracks = @album["tracks"]
 	end
-	album_tracks.each do |t|
-		t = t.pop if t.kind_of? Array
-		@tracks[t["@attr"]["rank"].to_i] = {
-			:available => false,
-			:name => t["name"]
-		}
+	puts album_tracks
+	unless album_tracks.kind_of? String
+		album_tracks.each do |t|
+			t = t.pop if t.kind_of? Array
+			@tracks[t["@attr"]["rank"].to_i] = {
+				:available => false,
+				:name => t["name"]
+			}
+		end
 	end
 	songs.each do |t|
 		@tracks[t.tracknum] = {
@@ -356,41 +359,66 @@ post "/api/song/add", :auth => true do
 	end
 	# parse song for information
 	tmp_file = directory + name
-	mp3 = Mp3Info.open(tmp_file)
-	if not mp3.tag.title
-		FileUtils.rm(tmp_file)
-		return {:error => true, :message => "No ID3 tags found!"}.to_json
+	ext = File.extname(name)[1..-1].downcase
+	tags = {}
+	case ext
+		when 'mp3'
+			mp3 = Mp3Info.open(tmp_file)
+			unless mp3.tag.title
+				FileUtils.rm(tmp_file)
+				return { :error => true, :message => "No tags found. Please add some tags and try again." }.to_json
+			end
+			tags = {
+				:length => mp3.length,
+				:title => mp3.tag.title,
+				:artist => mp3.tag.artist,
+				:album => mp3.tag.album,
+				:year => mp3.tag.year,
+				:tracknum => mp3.tag.tracknum,
+				:genre => mp3.tag.genre || mp3.tag.genre_s
+			}
+		when 'aac', 'mp4', 'm4a'
+			aac = AACInfo.open(tmp_file)
+			unless aac.title
+				FileUtils.rm(tmp_file)
+				return { :error => true, :message => "No tags found. Please add some tags and try again." }.to_json
+			end
+			tags = {
+				:length => aac.length,
+				:title => aac.title,
+				:artist => aac.artist,
+				:album => aac.album,
+				:year => aac.year,
+				:tracknum => aac.track,
+				:genre => aac.genre
+			}
+		else
+			FileUtils.rm(tmp_file)
+			return {:error => true, :message => "Not a supported filetype. Supported filetypes are mp3, m4a, aac, mp4." }.to_json
 	end
+	return { :error => true, :message => "Ran into unexpected error." }.to_json if tags.empty?
 	# see if duplicate song exists
-	if Song.first(:title => mp3.tag.title, :artist => mp3.tag.artist, :album => mp3.tag.album, :length => mp3.length)
+	if Song.first(:title => tags[:title], :artist => tags[:artist], :album => tags[:album], :length => tags[:length])
 		FileUtils.rm(tmp_file)
-		return {:error => true, :message => "Song already exists."}.to_json
+		return { :error => true, :message => "Song already exists." }.to_json
 	end
 	# move file
-	ext = File.extname(tmp_file)
-	file_name = mp3.tag.title + ext
-	target_path = './music/' + mp3.tag.artist + '/' + mp3.tag.album + '/'
+	file_name = tags[:title] + "." + ext
+	target_path = './music/' + tags[:artist] + '/' + tags[:album] + '/'
 	FileUtils.mkdir_p target_path unless File.exists? target_path
 	FileUtils.mv(tmp_file, target_path + file_name)
 	# add to MySQL
 	s = Song.new
 	s.attributes = {
 		:path => target_path + file_name,
-		:title => mp3.tag.title,
-		:artist => mp3.tag.artist,
-		:album => mp3.tag.album,
-		:year => mp3.tag.year,
-		:tracknum => mp3.tag.tracknum,
-		:genre => mp3.tag.genre_s,
-		:length => mp3.length,
 		:uploaded_by => @user.id,
 		:created_at => Time.now,
 		:updated_at => Time.now
-	}
+	}.merge(tags)
 	s.save
 	
 	# must return for file uploader to mark as success
-	return {:success => true}.to_json
+	return { :success => true }.to_json
 end
 
 post "/api/queue/add", :auth => true do
@@ -433,6 +461,15 @@ post "/api/dislike", :auth => true do
 	return { :success => true, :message => 'Disliked song' }.to_json
 end
 
+get "/api/playing", :auth => true do
+	playing = History.last
+	if Time.parse(playing.started_at).to_i + playing.song.length > Time.now.to_i
+		return { :currently_playing => true, :track => playing.song }.to_json
+	else
+		return { :currently_playing => false, :track => nil }.to_json
+	end
+end
+
 post "/api/pause", :auth => true do
 
 end
@@ -440,6 +477,11 @@ end
 post "/api/next", :auth => true do
 	Playr.skip
 	return { :success => true }.to_json
+end
+
+# remove a song from the queue
+post "/api/skip", :auth => true do
+	# params[:song]
 end
 
 post "/api/volume", :auth => true do

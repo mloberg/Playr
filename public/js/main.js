@@ -7,7 +7,7 @@ var Playr = {},
 Playr = {
 
 	init: function(){
-		$$(".dropdown-toggle").addEvent('click', function(evnt){
+		$$(".dropdown-toggle").addEvent("click", function(evnt){
 			evnt.preventDefault();
 			this.getParent("li").toggleClass("open");
 		});
@@ -24,10 +24,24 @@ Playr = {
 		$("play-next").addEvent("click", function(){
 			if(confirm("Are you sure?")){
 				new Request({
-					method: 'post',
-					url: '/api/next',
+					method: "post",
+					url: "/api/next",
 					onComplete: function(msg){
-					
+						
+					}
+				}).send();
+			}
+		});
+		$$(".dont-play").addEvent("click", function(){
+			if(confirm("Are you sure?")){
+				new Request({
+					method: "post",
+					url: "/api/skip",
+					data: {
+						song: this.get("data-song")
+					},
+					onComplete: function(msg){
+						
 					}
 				}).send();
 			}
@@ -36,8 +50,8 @@ Playr = {
 	
 	test: function(){
 		new Request({
-			method: 'post',
-			url: '/api/volume',
+			method: "post",
+			url: "/api/volume",
 			data: {
 				level: 30
 			},
@@ -48,14 +62,14 @@ Playr = {
 	},
 	
 	voting: function(){
-		$$(".like").addEvent('click', function(){
+		$$(".like").addEvent("click", function(){
 			if(!this.hasClass("disabled")){
 				var that = this,
 					sid = this.get("data-song"),
 					dislike = that.getSiblings(".dislike");
 				new Request({
-					method: 'post',
-					url: '/api/like',
+					method: "post",
+					url: "/api/like",
 					data: {
 						song: sid
 					},
@@ -66,14 +80,14 @@ Playr = {
 				}).send();
 			}
 		});
-		$$(".dislike").addEvent('click', function(){
+		$$(".dislike").addEvent("click", function(){
 			if(!this.hasClass("disabled")){
 				var that = this,
 					sid = this.get("data-song"),
 					like = that.getSiblings(".like");
 				new Request({
-					method: 'post',
-					url: '/api/dislike',
+					method: "post",
+					url: "/api/dislike",
 					data: {
 						song: sid
 					},
@@ -89,7 +103,7 @@ Playr = {
 	upload: function(){
 		var uploader = new qq.FileUploader({
 			element: document.getElementById("file-uploader"),
-			action: '/api/song/add',
+			action: "/api/song/add",
 			debug: false,
 			onComplete: function(id, fileName, resp){
 				if(resp.error == true){
@@ -103,11 +117,11 @@ Playr = {
 		if(typeof options == "undefined") options = {};
 		Browse.artist();
 		if(options.artist != ""){
-			$$('.artist:contains("' + options.artist + '")').fireEvent('click');
+			$$('.artist:contains("' + options.artist + '")').fireEvent("click");
 			if(options.album != ""){
 				var browseAlbums = setInterval(function(){
 					if($("album-list").get("html") != "" && $("album-list").get("html") != "<li>loading...</li>"){
-						$$('.album:contains("' + options.album + '")').fireEvent('click');
+						$$('.album:contains("' + options.album + '")').fireEvent("click");
 						clearInterval(browseAlbums);
 					}
 				}, 50);
@@ -129,18 +143,21 @@ Browse = {
 				$("album-artwork").fade("out");
 				$("album-list").getChildren().fade("out");
 				$("song-list").getChildren().fade("out");
-				setTimeout('$("song-list").set("html", "");$("album-artwork").set("html", "");', 300);
+				setTimeout(function(){
+					$("song-list").set("html", "");
+					$("album-artwork").set("html", "");
+				}, 300);
 			}
 			Browse.currentStep = "artist";
 			Browse.info["artist"] = this.get("text");
 			$("artists").morph(".span4");
 			$("albums").morph(".span6");
-			new Request.JSON({url: '/api/artist/info', onSuccess: function(artist){
+			new Request.JSON({url: "/api/artist/info", onSuccess: function(artist){
 				$("artist-info").set("html", '<img src="' + artist.image + '" alt="' + Browse.info["artist"] + '" />');
 			}}).get({ artist: Browse.info["artist"] });
 			new Request.JSON({
-				method: 'get',
-				url: '/api/artist/albums',
+				method: "get",
+				url: "/api/artist/albums",
 				data: { artist: Browse.info["artist"] },
 				onRequest: function(){
 					$("album-list").set("html", "<li>loading...</li>");
@@ -148,8 +165,8 @@ Browse = {
 				onComplete: function(albums){
 					$("album-list").set("html", "");
 					albums.each(function(album){
-						$("album-list").adopt(new Element('li', {
-							class: 'album',
+						$("album-list").adopt(new Element("li", {
+							class: "album",
 							text: album
 						}));
 					});
@@ -169,12 +186,12 @@ Browse = {
 			Browse.info["album"] = this.get("text");
 			$("albums").morph(".span4");
 			$("songs").morph(".span6");
-			new Request.JSON({url: '/api/album/artwork', onSuccess: function(artwork){
+			new Request.JSON({url: "/api/album/artwork", onSuccess: function(artwork){
 				$("album-artwork").set("html", '<img src="' + artwork + '" alt="' + Browse.info["album"] + '" />').fade("in");
 			}}).get({ artist: Browse.info["artist"], album: Browse.info["album"] });
 			new Request.JSON({
-				method: 'get',
-				url: '/api/album/tracks',
+				method: "get",
+				url: "/api/album/tracks",
 				data: {
 					artist: Browse.info["artist"],
 					album: Browse.info["album"]
@@ -185,12 +202,12 @@ Browse = {
 				onComplete: function(songs){
 					$("song-list").set("html", "");
 					songs.each(function(song){
-						var text = ''
+						var text = ""
 						if(song.tracknum != null) text += song.tracknum + ": "
 						text += song.title
-						$("song-list").adopt(new Element('li', {
+						$("song-list").adopt(new Element("li", {
 							id: song.id,
-							class: 'song',
+							class: "song",
 							text: text
 						}));
 					});
@@ -204,8 +221,8 @@ Browse = {
 		$$(".song").addEvent("click", function(){
 			Browse.currentStep = "song";
 			new Request.JSON({
-				method: 'get',
-				url: '/api/song',
+				method: "get",
+				url: "/api/song",
 				data: { id: this.get("id") },
 				onComplete: function(song){
 					var sm = new SimpleModal({
@@ -244,9 +261,9 @@ Queue = {
 
 	add: function(id){
 		var req = new Request.JSON({
-			method: 'post',
-			url: '/api/queue/add',
-			data: { 'id' : id },
+			method: "post",
+			url: "/api/queue/add",
+			data: { "id" : id },
 			onComplete: function(resp){
 				var sm = new SimpleModal({
 						offsetTop: 100,
@@ -255,7 +272,7 @@ Queue = {
 						closeButton: false,
 						btn_ok: "OK"
 					}),
-					message = 'Song added to queue!';
+					message = "Song added to queue!";
 				if(resp.error) message = resp.message;
 				sm.show({
 					model: "alert",
@@ -270,56 +287,56 @@ Queue = {
 Info = {
 
 	artist: function(){
-		var clearfix = new Element('div', { class: 'clear'}),
+		var clearfix = new Element("div", { class: "clear"}),
 			similarArtists = $$(".similar-artist"),
 			lastArtist = similarArtists.length - 1,
 			height = 0;
 		similarArtists.each(function(brick, key){
 			if((key + 1) % 3 === 0){
-				clearfix.inject(brick, 'after');
+				clearfix.inject(brick, "after");
 			}
 			if(key > 2){
 				var brickAbove = similarArtists[key - 3],
 					brickAboveCoords = brickAbove.getCoordinates(),
 					brickCoords = brick.getCoordinates(),
 					bricksHeight = brickAboveCoords.height + brickCoords.height;
-				brick.setStyle('position', 'relative').setPosition({
+				brick.setStyle("position", "relative").setPosition({
 					x: (brickAboveCoords.left - brickCoords.left),
 					y: (brickAboveCoords.bottom - brickCoords.top)
 				});
 				if(height < bricksHeight){
 					height = bricksHeight;
-					brick.getParent().setStyle('height', bricksHeight + 50);
+					brick.getParent().setStyle("height", bricksHeight + 50);
 				}
 			}
 		});
 	},
 	
 	track: function(id){
-		$("delete").addEvent('click', function(e){
+		$("delete").addEvent("click", function(e){
 			e.preventDefault();
 			if(confirm("Are you sure?")){
-				var delete_track = new Element('form', {
-					action: '/api/track',
-					method: 'post',
+				var delete_track = new Element("form", {
+					action: "/api/track",
+					method: "post",
 					styles: {
-						display: 'none'
+						display: "none"
 					}
 				}).inject(document.body);
-				new Element('input', {
-					type: 'hidden',
-					name: '_method',
-					value: 'delete'
+				new Element("input", {
+					type: "hidden",
+					name: "_method",
+					value: "delete"
 				}).inject(delete_track);
-				new Element('input', {
-					type: 'hidden',
-					name: 'song_id',
+				new Element("input", {
+					type: "hidden",
+					name: "song_id",
 					value: id
 				}).inject(delete_track);
 				delete_track.submit();
 			}
 		});
-		$("queue-up").addEvent('click', function(){
+		$("queue-up").addEvent("click", function(){
 			var sm = new SimpleModal({
 				offsetTop: 100,
 				draggable: false,
