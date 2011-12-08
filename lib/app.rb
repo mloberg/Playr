@@ -104,6 +104,14 @@ get "/", :auth => true do
 	erb :index
 end
 
+get "/error", :auth => true do
+	redirect "/", :error => "Test error"
+end
+
+get "/info", :auth => true do
+	redirect "/", :notice => "Test info message."
+end
+
 ############
 ## Browse ##
 ############

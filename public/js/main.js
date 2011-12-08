@@ -11,12 +11,6 @@ Playr = {
 			evnt.preventDefault();
 			this.getParent("li").toggleClass("open");
 		});
-		if($$(".alert-message")){
-			setTimeout(function(){
-				$$(".alert-message").fade("out");
-				setTimeout(function(){ $$(".alert-message").destroy(); }, 500);
-			}, 2000);
-		}
 		Playr.voting();
 		Playr.controls();
 	},

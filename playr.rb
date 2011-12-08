@@ -74,6 +74,8 @@ class Playr
 
 end
 
+Playr.pause
+
 pid = fork do
 	while true
 		Signal.trap("INT") do
