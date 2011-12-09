@@ -14,6 +14,11 @@ require 'time'
 require 'lib/database'
 require 'lib/app'
 require 'lib/aacinfo'
+require 'lib/lastfm'
+require 'lastfm_api_key'
+
+$lastfm = LastFM.new(LASTFM_API_KEY, LASTFM_SECRET)
+$lastfm.session = LASTFM_SESSION
 
 class Playr
 	
@@ -29,6 +34,7 @@ class Playr
 		else
 			# if queue is empty, pick one at random preferring those with a higher vote
 			tmpid = repository(:default).adapter.select("SELECT `id` FROM `songs` WHERE vote > 300 ORDER BY RAND() LIMIT 1").pop
+			# need to make sure it hasn't been played in the past 8 hours
 			song = Song.get(tmpid)
 			return song
 		end
@@ -92,9 +98,17 @@ pid = fork do
 			next_song = Playr.next_song
 			next_song.adjust!(:plays => 1)
 			# add song to play table
-			History.create(:song => next_song, :started_at => Time.now)
+			History.create(:song => next_song, :played_at => Time.now)
 			# play the song
 			Playr.play(next_song.path)
+			
+			# Scrobble to Last.fm
+			# Uncomment this when in production
+# 			$lastfm.update({
+# 				:album => next_song.album,
+# 				:track => next_song.title,
+# 				:artist => next_song.artist
+# 			})
 		end
 	end
 end

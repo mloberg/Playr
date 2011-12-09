@@ -45,7 +45,7 @@
 			<div class="clearfix">
 				<div class="input">
 					<input class="btn primary" type="submit" value="Save Changes" />
-					<input class="btn" type="button" value="Cancel" />
+					<input class="btn" type="button" value="Cancel" onclick="javascript:window.location.href = '/track/<%= @song.id.to_s %>'" />
 				</div>
 			</div>
 		</form>

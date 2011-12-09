@@ -60,12 +60,15 @@
 window.addEvent('domready', function(){
 	// humane options
 	humane.clickTpClose = true
-	<% if flash[:error] %>
+<% if flash[:error] %>
 	humane.error("<%= flash[:error].gsub('"', '\"') %>");
-	<% end %>
-	<% if flash[:notice] %>
+<% end %>
+<% if flash[:notice] %>
 	humane.info("<%= flash[:notice].gsub('"', '\"') %>");
-	<% end %>
+<% end %>
+<% if flash[:success] %>
+	humane.success("<%= flash[:success].gsub('"', '\"') %>");
+<% end %>
 	Playr.init();
 	<%= @ready %>
 });

@@ -1,6 +1,4 @@
 require 'lib/auth'
-require 'lib/lastfm'
-require 'lastfm_api_key'
 
 enable :sessions
 use Rack::Flash, :sweep => true
@@ -10,14 +8,14 @@ SITE_TITLE = "Playr"
 helpers do
 	def album_artwork(album, artist)
 		return redis.hget "album:artwork", album + ":" + artist if redis.hexists "album:artwork", album + ":" + artist
-		artwork = @lastfm.album_artwork album, artist
+		artwork = $lastfm.album_artwork album, artist
 		redis.hset "album:artwork", album + ":" + artist, artwork
 		artwork
 	end
 	
 	def artist_info(artist)
 		return redis.hget "artist:info", artist if redis.hexists "artist:info", artist
-		info = @lastfm.artist artist
+		info = $lastfm.artist artist
 #		info["image"].each{ |i| info["image"] = i["#text"] if i["size"] == "large" }
 		redis.hset "artist:info", artist, info.to_json
 		info.to_json
@@ -81,8 +79,8 @@ end
 
 set(:auth) do |val|
 	condition do
-		redirect '/login' unless @auth and @auth.is_valid?
-		redirect '/' if val == :admin and session[:user_id] != 1
+		redirect '/login', :error => "Must be logged in to see that page." unless @auth and @auth.is_valid?
+		redirect '/', :error => "Insufficient privileges." if val == :admin and session[:user_id] != 1
 	end
 end
 
@@ -91,8 +89,6 @@ before do
 		@user = User.get session[:user_id]
 		@auth = Auth.new(@user.password, @user.secret, session, request.env)
 	end
-	@lastfm = LastFM.new(LASTFM_API_KEY, LASTFM_SECRET)
-	@lastfm.session = LASTFM_SESSION
 end
 
 ############
@@ -102,14 +98,6 @@ end
 get "/", :auth => true do
 	@title = "Home"
 	erb :index
-end
-
-get "/error", :auth => true do
-	redirect "/", :error => "Test error"
-end
-
-get "/info", :auth => true do
-	redirect "/", :notice => "Test info message."
 end
 
 ############
@@ -157,7 +145,7 @@ get "/track/:track", :auth => true do
 		@song = Song.get(params[:track])
 		halt 404, "track not found!" unless @song
 		@title = @song.title
-		@info = @lastfm.track(@song.title, @song.artist)
+		@info = $lastfm.track(@song.title, @song.artist)
 		if @info["album"]
 			@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
 		end
@@ -171,7 +159,7 @@ get "/track/:track", :auth => true do
 		elsif @song.size == 1
 			@song = @song.pop
 			@title = @song.title
-			@info = @lastfm.track(@song.title, @song.artist)
+			@info = $lastfm.track(@song.title, @song.artist)
 			if @info["album"]["image"]
 				@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
 			end
@@ -201,7 +189,7 @@ get "/album/:album/?:artist?", :auth => true do
 	@title = params[:album]
 	@album = get_cache(@artist + ':' + @title)
 	unless @album
-		@album = @lastfm.album(@title, @artist)
+		@album = $lastfm.album(@title, @artist)
 		set_cache(@artist + ':' + @title, @album)
 	end
 	@album["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
@@ -448,7 +436,7 @@ end
 put "/api/track", :auth => true do
 	song = Song.get(params[:song_id])
 	song.update(:title => params[:title], :artist => params[:artist], :album => params[:album], :tracknum => params[:tracknum], :year => params[:year], :genre => params[:genre], :updated_at => Time.now)
-	redirect "/track/#{params[:song_id]}", :notice => "Track info updated."
+	redirect "/track/#{params[:song_id]}", :success => "Track info updated."
 end
 
 delete "/api/track", :auth => true do
@@ -545,7 +533,7 @@ post "/user/add", :auth => :admin do
 			:name => params[:name]
 		}
 		if u.save
-			redirect '/', :notice => "User #{params[:username]} added"
+			redirect '/', :success => "User #{params[:username]} added"
 		else
 			redirect '/user/add', :error => "Could not add user"
 		end
@@ -575,7 +563,7 @@ post "/login" do
 	@auth = Auth.new(user.password, user.secret, session, request.env)
 	if @auth.validate(password)
 		session[:user_id] = user.id
-		redirect '/'
+		redirect '/', :notice => "Welcome back #{user.name}."
 	else
 		redirect '/login', :error => "Invalid username/password combination."
 	end
