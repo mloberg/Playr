@@ -26,10 +26,26 @@ Playr = {
 							$$(".now-playing").fade("out");
 							setTimeout(function(){
 								$$(".now-playing").destroy();
+								Queue.next();
 							}, 500);
 						}
 					}).send();
 				}
+			});
+		}else if($("start-playr")){
+			$("start-playr").addEvent("click", function(){
+				new Request.JSON({
+					method: "post",
+					url: "/api/play",
+					onComplete: function(resp){
+						if(resp.error){
+							humane.error(resp.message);
+						}else{
+							humane.success(resp.message);
+							Queue.next();
+						}
+					}
+				}).send();
 			});
 		}
 		$$(".dont-play").addEvent("click", function(){
@@ -221,26 +237,20 @@ Browse = {
 						draggable: false,
 						width: 700
 					});
-					if(song.in_queue){
-						sm.show({
-							model: "alert",
-							title: "Error",
-							contents: "Song is already in queue."
-						});
-					}else{
+					if(!song.in_queue){
 						sm.addButton("Add To Queue", "btn primary", function(){
 							Queue.add(song.id);
 							this.hide();
 						});
-						sm.addButton("Track Info", "btn", function(){
-							window.location.href = "/track/" + song.id
-						});
-						sm.show({
-							model: "modal",
-							title: "Add Song To Queue?",
-							contents: Templates.songPopup(song)
-						});
 					}
+					sm.addButton("Track Info", "btn", function(){
+						window.location.href = "/track/" + song.id
+					});
+					sm.show({
+						model: "modal",
+						title: "Add Song To Queue?",
+						contents: Templates.songPopup(song)
+					});
 				}
 			}).send();
 		});
@@ -256,21 +266,31 @@ Queue = {
 			url: "/api/queue/add",
 			data: { "id" : id },
 			onComplete: function(resp){
-				var sm = new SimpleModal({
-						offsetTop: 100,
-						draggable: false,
-						hideHeader: true,
-						closeButton: false,
-						btn_ok: "OK"
-					}),
-					message = "Song added to queue!";
-				if(resp.error) message = resp.message;
-				sm.show({
-					model: "alert",
-					contents: message
-				});
+				if(resp.error){
+					humane.error(resp.message);
+				}else{
+					humane.success("Song added to queue.");
+				}
 			}
 		}).send();
+	},
+	
+	next: function(){
+		var queue = $$(".queue")[0],
+			h3 = queue.getChildren("h3")[0],
+			info = queue.getElements(".span6")[0],
+			btns = queue.getElements(".buttons")[0];
+		$$(".paused").destroy();
+		queue.removeClass("queue").removeClass("offset3").removeClass("span10").addClass("span16").addClass("now-playing");
+		new Element("h2", { text: "Now Playing" }).inject(queue, "top");
+		h3.inject(info, "top");
+		btns.getChildren(".dont-play")[0].destroy();
+		new Element("a", {
+			class: "btn",
+			id: "play-next",
+			text: "Next"
+		}).inject(btns);
+		Playr.controls();
 	}
 
 };
@@ -359,7 +379,8 @@ Templates = {
 					<strong>Song</strong>: {{title}}<br />\
 					<strong>Artist</strong>: {{artist}}<br />\
 					<strong>Album</strong>: {{album}}<br />\
-					<strong>Plays</strong>: {{plays}}\
+					<strong>Plays</strong>: {{plays}}<br />\
+					<strong>In Queue</strong>: {{in_queue}}\
 				</p>\
 			</div>\
 		</div>', view);

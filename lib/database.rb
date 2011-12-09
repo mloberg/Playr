@@ -34,13 +34,14 @@ class Song
 	property :length, Float, :required => true
 	property :vote, Integer, :default => 500
 	property :plays, Integer, :default => 0
-	property :uploaded_by, Integer
 	property :created_at, DateTime
 	property :updated_at, DateTime
 	
 	has n, :votes
 	has n, :queues
 	has n, :histories
+	
+	belongs_to :user
 	
 	def self.search(query)
 		q = '%' + query + '%'
@@ -58,6 +59,7 @@ class User
 	property :email, String, :default => 'admin@dkyinc.com', :format => :email_address
 	
 	has n, :votes
+	has n, :songs
 end
 
 class Queue
@@ -104,9 +106,9 @@ end
 class History
 	include DataMapper::Resource
 	property :id, Serial
-	property :started_at, DateTime
+	property :played_at, DateTime
 	
 	belongs_to :song
 end
 
-DataMapper.auto_upgrade!
+DataMapper.finalize.auto_upgrade!

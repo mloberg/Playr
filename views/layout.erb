@@ -65,8 +65,8 @@ window.addEvent('domready', function(){
 	<% end %>
 	<% if flash[:notice] %>
 	humane.info("<%= flash[:notice].gsub('"', '\"') %>");
-	Playr.init();
 	<% end %>
+	Playr.init();
 	<%= @ready %>
 });
 </script>

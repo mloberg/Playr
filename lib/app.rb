@@ -335,10 +335,12 @@ end
 # ?id=:id or ?artist=:artist&album=:album&song=:song_title
 get "/api/song" do
 	if params[:id]
-		song = Song.get(params[:id]).to_h
-		song["in_queue"] = in_queue params[:id]
-		song["artwork"] = album_artwork(song["album"], song["artist"])
-		return song.to_json
+		song = Song.get(params[:id])
+		info = {}
+		info[:in_queue] = in_queue song
+		info[:artwork] = album_artwork(song.album, song.artist)
+		info.merge! song.to_h
+		return info.to_json
 	end
 end
 
@@ -419,7 +421,7 @@ post "/api/song/add", :auth => true do
 	s = Song.new
 	s.attributes = {
 		:path => target_path + file_name,
-		:uploaded_by => @user.id,
+		:user => @user,
 		:created_at => Time.now,
 		:updated_at => Time.now
 	}.merge(tags)
@@ -478,8 +480,21 @@ get "/api/playing", :auth => true do
 	end
 end
 
-post "/api/pause", :auth => true do
+post "/api/play", :auth => true do
+	if Playr.paused?
+		Playr.pause # unpause
+		return { :success => true, :message => "Started playing the next track in queue." }.to_json
+	end
+	return { :error => true, :message => "Playr is already playing." }.to_json
+end
 
+post "/api/pause", :auth => true do
+	if Playr.playing?
+		Playr.pause
+		return { :success => true, :message => "Paused Playr." }.to_json
+	else
+		return { :error => true, :message => "Playr is already paused." }.to_json
+	end
 end
 
 post "/api/next", :auth => true do
@@ -489,7 +504,6 @@ end
 
 # remove a song from the queue
 post "/api/skip", :auth => true do
-	# params[:song]
 	q = Queue.first(:song => Song.get(params[:song]))
 	return { :success => true }.to_json if q.destroy
 	return { :error => true, :message => "Could not remove track from queue." }.to_json
