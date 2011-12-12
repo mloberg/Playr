@@ -43,20 +43,21 @@ Playr = {
 		}
 	},
 	
-	history: function(){
+	paginate: function(){
+		var url = "/" + window.location.href.split("/").pop();
 		$$(".next-page").addEvent("click", function(e){
 			var that = this;
 			e.preventDefault();
 			new Request({
 				method: "get",
-				url: "/history",
+				url: url,
 				data: {
 					page: that.get("data-page"),
 					ajax: true
 				},
 				onComplete: function(resp){
 					$$(".content").set("html", resp);
-					Playr.history();
+					Playr.paginate();
 				}
 			}).send();
 		});
@@ -65,49 +66,14 @@ Playr = {
 			e.preventDefault();
 			new Request({
 				method: "get",
-				url: "/history",
+				url: url,
 				data: {
 					page: that.get("data-page"),
 					ajax: true
 				},
 				onComplete: function(resp){
 					$$(".content").set("html", resp);
-					Playr.history();
-				}
-			}).send();
-		});
-	},
-	
-	artists: function(){
-		$$(".next-page").addEvent("click", function(e){
-			var that = this;
-			e.preventDefault();
-			new Request({
-				method: "get",
-				url: "/artists",
-				data: {
-					page: that.get("data-page"),
-					ajax: true
-				},
-				onComplete: function(resp){
-					$$(".content").set("html", resp);
-					Playr.artists();
-				}
-			}).send();
-		});
-		$$(".prev-page").addEvent("click", function(e){
-			var that = this;
-			e.preventDefault();
-			new Request({
-				method: "get",
-				url: "/artists",
-				data: {
-					page: that.get("data-page"),
-					ajax: true
-				},
-				onComplete: function(resp){
-					$$(".content").set("html", resp);
-					Playr.artists();
+					Playr.paginate();
 				}
 			}).send();
 		});

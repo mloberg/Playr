@@ -152,11 +152,11 @@ end
 
 get "/history", :auth => true do
 	@title = "History"
+	@ready = 'Playr.paginate();'
 	@page = params[:page] ? params[:page].to_i : 1
 	@per_page = 12
 	@total = History.count
 	@history = History.all(:order => [:played_at.desc], :limit => @per_page, :offset => ((@page - 1) * @per_page))
-	@ready = 'Playr.history();'
 	return erb :history, :layout => false if params[:ajax]
 	erb :history
 end
@@ -256,11 +256,13 @@ end
 
 get "/artists", :auth => true do
 	@title = "Artists"
-	@ready = "Playr.artists();"
+	@ready = "Playr.paginate();"
 	@page = params[:page] ? params[:page].to_i : 1
 	@per_page = 15
-	@total = Song.all(:fields => [:artist], :unique => true).count
-	artists = Song.all(:fields => [:artist], :unique => true, :order => [:artist.asc], :limit => @per_page, :offset => ((@page - 1) * @per_page))
+	artists = Song.all(:fields => [:artist], :unique => true, :order => [:artist.asc])
+	@total = artists.count
+	offset = (@page - 1) * @per_page
+	artists = artists[(offset)..(offset + @per_page - 1)]
 	@artists = {}
 	artists.each do |artist|
 		artist_info = JSON.parse(artist_info(artist.artist))
@@ -274,7 +276,14 @@ end
 
 get "/albums", :auth => true do
 	@title = "Albums"
+	@ready = "Playr.paginate();"
+	@page = params[:page] ? params[:page].to_i : 1
+	@per_page = 16
 	@albums = Song.all(:fields => [:artist, :album], :unique => true, :order => [:album.asc])
+	@total = @albums.count
+	offset = (@page - 1) * @per_page
+	@albums = @albums[(offset)..(offset + @per_page - 1)]
+	return erb :albums, :layout => false if params[:ajax]
 	erb :albums
 end
 
@@ -290,7 +299,14 @@ end
 
 get "/search", :auth => true do
 	@title = "Search"
+	@ready = "Playr.paginate();"
+	@page = params[:page] ? params[:page].to_i : 1
+	@per_page = 12
 	@results = Song.search(params[:q])
+	@total = @results.count
+	offset = (@page - 1) * @per_page
+	@results = @results[(offset)..(offset + @per_page - 1)]
+	return erb :search, :layout => false if params[:ajax]
 	erb :search
 end
 
