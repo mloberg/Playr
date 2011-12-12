@@ -146,8 +146,19 @@ end
 get "/queue", :auth => true do
 	@title = "Queue"
 	@playing = History.last.song
-	@queue = Queue.all(:order => [ :created_at.asc ])
+	@queue = Queue.all(:order => [:created_at.asc])
 	erb :queue
+end
+
+get "/history", :auth => true do
+	@title = "History"
+	@page = params[:page] ? params[:page].to_i : 1
+	@per_page = 12
+	@total = History.count
+	@history = History.all(:order => [:played_at.desc], :limit => @per_page, :offset => ((@page - 1) * @per_page))
+	@ready = 'Playr.history();'
+	return erb :history, :layout => false if params[:ajax]
+	erb :history
 end
 
 ########################
@@ -532,6 +543,7 @@ get "/likes/?:username?", :auth => true do
 end
 
 get "/user/add", :auth => :admin do
+	@title = "Add User"
 	erb :add_user
 end
 
@@ -574,6 +586,7 @@ post "/login" do
 	username = params[:username]
 	password = params[:password]
 	user = User.first(:username => username)
+	redirect '/login', :error => "Invalid username/password combination." unless user
 	@auth = Auth.new(user.password, user.secret, session, request.env)
 	if @auth.validate(password)
 		session[:user_id] = user.id

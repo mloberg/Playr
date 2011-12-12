@@ -43,6 +43,41 @@ Playr = {
 		}
 	},
 	
+	history: function(){
+		$$(".next-page").addEvent("click", function(e){
+			var that = this;
+			e.preventDefault();
+			new Request({
+				method: "get",
+				url: "/history",
+				data: {
+					page: that.get("data-page"),
+					ajax: true
+				},
+				onComplete: function(resp){
+					$$(".content").set("html", resp);
+					Playr.history();
+				}
+			}).send();
+		});
+		$$(".prev-page").addEvent("click", function(e){
+			var that = this;
+			e.preventDefault();
+			new Request({
+				method: "get",
+				url: "/history",
+				data: {
+					page: that.get("data-page"),
+					ajax: true
+				},
+				onComplete: function(resp){
+					$$(".content").set("html", resp);
+					Playr.history();
+				}
+			}).send();
+		});
+	},
+	
 	controls: function(vol){
 		if($("play-next")){
 			$("play-next").addEvent("click", function(){
