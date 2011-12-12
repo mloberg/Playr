@@ -89,6 +89,7 @@ before do
 		@user = User.get session[:user_id]
 		@auth = Auth.new(@user.password, @user.secret, session, request.env)
 	end
+	@volume = Playr.volume.to_s
 end
 
 ############
@@ -97,6 +98,19 @@ end
 
 get "/", :auth => true do
 	@title = "Home"
+	@playing = History.last.song
+	@albums = repository(:default).adapter.select("SELECT `artist`, `album`, SUM(`vote` + `plays`) AS `rating` FROM `songs` GROUP BY `album` ORDER BY `rating` DESC")
+	@album_count = @albums.count
+	@albums = @albums[0..5]
+	@artists = repository(:default).adapter.select("SELECT `artist`, SUM(`plays`) as `rating` FROM `songs` GROUP BY `artist` ORDER BY `rating` DESC")
+	@artist_count = @artists.count
+	@artists = @artists[0..5]
+	@tracks = repository(:default).adapter.select("SELECT `id`, `title`, `album`, `artist`, SUM(`vote` + `plays`) as `rating` FROM `songs` GROUP BY `id` ORDER BY `rating` DESC")
+	@track_count = @tracks.count
+	@tracks = @tracks[0..5]
+	@your_tracks = Song.all(:user => @user, :order => [:id.desc])
+	@your_track_count = @your_tracks.count
+	@your_tracks = @your_tracks[0..5]
 	erb :index
 end
 

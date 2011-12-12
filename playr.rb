@@ -3,7 +3,7 @@ $: << '.'
 require 'sinatra'
 require 'rack-flash'
 require 'sinatra/redirect_with_flash'
-require 'active_support/secure_random'
+require 'active_support'
 require 'sinatra/redis'
 require 'fileutils'
 require 'json'
@@ -33,10 +33,13 @@ class Playr
 			return queued.song
 		else
 			# if queue is empty, pick one at random preferring those with a higher vote
-			tmpid = repository(:default).adapter.select("SELECT `id` FROM `songs` WHERE vote > 300 ORDER BY RAND() LIMIT 1").pop
-			# need to make sure it hasn't been played in the past 8 hours
-			song = Song.get(tmpid)
-			return song
+			loop do
+				tmpid = repository(:default).adapter.select("SELECT `id` FROM `songs` WHERE vote > 300 ORDER BY RAND() LIMIT 1").pop
+				song = Song.get(tmpid)
+				# need to make sure it hasn't been played in the past 8 hours
+				played = History.last(:song => song, :played_at.gt => Time.now - 36000)
+				return song unless played
+			end
 		end
 		
 	end
@@ -96,6 +99,7 @@ pid = fork do
 		else
 			# get the next song
 			next_song = Playr.next_song
+			# adjust plays
 			next_song.adjust!(:plays => 1)
 			# add song to play table
 			History.create(:song => next_song, :played_at => Time.now)

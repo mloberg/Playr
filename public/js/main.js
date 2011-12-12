@@ -12,10 +12,38 @@ Playr = {
 			this.getParent("li").toggleClass("open");
 		});
 		Playr.voting();
-		Playr.controls();
 	},
 	
-	controls: function(){
+	upload: function(){
+		var uploader = new qq.FileUploader({
+			element: document.getElementById("file-uploader"),
+			action: "/api/song/add",
+			debug: false,
+			onComplete: function(id, fileName, resp){
+				if(resp.error == true){
+					alert(resp.message);
+				}
+			}
+		});
+	},
+	
+	browse: function(options){
+		if(typeof options == "undefined") options = {};
+		Browse.artist();
+		if(options.artist != ""){
+			$$('.artist:contains("' + options.artist + '")').fireEvent("click");
+			if(options.album != ""){
+				var browseAlbums = setInterval(function(){
+					if($("album-list").get("html") != "" && $("album-list").get("html") != "<li>loading...</li>"){
+						$$('.album:contains("' + options.album + '")').fireEvent("click");
+						clearInterval(browseAlbums);
+					}
+				}, 50);
+			}
+		}
+	},
+	
+	controls: function(vol){
 		if($("play-next")){
 			$("play-next").addEvent("click", function(){
 				if(confirm("Are you sure?")){
@@ -66,6 +94,42 @@ Playr = {
 				}).send();
 			}
 		});
+		var mySlide = new Slider($("slider"), $("knob"), {
+			initialStep: vol,
+			onChange: function(pos){
+				$("volume-label").set("html", pos);
+			},
+			onComplete: function(pos){
+				new Request.JSON({
+					method: "post",
+					url: "/api/volume",
+					data: { level: pos }
+				}).send();
+			}
+		});
+		$("mute").addEvent("click", function(e){
+			e.preventDefault();
+			mySlide.set(0);
+		});
+		$("pause").addEvent("click", function(e){
+			e.preventDefault();
+			var msg = "Are you sure?",
+				that = this;
+			if(that.get("text") == "Pause") msg = msg + " This will stop the current track.";
+			if(confirm(msg)){
+				new Request.JSON({
+					method: "post",
+					url: "/api/pause",
+					onComplete: function(resp){
+						if(resp.success){
+							that.set("text", "Play");
+						}else{
+							that.set("text", "Pause");
+						}
+					}
+				}).send();
+			}
+		});
 	},
 	
 	voting: function(){
@@ -105,35 +169,6 @@ Playr = {
 				}).send();
 			}
 		});
-	},
-	
-	upload: function(){
-		var uploader = new qq.FileUploader({
-			element: document.getElementById("file-uploader"),
-			action: "/api/song/add",
-			debug: false,
-			onComplete: function(id, fileName, resp){
-				if(resp.error == true){
-					alert(resp.message);
-				}
-			}
-		});
-	},
-	
-	browse: function(options){
-		if(typeof options == "undefined") options = {};
-		Browse.artist();
-		if(options.artist != ""){
-			$$('.artist:contains("' + options.artist + '")').fireEvent("click");
-			if(options.album != ""){
-				var browseAlbums = setInterval(function(){
-					if($("album-list").get("html") != "" && $("album-list").get("html") != "<li>loading...</li>"){
-						$$('.album:contains("' + options.album + '")').fireEvent("click");
-						clearInterval(browseAlbums);
-					}
-				}, 50);
-			}
-		}
 	}
 
 };

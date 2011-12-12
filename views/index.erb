@@ -1,3 +1,45 @@
 <div class="page-header">
 	<h1>Playr</h1>
 </div>
+<div class="row">
+	<div class="span4">
+		<h2>Artists</h2>
+		<p>There are <%= @artist_count %> uploaded artists.<br />Here are the most popular artists.</p>
+		<ol>
+		<% @artists.each do |artist| %>
+			<li><a href="/artist/<%= artist.artist %>" title="<%= artist.artist %>"><%= artist.artist %></a></li>
+		<% end %>
+		</ol>
+		<p><a href="/artists">Browse all artists</a></p>
+	</div>
+	<div class="span4">
+		<h2>Albums</h2>
+		<p>There are <%= @album_count %> uploaded albums.<br />Here are the most popular albums.</p>
+		<ol>
+		<% @albums.each do |album| %>
+			<li><a href="/album/<%= album.album %>/<%= album.artist %>" title="<%= album.album %> by <%= album.artist %>"><%= album.album %></a></li>
+		<% end %>
+		</ol>
+		<p><a href="/albums">Browse all albums</a></p>
+	</div>
+	<div class="span4">
+		<h2>Tracks</h2>
+		<p>There are <%= @track_count %> uploaded tracks.<br />Here are the most popular tracks.</p>
+		<ol>
+		<% @tracks.each do |track| %>
+			<li><a href="/track/<%= track.id %>" title="<%= track.title %> by <%= track.artist %>"><%= track.title %></a></li>
+		<% end %>
+		</ol>
+		<p><a href="/browse">Browse all tracks</a></p>
+	</div>
+	<div class="span4">
+		<h2>Your Tracks</h2>
+		<p>You've uploaded <%= @your_track_count %> tracks.<br />Here are the most recent.</p>
+		<ul>
+		<% @your_tracks.each do |track| %>
+			<li><a href="/track/<%= track.id %>"><%= track.title %></a></li>
+		<% end %>
+		</ul>
+		<p><a href="/upload">Upload more songs</a></p>
+	</div>
+</div>
