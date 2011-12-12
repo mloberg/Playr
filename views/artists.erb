@@ -10,3 +10,13 @@
 		</ul>
 	</div>
 </div>
+<div class="row">
+	<div class="span16">
+	<% if @page != 1 %>
+		<a class="prev-page float-left btn" data-page="<%= @page - 1 %>" href="#">&laquo; Previous</a>
+	<% end %>
+	<% if @total > @page * @per_page %>
+		<a class="next-page float-right btn" data-page="<%= @page + 1 %>" href="#">Next &raquo;</a>
+	<% end %>
+	</div>
+</div>

@@ -78,6 +78,41 @@ Playr = {
 		});
 	},
 	
+	artists: function(){
+		$$(".next-page").addEvent("click", function(e){
+			var that = this;
+			e.preventDefault();
+			new Request({
+				method: "get",
+				url: "/artists",
+				data: {
+					page: that.get("data-page"),
+					ajax: true
+				},
+				onComplete: function(resp){
+					$$(".content").set("html", resp);
+					Playr.artists();
+				}
+			}).send();
+		});
+		$$(".prev-page").addEvent("click", function(e){
+			var that = this;
+			e.preventDefault();
+			new Request({
+				method: "get",
+				url: "/artists",
+				data: {
+					page: that.get("data-page"),
+					ajax: true
+				},
+				onComplete: function(resp){
+					$$(".content").set("html", resp);
+					Playr.artists();
+				}
+			}).send();
+		});
+	},
+	
 	controls: function(vol){
 		if($("play-next")){
 			$("play-next").addEvent("click", function(){

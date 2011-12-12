@@ -256,7 +256,11 @@ end
 
 get "/artists", :auth => true do
 	@title = "Artists"
-	artists = Song.all(:fields => [:artist], :unique => true, :order => [:artist.asc])
+	@ready = "Playr.artists();"
+	@page = params[:page] ? params[:page].to_i : 1
+	@per_page = 15
+	@total = Song.all(:fields => [:artist], :unique => true).count
+	artists = Song.all(:fields => [:artist], :unique => true, :order => [:artist.asc], :limit => @per_page, :offset => ((@page - 1) * @per_page))
 	@artists = {}
 	artists.each do |artist|
 		artist_info = JSON.parse(artist_info(artist.artist))
@@ -264,6 +268,7 @@ get "/artists", :auth => true do
 		artist_info["image"].each { |i| image = i["#text"] if i["size"] == "extralarge" }
 		@artists[artist.artist] = image
 	end
+	return erb :artists, :layout => false if params[:ajax]
 	erb :artists
 end
 
