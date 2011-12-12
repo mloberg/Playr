@@ -1,6 +1,31 @@
 <div class="page-header">
 	<h1>Playr</h1>
 </div>
+<% if Playr.playing? %>
+<div class="row">
+	<div class="span16 now-playing" style="box-shadow: none;">
+		<h2>Now Playing</h2>
+		<div class="row">
+			<div class="span4 offset4"><img src="<%= album_artwork @playing.album, @playing.artist %>" alt="<%= @playing.title %>" /></div>
+			<div class="span6">
+				<h3><%= @playing.title %> <small>by <%= @playing.artist %></small></h3>
+				<p>
+					<strong>Album</strong>: <%= @playing.album %><br />
+					<strong>Year</strong>: <%= @playing.year %><br />
+					<strong>Genre</strong>: <%= @playing.genre %><br />
+					<strong>Plays</strong>: <%= @playing.plays %><br />
+					<strong>Likes</strong>: <%= likes @playing %><br />
+				</p>
+				<p>
+					<a class="btn success like<% if likes? @playing.id %> disabled<% end %>" data-song="<%= @playing.id.to_s %>">Like</a>
+					<a class="btn danger dislike<% if likes?(@playing.id) == false %> disabled<% end %>" data-song="<%= @playing.id.to_s %>">Dislike</a>
+					<a class="btn" id="play-next">Next</a>
+				</p>
+			</div>
+		</div>
+	</div>
+</div>
+<% end %>
 <div class="row">
 	<div class="span4">
 		<h2>Artists</h2>

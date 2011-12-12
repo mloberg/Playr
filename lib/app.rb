@@ -16,7 +16,6 @@ helpers do
 	def artist_info(artist)
 		return redis.hget "artist:info", artist if redis.hexists "artist:info", artist
 		info = $lastfm.artist artist
-#		info["image"].each{ |i| info["image"] = i["#text"] if i["size"] == "large" }
 		redis.hset "artist:info", artist, info.to_json
 		info.to_json
 	end
@@ -98,7 +97,7 @@ end
 
 get "/", :auth => true do
 	@title = "Home"
-	@playing = History.last.song
+	@playing = History.last.song if Playr.playing?
 	@albums = repository(:default).adapter.select("SELECT `artist`, `album`, SUM(`vote` + `plays`) AS `rating` FROM `songs` GROUP BY `album` ORDER BY `rating` DESC")
 	@album_count = @albums.count
 	@albums = @albums[0..5]
@@ -145,7 +144,7 @@ end
 
 get "/queue", :auth => true do
 	@title = "Queue"
-	@playing = History.last.song
+	@playing = History.last.song if Playr.playing?
 	@queue = Queue.all(:order => [:created_at.asc])
 	erb :queue
 end
