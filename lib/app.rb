@@ -1,5 +1,11 @@
 require 'lib/auth'
 
+set :environment, :development
+
+configure :production do
+	set :port, 80
+end
+
 enable :sessions
 use Rack::Flash, :sweep => true
 
