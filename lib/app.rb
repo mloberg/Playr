@@ -1,15 +1,44 @@
-require 'lib/auth'
-
-set :environment, :development
-
-configure :production do
-	set :port, 80
-end
-
+set :environment, :production
 enable :sessions
 use Rack::Flash, :sweep => true
 
 SITE_TITLE = "Playr"
+SCRIPTS = %w(mootools-core mootools-more humane mustache simple-modal fileuploader main)
+STYLES = %w(bootstrap jackedup style)
+
+configure :production do
+	set :port, 80
+	
+	compressed_js = ''
+	SCRIPTS.each do |js|
+		code = File.read("public/js/#{js}.js")
+		compressed_js << Packr.pack(code) + "\n"
+	end
+	redis.set "app_js", compressed_js
+	SCRIPT_TAG = '<script src="/playr.js"></script>'
+	
+	compressed_css = ''
+	STYLES.each do |css|
+		style = File.read("public/css/#{css}.css")
+		compressed_css << Rainpress.compress(style)
+	end
+	redis.set "app_css", compressed_css
+	STYLE_TAG = '<link rel="stylesheet" href="/playr.css" />'
+end
+
+configure :development, :testing do
+	script_tag = ''
+	SCRIPTS.each do |js|
+		script_tag << "<script src=\"/js/#{js}.js\"></script>"
+	end
+	SCRIPT_TAG = script_tag
+	
+	style_tag = ''
+	STYLES.each do |css|
+		style_tag << "<link rel=\"stylesheet\" href=\"/css/#{css}.css\" />"
+	end
+	STYLE_TAG = style_tag
+end
 
 helpers do
 	def album_artwork(album, artist)
@@ -117,6 +146,18 @@ get "/", :auth => true do
 	@your_track_count = @your_tracks.count
 	@your_tracks = @your_tracks[0..5]
 	erb :index
+end
+
+get "/playr.js" do
+	content_type('application/javascript')
+	expires(60 * 60 * 24 * 7, :public, :must_revalidate)
+	redis.get "app_js"
+end
+
+get "/playr.css" do
+	content_type('text/css')
+	expires(60 * 60 * 24 * 7, :public, :must_revalidate)
+	redis.get "app_css"
 end
 
 ############
@@ -321,7 +362,6 @@ end
 
 get "/upload", :auth => true do
 	@title = "Upload Songs"
-	@script = '<script src="/js/fileuploader.js"></script>'
 	@ready = 'Playr.upload();'
 	erb :upload
 end

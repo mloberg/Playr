@@ -1,5 +1,5 @@
 /*
-  mustache.js Ñ Logic-less templates in JavaScript
+  mustache.js Logic-less templates in JavaScript
 
   See http://mustache.github.com/ for more info.
 */
@@ -322,17 +322,7 @@ var Mustache = function() {
       Does away with nasty characters
     */
     escape: function(s) {
-      s = String(s === null ? "" : s);
-      return s.replace(/&(?!\w+;)|["'<>\\]/g, function(s) {
-        switch(s) {
-        case "&": return "&amp;";
-        case '"': return '&quot;';
-        case "'": return '&#39;';
-        case "<": return "&lt;";
-        case ">": return "&gt;";
-        default: return s;
-        }
-      });
+      return String(s === null ? "" : s);
     },
 
     // by @langalex, support for arrays of strings

@@ -53,36 +53,28 @@ provides:
 var SimpleModal = new Class({
     // Implements
     Implements: [Options],
-    request:null,
-    buttons:[],
+    request: null,
+    buttons: [],
     // Options
     options: {
-        onAppend:      Function, // callback inject in DOM
-        offsetTop:     null,
-        overlayOpacity:.3,
-        overlayColor:  "#000000",
-        width:         400,
-        draggable:     true,
-        overlayClick:  true,
-        closeButton:   true, // X close button
-        hideHeader:    false, 
-        hideFooter:    false,
-        btn_ok:        "OK", // Label
-        btn_cancel:    "Cancel", // Label
-        template:"<div class=\"simple-modal-header\"> \
-            <h1>{_TITLE_}</h1> \
-          </div> \
-          <div class=\"simple-modal-body\"> \
-            <div class=\"contents\">{_CONTENTS_}</div> \
-          </div> \
-          <div class=\"simple-modal-footer\"></div>"
+        onAppend: Function, // callback inject in DOM
+        offsetTop: null,
+        overlayOpacity: 0.3,
+        overlayColor: "#000000",
+        width: 400,
+        overlayClick: true,
+        closeButton: true, // X close button
+        hideHeader: false,
+        hideFooter: false,
+        btn_ok: "OK", // Label
+        btn_cancel: "Cancel", // Label
+        template: '<div class="simple-modal-header"><h1>{{title}}</h1></div><div class="simple-modal-body"><div class="contents">{{contents}}</div></div><div class="simple-modal-footer"></div>'
     },
 
     /**
      * Initialization
      */
     initialize: function(options) {
-        //set options
         this.setOptions(options);
     },
     
@@ -97,45 +89,36 @@ var SimpleModal = new Class({
       // Inserisce Overlay
       this._overlay("show");
       // Switch different modal
-      switch( options.model ){
-        // Require title && contents && callback
+      switch(options.model){
         case "confirm":
-          // Add button confirm
           this.addButton(this.options.btn_ok, "btn primary btn-margin", function(){
-              try{ options.callback() } catch(err){};
+              try{
+                options.callback();
+              }catch(err){};
               this.hide();
-          })
-          // Add button cancel
+          });
           this.addButton(this.options.btn_cancel, "btn secondary");
-					// Rendering
-					var node = this._drawWindow(options);
+		  var node = this._drawWindow(options);
         break;
         // Require title && contents (define the action buttons externally)
         case "modal":
-					// Rendering
-					var node = this._drawWindow(options);
+			var node = this._drawWindow(options);
         break;
-        // Require title && url contents (define the action buttons externally)
         case "modal-ajax":
-					// Rendering
-					var node = this._drawWindow(options);
+		  var node = this._drawWindow(options);
           this._loadContents({
-            "url":options.param.url || "",
-            "onRequestComplete":options.param.onRequestComplete||Function
-          })
+            url: options.param.url || "",
+            onRequestComplete: options.param.onRequestComplete || Function
+          });
         break;
         // Require title && contents
         default:
-					// Alert
-          // Add button
           this.addButton(this.options.btn_ok, "btn primary");
-					// Rendering
-					var node = this._drawWindow(options);
-        break;
+		  var node = this._drawWindow(options);
       }
 			   
       // Custom size Modal
-      node.setStyles({width:this.options.width});
+      node.setStyles({width: this.options.width});
       
       // Hide Header &&/|| Footer
       if( this.options.hideHeader ) node.addClass("hide-header");
@@ -144,14 +127,6 @@ var SimpleModal = new Class({
       // Add Button X
       if( this.options.closeButton ) this._addCloseButton();
       
-      // Enabled Drag Window
-      if( this.options.draggable ){
-        var headDrag = node.getElement(".simple-modal-header");
-          new Drag(node, { handle:headDrag });
-          // Set handle cursor
-          headDrag.setStyle("cursor", "move")
-          node.addClass("draggable");
-      }
       // Resize Stage
       this._display();
     },
@@ -174,12 +149,12 @@ var SimpleModal = new Class({
     * Rendering window
     * return node SM
     */
-		_drawWindow:function(options){
+	_drawWindow:function(options){
 			// Add Node in DOM
-      var node = new Element("div#simple-modal", {"class":"simple-modal"});
+      var node = new Element("div#simple-modal", { class: "simple-modal" });
           node.inject( $$("body")[0] );
 			// Set Contents
-			var html = this._template(this.options.template, {"_TITLE_":options.title || "Untitled", "_CONTENTS_":options.contents || ""});
+			var html = Mustache.to_html(this.options.template, { title: options.title || "Untitled", contents: options.contents || "" });
 		      node.set("html", html);
 					// Add all buttons
 		      this._injectAllButtons();
@@ -196,10 +171,10 @@ var SimpleModal = new Class({
     */
      addButton: function(label, classe, clickEvent){
          var bt = new Element('a',{
-                                     "title" : label,
-                                     "text"  : label,
-                                     "class" : classe,
-                                     "events": {
+                                     title: label,
+                                     text: label,
+                                     class: classe,
+                                     events: {
                                          click: (clickEvent || this.hide).bind(this)
                                      }
                                });
@@ -225,13 +200,13 @@ var SimpleModal = new Class({
     * @return node HTML
     */
     _addCloseButton: function(){
-      var b = new Element("a", {"class":"close", "href":"#", "html":"x"});
+      var b = new Element("a", { class: "close", href: "#", html: "x" });
           b.inject($("simple-modal"), "top");
           // Aggiunge bottome X Close
           b.addEvent("click", function(e){
             if(e) e.stop();
             this.hide();
-          }.bind( this ))
+          }.bind(this));
       return b;
     },
 
@@ -244,7 +219,7 @@ var SimpleModal = new Class({
        switch( status ) {
            case 'show':
                this._overlay('hide');
-               var overlay = new Element("div", {"id":"simple-modal-overlay"});
+               var overlay = new Element("div", { id: "simple-modal-overlay"});
                    overlay.inject( $$("body")[0] );
                    overlay.setStyle("background-color", this.options.overlayColor);
                    overlay.fade("hide").fade(this.options.overlayOpacity);
@@ -253,7 +228,7 @@ var SimpleModal = new Class({
                   overlay.addEvent("click", function(e){
                     if(e) e.stop();
                     this.hide();
-                  }.bind(this))
+                  }.bind(this));
                 }
                // Add Control Resize
                this.__resize = this._display.bind(this);
@@ -305,7 +280,7 @@ var SimpleModal = new Class({
 									// Imposta dimensioni
 									var content = $('simple-modal').getElement(".contents");
 									var padding = content.getStyle("padding").split(" ");
-									var width   = (immagine.get("width").toInt()) + (padding[1].toInt()+padding[3].toInt())
+									var width   = (immagine.get("width").toInt()) + (padding[1].toInt()+padding[3].toInt());
 									var height  = immagine.get("height").toInt();
 									// Width
 									var myFx1 = new Fx.Tween($("simple-modal"), {
@@ -339,7 +314,7 @@ var SimpleModal = new Class({
 			}else{
 				// Request HTML
 	      this.request = new Request.HTML({
-	          evalScripts:false,
+	          evalScripts: false,
 	          url: param.url,
 	          method: 'get',
 	          onRequest: function(){
@@ -349,7 +324,7 @@ var SimpleModal = new Class({
 	            param.onRequestComplete();
 	            $('simple-modal').getElement(".contents").set("html", responseHTML);
 	            // Execute script page loaded
-	            eval(responseJavaScript)
+	            eval(responseJavaScript);
 	            // Resize
 	            this._display();
 	          }.bind(this),
@@ -383,16 +358,5 @@ var SimpleModal = new Class({
         });
       } catch(err){}
  		  return;
-     },
-      
-    /**
-    * private method _template
-    * simple template by Thomas Fuchs
-    * @return
-    */
-    _template:function(s,d){
-     for(var p in d)
-       s=s.replace(new RegExp('{'+p+'}','g'), d[p]);
-     return s;
-    }
+     }
 });

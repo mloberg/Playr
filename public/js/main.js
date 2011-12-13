@@ -7,8 +7,8 @@ var Playr = {},
 Playr = {
 
 	init: function(){
-		$$(".dropdown-toggle").addEvent("click", function(evnt){
-			evnt.preventDefault();
+		$$(".dropdown-toggle").addEvent("click", function(e){
+			e.preventDefault();
 			this.getParent("li").toggleClass("open");
 		});
 		Playr.voting();
@@ -16,11 +16,11 @@ Playr = {
 	
 	upload: function(){
 		var uploader = new qq.FileUploader({
-			element: document.getElementById("file-uploader"),
+			element: $("file-uploader"),
 			action: "/api/song/add",
 			debug: false,
 			onComplete: function(id, fileName, resp){
-				if(resp.error == true){
+				if(resp.error === true){
 					alert(resp.message);
 				}
 			}
@@ -28,11 +28,11 @@ Playr = {
 	},
 	
 	browse: function(options){
-		if(typeof options == "undefined") options = {};
+		if(typeof options === "undefined") options = {};
 		Browse.artist();
-		if(options.artist != ""){
+		if(options.artist !== "undefined"){
 			$$('.artist:contains("' + options.artist + '")').fireEvent("click");
-			if(options.album != ""){
+			if(options.album !== "undefined"){
 				var browseAlbums = setInterval(function(){
 					if($("album-list").get("html") != "" && $("album-list").get("html") != "<li>loading...</li>"){
 						$$('.album:contains("' + options.album + '")').fireEvent("click");
@@ -80,7 +80,7 @@ Playr = {
 	},
 	
 	controls: function(vol){
-		if($("play-next")){
+		if($("play-next") !== null){
 			$("play-next").addEvent("click", function(){
 				if(confirm("Are you sure?")){
 					new Request({
@@ -96,7 +96,7 @@ Playr = {
 					}).send();
 				}
 			});
-		}else if($("start-playr")){
+		}else if($("start-playr") !== null){
 			$("start-playr").addEvent("click", function(){
 				new Request.JSON({
 					method: "post",
@@ -147,19 +147,25 @@ Playr = {
 			e.preventDefault();
 			mySlide.set(0);
 		});
-		$("pause").addEvent("click", function(e){
+		$("play-pause").addEvent("click", function(e){
 			e.preventDefault();
-			var msg = "Are you sure?",
+			var url = "/api/play",
+				msg = "Are you sure?",
 				that = this;
-			if(that.get("text") == "Pause") msg = msg + " This will stop the current track.";
+			if(that.get("data-playing") === "true"){
+				url = "/api/pause";
+				msg = msg + " This will stop the current track.";
+			}
 			if(confirm(msg)){
 				new Request.JSON({
 					method: "post",
-					url: "/api/pause",
+					url: url,
 					onComplete: function(resp){
-						if(resp.success){
+						if(resp.success && that.get("data-playing") === "true"){
+							that.set("data-playing", "false");
 							that.set("text", "Play");
-						}else{
+						}else if(resp.success){
+							that.set("data-playing", "true");
 							that.set("text", "Pause");
 						}
 					}
@@ -216,7 +222,7 @@ Browse = {
 	
 	artist: function(){
 		$$(".artist").addEvent("click", function(){
-			if(Browse.currentStep != null){
+			if(Browse.currentStep !== null){
 				$("artist-info").set("html", "");
 				$("album-artwork").fade("out");
 				$("album-list").getChildren().fade("out");
@@ -227,16 +233,16 @@ Browse = {
 				}, 300);
 			}
 			Browse.currentStep = "artist";
-			Browse.info["artist"] = this.get("text");
+			Browse.info.artist = this.get("text");
 			$("artists").morph(".span4");
 			$("albums").morph(".span6");
 			new Request.JSON({url: "/api/artist/info", onSuccess: function(artist){
-				$("artist-info").set("html", '<img src="' + artist.image + '" alt="' + Browse.info["artist"] + '" />');
-			}}).get({ artist: Browse.info["artist"] });
+				$("artist-info").set("html", '<img src="' + artist.image + '" alt="' + Browse.info.artist + '" />');
+			}}).get({ artist: Browse.info.artist });
 			new Request.JSON({
 				method: "get",
 				url: "/api/artist/albums",
-				data: { artist: Browse.info["artist"] },
+				data: { artist: Browse.info.artist },
 				onRequest: function(){
 					$("album-list").set("html", "<li>loading...</li>");
 				},
@@ -244,7 +250,7 @@ Browse = {
 					$("album-list").set("html", "");
 					albums.each(function(album){
 						$("album-list").adopt(new Element("li", {
-							class: "album",
+							"class": "album",
 							text: album
 						}));
 					});
@@ -256,23 +262,23 @@ Browse = {
 	
 	album: function(){
 		$$(".album").addEvent("click", function(){
-			if(Browse.currentStep != "artist"){
+			if(Browse.currentStep !== "artist"){
 				$("album-artwork").set("html", "");
 				$("song-list").set("html", "");
 			}
 			Browse.currentStep = "album";
-			Browse.info["album"] = this.get("text");
+			Browse.info.album = this.get("text");
 			$("albums").morph(".span4");
 			$("songs").morph(".span6");
 			new Request.JSON({url: "/api/album/artwork", onSuccess: function(artwork){
-				$("album-artwork").set("html", '<img src="' + artwork + '" alt="' + Browse.info["album"] + '" />').fade("in");
-			}}).get({ artist: Browse.info["artist"], album: Browse.info["album"] });
+				$("album-artwork").set("html", '<img src="' + artwork + '" alt="' + Browse.info.album + '" />').fade("in");
+			}}).get({ artist: Browse.info.artist, album: Browse.info.album });
 			new Request.JSON({
 				method: "get",
 				url: "/api/album/tracks",
 				data: {
-					artist: Browse.info["artist"],
-					album: Browse.info["album"]
+					artist: Browse.info.artist,
+					album: Browse.info.album
 				},
 				onRequest: function(){
 					$("song-list").set("html", "<li>loading...</li>");
@@ -280,12 +286,12 @@ Browse = {
 				onComplete: function(songs){
 					$("song-list").set("html", "");
 					songs.each(function(song){
-						var text = ""
-						if(song.tracknum != null) text += song.tracknum + ": "
-						text += song.title
+						var text = "";
+						if(song.tracknum !== null) text += song.tracknum + ": ";
+						text += song.title;
 						$("song-list").adopt(new Element("li", {
 							id: song.id,
-							class: "song",
+							"class": "song",
 							text: text
 						}));
 					});
@@ -315,7 +321,7 @@ Browse = {
 						});
 					}
 					sm.addButton("Track Info", "btn", function(){
-						window.location.href = "/track/" + song.id
+						window.location.href = "/track/" + song.id;
 					});
 					sm.show({
 						model: "modal",
@@ -357,7 +363,7 @@ Queue = {
 		h3.inject(info, "top");
 		btns.getChildren(".dont-play")[0].destroy();
 		new Element("a", {
-			class: "btn",
+			"class": "btn",
 			id: "play-next",
 			text: "Next"
 		}).inject(btns);
@@ -369,7 +375,7 @@ Queue = {
 Info = {
 
 	artist: function(){
-		var clearfix = new Element("div", { class: "clear"}),
+		var clearfix = new Element("div", { "class": "clear"}),
 			similarArtists = $$(".similar-artist"),
 			lastArtist = similarArtists.length - 1,
 			height = 0;
@@ -427,7 +433,7 @@ Info = {
 			sm.addButton("Add To Queue", "btn primary", function(){
 				Queue.add(id);
 				this.hide();
-			})
+			});
 			sm.addButton("Cancel", "btn");
 			sm.show({
 				model: "modal",
@@ -441,20 +447,21 @@ Info = {
 Templates = {
 
 	songPopup: function(view){
-		return Mustache.to_html('<div class="row">\
-			<div class="span4">\
-				<img src="{{artwork}}" alt="{{artist}}" />\
-			</div>\
-			<div class="span4">\
-				<p>\
-					<strong>Song</strong>: {{title}}<br />\
-					<strong>Artist</strong>: {{artist}}<br />\
-					<strong>Album</strong>: {{album}}<br />\
-					<strong>Plays</strong>: {{plays}}<br />\
-					<strong>In Queue</strong>: {{in_queue}}\
-				</p>\
-			</div>\
-		</div>', view);
+		return Mustache.to_html(
+			'<div class="row">' +
+				'<div class="span4">' +
+					'<img src="{{artwork}}" alt="{{artist}}" />' +
+				'</div>' +
+				'<div class="span4">' +
+					'<p>' +
+						'<strong>Song</strong>: {{title}}<br />' +
+						'<strong>Artist</strong>: {{artist}}<br />' +
+						'<strong>Album</strong>: {{album}}<br />' +
+						'<strong>Plays</strong>: {{plays}}<br />' +
+						'<strong>In Queue</strong>: {{in_queue}}' +
+					'</p>' +
+				'</div>' +
+			'</div>', view);
 	}
 
 };
