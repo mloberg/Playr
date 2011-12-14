@@ -1,11 +1,11 @@
 # Playr
 
-Playr is an ruby application to manage music in a community environment (like an office). Users can upload music and music to a queue.
+Playr is an ruby application to manage music in a community environment (like an office). Users can upload music and add music to a queue.
 
 ## Requirements
 
-* Mac OS X 10.5 or greater
-* Ruby 1.9 (developed with 1.9.3)
+* Mac OS X 10.5 or later
+* Ruby 1.9
 * bundler (gem install bundler)
 * MySQL (brew install mysql)
 * Redis (brew install redis)
@@ -31,10 +31,20 @@ Playr will need it's own database, so create one for it and make sure the databa
 
 By default Playr is set to run in production mode. The main difference between production and development or testing is production runs on port 80 and all css and js assets are compressed into one file (done on app run) and are cached for a week. If you wish to change either the mode to run in, or the cache time, open up *lib/app.rb* and change those settings. If you add any css or js files, you will need to add them to the SCRIPTS and STYLES variables (respectively).
 
+## Setup
+
+To setup Playr run `ruby playr.rb`. This will ask your for your Last.fm api information and authorize Playr to scrobble tracks. It will then setup an admin user.
+
 ## Running
 
-Running Playr is simple.
+Running Playr is simple `ruby playr.rb`
 
-	ruby playr.rb
+## FAQ
 
-If it's your first time running it, it will set up your Last.fm API information and then start the Sinatra app, otherwise it will just start the Sinatra app.
+### How do I add another user?
+
+The admin user (the one your originally setup) is the only user that can add other users. Navigate to */user/add* and fill out the form.
+
+### What music types are supported?
+
+mp3 and mp4 (m4a, aac, mp4)
