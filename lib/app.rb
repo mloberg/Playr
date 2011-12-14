@@ -7,23 +7,25 @@ SCRIPTS = %w(mootools-core mootools-more humane mustache simple-modal fileupload
 STYLES = %w(bootstrap jackedup style)
 
 configure :production do
-	set :port, 80
+#	set :port, 80
+	
+	use Sinatra::CacheAssets, :max_age => 7200
 	
 	compressed_js = ''
 	SCRIPTS.each do |js|
 		code = File.read("public/js/#{js}.js")
 		compressed_js << Packr.pack(code) + "\n"
 	end
-	redis.set "app_js", compressed_js
-	SCRIPT_TAG = '<script src="/playr.js"></script>'
+	File.open('public/js/app.min.js', 'wb') { |f| f.write(compressed_js) }
+	SCRIPT_TAG = '<script src="/js/app.min.js"></script>'
 	
 	compressed_css = ''
 	STYLES.each do |css|
 		style = File.read("public/css/#{css}.css")
 		compressed_css << Rainpress.compress(style)
 	end
-	redis.set "app_css", compressed_css
-	STYLE_TAG = '<link rel="stylesheet" href="/playr.css" />'
+	File.open('public/css/app.min.css', 'wb') { |f| f.write(compressed_css) }
+	STYLE_TAG = '<link rel="stylesheet" href="/css/app.min.css" />'
 end
 
 configure :development, :testing do
@@ -146,18 +148,6 @@ get "/", :auth => true do
 	@your_track_count = @your_tracks.count
 	@your_tracks = @your_tracks[0..5]
 	erb :index
-end
-
-get "/playr.js" do
-	content_type('application/javascript')
-	expires(60 * 60 * 24 * 7, :public, :must_revalidate)
-	redis.get "app_js"
-end
-
-get "/playr.css" do
-	content_type('text/css')
-	expires(60 * 60 * 24 * 7, :public, :must_revalidate)
-	redis.get "app_css"
 end
 
 ############
