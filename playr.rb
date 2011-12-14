@@ -19,10 +19,12 @@ require 'lib/app'
 require 'lib/auth'
 require 'lib/aacinfo'
 require 'lib/lastfm'
+require 'lib/web_socket'
 require 'lastfm_api_key'
 
 $lastfm = LastFM.new(LASTFM_API_KEY, LASTFM_SECRET)
 $lastfm.session = LASTFM_SESSION
+update_key = ActiveSupport::SecureRandom.hex(10)
 
 class Playr
 	
@@ -49,7 +51,7 @@ class Playr
 	end
 	
 	def self.play(next_song)
-		fork { system "afplay -q 1 '#{next_song}'" }
+		Thread.new { system "afplay -q 1 '#{next_song}'" }
 	end
 	
 	def self.pause
@@ -89,28 +91,67 @@ end
 
 Playr.pause
 
-pid = fork do
+
+ws = fork do
+	Signal.trap("INT") do
+		puts "Exiting WebSockets process ..."
+		Process.exit
+	end
+	
+	server = WebSocketServer.new(:port => 10081, :accepted_domains => ["*"])
+	connections = []
+	
+	server.run do |ws|
+		if ws.path == "/"
+			begin
+				ws.handshake
+				que = Queue.new
+				connections.push(que)
+				thread = Thread.new do
+					while true
+						ws.send que.pop
+					end
+				end
+				while true
+					sleep 1
+				end
+			ensure
+				connections.delete(que)
+				thread.terminate if thread
+			end
+		elsif ws.path == "/update?key=#{update_key}"
+			ws.handshake
+			while data = ws.receive
+				for conn in connections
+					conn.push data
+				end
+			end
+		else
+			ws.handshake("404 Not Found")
+		end
+	end
+end
+Process.detach(ws)
+
+play = fork do
 	while true
 		Signal.trap("INT") do
-			puts "Stopping the currently played song."
+			puts "\nExiting Playr ..."
 			Playr.stop
-			puts "Exiting Playr..."
-			Process.exit # do a clean exit
+			Process.exit
 		end
 		
 		if Playr.paused? or Playr.playing?
 			sleep(1)
 		else
-			# get the next song
 			next_song = Playr.next_song
-			# adjust plays
 			next_song.adjust!(:plays => 1)
-			# add song to play table
 			History.create(:song => next_song, :played_at => Time.now)
-			# play the song
 			Playr.play(next_song.path)
-			
-			# Scrobble to Last.fm
+			# websocket
+			update = WebSocket.new("ws://localhost:10081/update?key=#{update_key}")
+			update.send "Now playing <strong>#{next_song.title}</strong> by <strong>#{next_song.artist}</strong>"
+			update.close
 			# Uncomment this when in production
 # 			$lastfm.update({
 # 				:album => next_song.album,
@@ -120,4 +161,4 @@ pid = fork do
 		end
 	end
 end
-Process.detach(pid)
+Process.detach(play)

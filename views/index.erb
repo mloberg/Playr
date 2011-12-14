@@ -8,9 +8,9 @@
 		<div class="row">
 			<div class="span4 offset4"><img src="<%= album_artwork @playing.album, @playing.artist %>" alt="<%= @playing.title %>" /></div>
 			<div class="span6">
-				<h3><%= @playing.title %> <small>by <%= @playing.artist %></small></h3>
+				<h3><a href="/track/<%= @playing.id.to_s %>"><%= @playing.title %></a> <small>by <a href="/artist/<%= @playing.artist %>"><%= @playing.artist %></a></small></h3>
 				<p>
-					<strong>Album</strong>: <%= @playing.album %><br />
+					<strong>Album</strong>: <a href="/album/<%= @playing.album %>/<%= @playing.artist %>"><%= @playing.album %></a><br />
 					<strong>Year</strong>: <%= @playing.year %><br />
 					<strong>Genre</strong>: <%= @playing.genre %><br />
 					<strong>Plays</strong>: <%= @playing.plays %><br />

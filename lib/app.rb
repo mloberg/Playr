@@ -1,9 +1,9 @@
-set :environment, :production
+set :environment, :development
 enable :sessions
 use Rack::Flash, :sweep => true
 
 SITE_TITLE = "Playr"
-SCRIPTS = %w(mootools-core mootools-more humane mustache simple-modal fileuploader main)
+SCRIPTS = %w(mootools-core mootools-more humane mustache simple-modal fileuploader swfobject web_socket main)
 STYLES = %w(bootstrap jackedup style)
 
 configure :production do
