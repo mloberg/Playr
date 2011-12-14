@@ -1,6 +1,6 @@
 # Playr
 
-Playr is an ruby application to manage music in a community environment (like an office). Users can upload music and add music to a queue.
+Playr is an ruby application to manage music in a community environment (like an office). Users can upload music, add music to a queue, and like and dislike tracks. It integrates with Last.fm's API to get artist, album, and track information.
 
 ## Requirements
 
@@ -48,3 +48,7 @@ The admin user (the one your originally setup) is the only user that can add oth
 ### What music types are supported?
 
 mp3 and mp4 (m4a, aac, mp4)
+
+### Playr keeps crashing on startup
+
+Production mode uses port 80. Any port below 1024 requires admin privileges. Either run `sudo ruby playr.rb` or change (or comment out) the port line in *lib/app.rb*.

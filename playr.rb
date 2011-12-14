@@ -35,21 +35,29 @@ require 'lastfm_api_key'
 $lastfm = LastFM.new(LASTFM_API_KEY, LASTFM_SECRET)
 
 unless defined?(LASTFM_SESSION)
-	puts "Generating Last.fm session..."
-	print "Please hit enter to authorize Playr (this will open up your browser)."
-	STDIN.gets
-	token = $lastfm.auth_token
-	system("open 'http://www.last.fm/api/auth/?api_key=#{LASTFM_API_KEY}&token=#{token}'")
-	print "Once you have authorized the app, please hit enter..."
-	STDIN.gets
-	LASTFM_SESSION = $lastfm.auth_session(token)
-	if LASTFM_SESSION == nil
-		puts "Could not get auth session. Please try again."
-		Process.exit
+	print "Do you want to generate a Last.fm session? [y/n]"
+	if STDIN.gets.chomp =~ /n|N|no/
+		LASTFM_SESSION = nil
+		File.open('lastfm_api_key.rb', 'a') { |f| f << "LASTFM_SESSION = nil" }
+	else
+		puts "Generating Last.fm session..."
+		print "Please hit enter to authorize Playr (this will open up your browser)."
+		STDIN.gets
+		token = $lastfm.auth_token
+		system("open 'http://www.last.fm/api/auth/?api_key=#{LASTFM_API_KEY}&token=#{token}'")
+		print "Once you have authorized the app, please hit enter..."
+		STDIN.gets
+		LASTFM_SESSION = $lastfm.auth_session(token)
+		if LASTFM_SESSION == nil
+			puts "Could not get auth session. Please try again."
+			Process.exit
+		end
+		File.open('lastfm_api_key.rb', 'a') { |f| f << "LASTFM_SESSION = '#{LASTFM_SESSION}'" }
 	end
-	File.open('lastfm_api_key.rb', 'a') { |f| f << "LASTFM_SESSION = '#{LASTFM_SESSION}'" }
 	puts "Last.fm config file created!"
 end
+
+$lastfm.session = LASTFM_SESSION if LASTFM_SESSION
 
 if User.all.empty?
 	print "Would you like to create the admin user? [y/n]"
@@ -69,7 +77,6 @@ if User.all.empty?
 	end
 end
 
-$lastfm.session = LASTFM_SESSION
 update_key = ActiveSupport::SecureRandom.hex(10)
 
 puts "== Starting Playr ..."
@@ -197,12 +204,13 @@ play = fork do
 			update = WebSocket.new("ws://localhost:10081/update?key=#{update_key}")
 			update.send "Now playing <strong>#{next_song.title}</strong> by <strong>#{next_song.artist}</strong>"
 			update.close
-			# Uncomment this when in production
-# 			$lastfm.update({
-# 				:album => next_song.album,
-# 				:track => next_song.title,
-# 				:artist => next_song.artist
-# 			})
+			if LASTFM_SESSION
+				$lastfm.update({
+					:album => next_song.album,
+					:track => next_song.title,
+					:artist => next_song.artist
+				})
+			end
 		end
 	end
 end
