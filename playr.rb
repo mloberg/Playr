@@ -197,7 +197,7 @@ play = fork do
 	Signal.trap("INT", "kill_process")
 	Signal.trap("TERM", "kill_process")
 	while true	
-		if Playr.paused? or Playr.playing? and Song.all.empty?
+		if Playr.paused? or Playr.playing? or Song.all.empty?
 			sleep(1)
 		else
 			next_song = Playr.next_song
