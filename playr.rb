@@ -13,6 +13,7 @@ require 'digest'
 require 'time'
 require 'packr'
 require 'rainpress'
+require 'highline/import'
 
 require 'lib/database'
 require 'lib/app'
@@ -20,11 +21,58 @@ require 'lib/auth'
 require 'lib/aacinfo'
 require 'lib/lastfm'
 require 'lib/web_socket'
-require 'lastfm_api_key'
 
+unless File.exists?('lastfm_api_key.rb')
+	puts "\nNo Last.fm config file found. Creating one now."
+	print "Your Last.fm API Key: "
+	api_key = STDIN.gets.chomp
+	print "Your Last.fm Secret Key: "
+	secret_key = STDIN.gets.chomp
+	File.open('lastfm_api_key.rb', 'w') { |f| f.write("LASTFM_API_KEY = '#{api_key}'\nLASTFM_SECRET = '#{secret_key}'\n") }
+end
+
+require 'lastfm_api_key'
 $lastfm = LastFM.new(LASTFM_API_KEY, LASTFM_SECRET)
+
+unless defined?(LASTFM_SESSION)
+	puts "Generating Last.fm session..."
+	print "Please hit enter to authorize Playr (this will open up your browser)."
+	STDIN.gets
+	token = $lastfm.auth_token
+	system("open 'http://www.last.fm/api/auth/?api_key=#{LASTFM_API_KEY}&token=#{token}'")
+	print "Once you have authorized the app, please hit enter..."
+	STDIN.gets
+	LASTFM_SESSION = $lastfm.auth_session(token)
+	if LASTFM_SESSION == nil
+		puts "Could not get auth session. Please try again."
+		Process.exit
+	end
+	File.open('lastfm_api_key.rb', 'a') { |f| f << "LASTFM_SESSION = '#{LASTFM_SESSION}'" }
+	puts "Last.fm config file created!"
+end
+
+if User.all.empty?
+	print "Would you like to create the admin user? [y/n]"
+	if STDIN.gets.chomp =~ /y|Y|yes/
+		print "Username: "
+		username = STDIN.gets.chomp
+		password = ask("Password: ") { |q| q.echo = "*" }
+		print "Name: "
+		name = STDIN.gets.chomp
+		u = User.create(
+			:username => username,
+			:password => Auth.hash_password(password),
+			:secret => ActiveSupport::SecureRandom.hex(16),
+			:name => name
+		)
+		puts "User #{username} created."
+	end
+end
+
 $lastfm.session = LASTFM_SESSION
 update_key = ActiveSupport::SecureRandom.hex(10)
+
+puts "== Starting Playr ..."
 
 class Playr
 	
@@ -89,12 +137,9 @@ class Playr
 
 end
 
-Playr.pause
-
-
 ws = fork do
 	Signal.trap("INT") do
-		puts "Exiting WebSockets process ..."
+		puts "== Exiting WebSockets process ..."
 		Process.exit
 	end
 	
@@ -136,7 +181,7 @@ Process.detach(ws)
 play = fork do
 	while true
 		Signal.trap("INT") do
-			puts "\nExiting Playr ..."
+			puts "== Exiting Playr ..."
 			Playr.stop
 			Process.exit
 		end

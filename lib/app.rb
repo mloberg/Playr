@@ -1,4 +1,4 @@
-set :environment, :development
+set :environment, :production
 enable :sessions
 use Rack::Flash, :sweep => true
 
@@ -9,7 +9,7 @@ STYLES = %w(bootstrap jackedup style)
 configure :production do
 #	set :port, 80
 	
-	use Sinatra::CacheAssets, :max_age => 7200
+	use Sinatra::CacheAssets, :max_age => (60 * 60 * 24 * 7)
 	
 	compressed_js = ''
 	SCRIPTS.each do |js|

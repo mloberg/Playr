@@ -61,13 +61,16 @@ class LastFM
 	def auth_session(token)
 		params = { :method => 'auth.getSession', :token => token }
 		params[:api_sig] = sign(params)
-		self.class.post('', :query => params)["session"]["key"]
+		resp = self.class.post('', :query => params)
+		return resp["session"]["key"] if resp["session"]["key"]
+		nil
 	end
 	
 	def sign(params)
 		params[:api_key] = @api_key
 		str_to_sign = ''
 		params.keys.sort.each { |key| str_to_sign << key.to_s + params[key] }
+		str_to_sign << @secret
 		Digest::MD5.hexdigest(str_to_sign)
 	end
 

@@ -45,7 +45,7 @@ Playr = {
 	},
 	
 	updates: function(){
-		WEB_SOCKET_SWF_LOCATION = "WebSocketMain.swf";
+		WEB_SOCKET_SWF_LOCATION = "/WebSocketMain.swf";
 		var ws = new WebSocket("ws://localhost:10081/");
 		ws.onmessage = function(e){
 			humane.timeout = 5000;
