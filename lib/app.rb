@@ -107,7 +107,7 @@ helpers do
 	end
 	
 	def in_queue(song)
-		q = Queue.all(:song => song)
+		q = SongQueue.all(:song => song)
 		return false if q.empty?
 		return true
 	end
@@ -182,7 +182,7 @@ end
 get "/queue", :auth => true do
 	@title = "Queue"
 	@playing = History.last.song if Playr.playing?
-	@queue = Queue.all(:order => [:created_at.asc])
+	@queue = SongQueue.all(:order => [:created_at.asc])
 	erb :queue
 end
 
@@ -504,7 +504,7 @@ post "/api/queue/add", :auth => true do
 	return { :error => true, :message => "Requires song id." }.to_json unless params[:id]
 	return { :error => true, :message => "This song is already in the queue." }.to_json if in_queue params[:id]
 	s = Song.get(params[:id])
-	q = Queue.new
+	q = SongQueue.new
 	q.attributes = {
 		:song => s,
 		:added_by => @user.id,
@@ -573,7 +573,7 @@ end
 
 # remove a song from the queue
 post "/api/skip", :auth => true do
-	q = Queue.first(:song => Song.get(params[:song]))
+	q = SongQueue.first(:song => Song.get(params[:song]))
 	return { :success => true }.to_json if q.destroy
 	return { :error => true, :message => "Could not remove track from queue." }.to_json
 end

@@ -14,6 +14,7 @@ require 'time'
 require 'packr'
 require 'rainpress'
 require 'highline/import'
+require 'thread'
 
 require 'lib/database'
 require 'lib/app'
@@ -88,7 +89,7 @@ class Playr
 	
 	def self.next_song
 		# check queue
-		queued = Queue.first
+		queued = SongQueue.first
 		if queued
 			queued.destroy
 			return queued.song
@@ -145,10 +146,12 @@ class Playr
 end
 
 ws = fork do
-	Signal.trap("INT") do
+	def kill_process
 		puts "== Exiting WebSockets process ..."
 		Process.exit
 	end
+	Signal.trap("INT", "kill_process")
+	Signal.trap("TERM", "kill_process")
 	
 	server = WebSocketServer.new(:port => 10081, :accepted_domains => ["*"])
 	connections = []
@@ -186,14 +189,15 @@ end
 Process.detach(ws)
 
 play = fork do
-	while true
-		Signal.trap("INT") do
-			puts "== Exiting Playr ..."
-			Playr.stop
-			Process.exit
-		end
-		
-		if Playr.paused? or Playr.playing?
+	def kill_process
+		puts "== Exiting Playr ..."
+		Playr.stop
+		Process.exit
+	end
+	Signal.trap("INT", "kill_process")
+	Signal.trap("TERM", "kill_process")
+	while true	
+		if Playr.paused? or Playr.playing? and Song.all.empty?
 			sleep(1)
 		else
 			next_song = Playr.next_song

@@ -38,7 +38,7 @@ class Song
 	property :updated_at, DateTime
 	
 	has n, :votes
-	has n, :queues
+	has n, :songQueues
 	has n, :histories
 	
 	belongs_to :user
@@ -62,7 +62,7 @@ class User
 	has n, :songs
 end
 
-class Queue
+class SongQueue
 	include DataMapper::Resource
 	property :added_by, Integer
 	property :created_at, DateTime
