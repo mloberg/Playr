@@ -152,6 +152,7 @@ ws = fork do
 	end
 	Signal.trap("INT", "kill_process")
 	Signal.trap("TERM", "kill_process")
+	Signal.trap("VTALRM", "kill_process")
 	
 	server = WebSocketServer.new(:port => 10081, :accepted_domains => ["*"])
 	connections = []
@@ -196,6 +197,8 @@ play = fork do
 	end
 	Signal.trap("INT", "kill_process")
 	Signal.trap("TERM", "kill_process")
+	Signal.trap("VTALRM", "kill_process")
+	
 	while true	
 		if Playr.paused? or Playr.playing? or Song.all.empty?
 			sleep(1)
