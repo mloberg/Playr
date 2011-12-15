@@ -7,7 +7,7 @@ SCRIPTS = %w(mootools-core mootools-more humane mustache simple-modal fileupload
 STYLES = %w(bootstrap jackedup style)
 
 configure :production do
-	set :port, 80
+#	set :port, 80
 	
 	use Sinatra::CacheAssets, :max_age => (60 * 60 * 24 * 7)
 	

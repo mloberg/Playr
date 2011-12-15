@@ -147,22 +147,21 @@ end
 
 ws = fork do
 	def kill_process
-		puts "== Exiting WebSockets process ..."
 		Process.exit
 	end
 	Signal.trap("INT", "kill_process")
 	Signal.trap("TERM", "kill_process")
 	Signal.trap("VTALRM", "kill_process")
-	
 	server = WebSocketServer.new(:port => 10081, :accepted_domains => ["*"])
-	connections = []
+	web_connections = []
+	desk_connections = []
 	
 	server.run do |ws|
 		if ws.path == "/"
 			begin
 				ws.handshake
 				que = Queue.new
-				connections.push(que)
+				web_connections.push(que)
 				thread = Thread.new do
 					while true
 						ws.send que.pop
@@ -172,13 +171,37 @@ ws = fork do
 					sleep 1
 				end
 			ensure
-				connections.delete(que)
+				web_connections.delete(que)
+				thread.terminate if thread
+			end
+		elsif ws.path == "/notify"
+			begin
+				ws.handshake
+				que = Queue.new
+				desk_connections.push(que)
+				thread = Thread.new do
+					while true
+						ws.send que.pop
+					end
+				end
+				while true
+					sleep 1
+				end
+			ensure
+				desk_connections.delete(que)
 				thread.terminate if thread
 			end
 		elsif ws.path == "/update?key=#{update_key}"
 			ws.handshake
 			while data = ws.receive
-				for conn in connections
+				for conn in web_connections
+					conn.push data
+				end
+			end
+		elsif ws.path == "/notify?key=#{update_key}"
+			ws.handshake
+			while data = ws.receive
+				for conn in desk_connections
 					conn.push data
 				end
 			end
@@ -191,15 +214,15 @@ Process.detach(ws)
 
 play = fork do
 	def kill_process
-		puts "== Exiting Playr ..."
+		puts "== Stopping Playr"
 		Playr.stop
 		Process.exit
 	end
-	Signal.trap("INT", "kill_process")
-	Signal.trap("TERM", "kill_process")
-	Signal.trap("VTALRM", "kill_process")
-	
-	while true	
+	while true
+		Signal.trap("INT", "kill_process")
+		Signal.trap("TERM", "kill_process")
+		Signal.trap("VTALRM", "kill_process")
+		
 		if Playr.paused? or Playr.playing? or Song.all.empty?
 			sleep(1)
 		else
@@ -207,10 +230,13 @@ play = fork do
 			next_song.adjust!(:plays => 1)
 			History.create(:song => next_song, :played_at => Time.now)
 			Playr.play(next_song.path)
-			# websocket
-			update = WebSocket.new("ws://localhost:10081/update?key=#{update_key}")
+			# web users
+			update = WebSocket.new("ws://127.0.0.1:10081/update?key=#{update_key}")
 			update.send "Now playing <strong>#{next_song.title}</strong> by <strong>#{next_song.artist}</strong>"
 			update.close
+			# growl users
+			growl = WebSocket.new("ws://127.0.0.1:10081/notify?key=#{update_key}")
+			growl.send({ :title => "Playr Now Playing", :message => "#{next_song.title} by #{next_song.artist}" }.to_json)
 			if LASTFM_SESSION
 				$lastfm.update({
 					:album => next_song.album,

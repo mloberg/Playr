@@ -49,7 +49,7 @@ class LastFM
 		params[:method] = 'track.scrobble'
 		params[:sk] = @session
 		params[:api_sig] = sign(params)
-		self.class.post('', query => params)
+		self.class.post('', :query => params)
 	end
 	
 	def auth_token
