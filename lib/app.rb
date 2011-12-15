@@ -615,11 +615,8 @@ post "/user/add", :auth => :admin do
 			:name => params[:name],
 			:email => params[:email]
 		}
-		if u.save
-			redirect '/', :success => "User #{params[:username]} added"
-		else
-			redirect '/user/add', :error => "Could not add user"
-		end
+		u.save
+		redirect '/', :success => "User added"
 	end
 end
 
