@@ -7,7 +7,7 @@ SCRIPTS = %w(mootools-core mootools-more humane mustache simple-modal fileupload
 STYLES = %w(bootstrap jackedup style)
 
 configure :production do
-#	set :port, 80
+	set :port, 80
 	
 	use Sinatra::CacheAssets, :max_age => (60 * 60 * 24 * 7)
 	
@@ -612,7 +612,8 @@ post "/user/add", :auth => :admin do
 			:username => params[:username],
 			:password => Auth.hash_password(params[:password]),
 			:secret => ActiveSupport::SecureRandom.hex(16),
-			:name => params[:name]
+			:name => params[:name],
+			:email => params[:email]
 		}
 		if u.save
 			redirect '/', :success => "User #{params[:username]} added"
