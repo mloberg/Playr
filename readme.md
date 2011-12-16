@@ -37,9 +37,7 @@ To setup Playr run `ruby playr.rb`. This will ask your for your Last.fm api info
 
 ## Running
 
-Running Playr is simple as `ruby playr.rb`.
-
-If you want to pause Playr initially pass `-s` or `--silent` when starting Playr.
+Running Playr is simple `ruby playr.rb`
 
 ## FAQ
 

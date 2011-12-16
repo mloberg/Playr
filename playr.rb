@@ -212,8 +212,6 @@ ws = fork do
 end
 Process.detach(ws)
 
-Playr.pause if ARGV[0] =~ /^(-s|--slient)$/
-
 play = fork do
 	def kill_process
 		puts "== Stopping Playr"
