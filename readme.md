@@ -57,11 +57,20 @@ Production mode uses port 80. Any port below 1024 requires admin privileges. Eit
 
 Included is a Growl plugin for Playr that will update the currently playing song using Growl. It supports both Growl 1.3 and 1.2.x.
 
+## Requirements
+
+* Mac OS X 10.5 or later
+* Growl 1.2.x or 1.3
+* Ruby 1.8.7 or later
+* Shell access
+
+## Installation
+
 To install growl-playr, you will need to copy the `growl` directory to the users system, cd to the directory and run `ruby installer.rb`. It will ask you a few things and move all the necessary files into place.
 
 ## Usage
 
-`growl-playr` is the script that's installed. It runs as a daemon, so the usage is what you would expect from any other daemon script.
+Once you have run the installation, the growl plugin is available with `growl-playr`.
 
 	growl-playr start # start growl-playr
 	growl-playr stop # stop growl-playr
@@ -70,4 +79,4 @@ To install growl-playr, you will need to copy the `growl` directory to the users
 
 ## Important Notes
 
-If you are using RVM on your system, you will need to make sure you are running the system default Ruby so the necessary gems are installed. To use the system's Ruby install run `rvm system`. Then after the install is done, `rvm 1.9.3` or whatever version of Ruby you were using.
+If you are using RVM on your system, you will need to make sure you are running the system default Ruby so the necessary gems are installed. To use the system's Ruby install run `rvm system`. Then after the install is done, `rvm use 1.9.3` or whatever version of Ruby you were using.
