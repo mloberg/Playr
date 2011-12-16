@@ -135,7 +135,7 @@ end
 get "/", :auth => true do
 	@title = "Home"
 	@playing = History.last.song if Playr.playing?
-	@albums = repository(:default).adapter.select("SELECT `artist`, `album`, SUM(`vote` + `plays`) AS `rating` FROM `songs` GROUP BY `album` ORDER BY `rating` DESC")
+	@albums = repository(:default).adapter.select("SELECT `artist`, `album`, (`vote` + `plays`) AS `rating` FROM `songs` GROUP BY `album` ORDER BY `rating` DESC")
 	@album_count = @albums.count
 	@albums = @albums[0..5]
 	@artists = repository(:default).adapter.select("SELECT `artist`, SUM(`plays`) as `rating` FROM `songs` GROUP BY `artist` ORDER BY `rating` DESC")
