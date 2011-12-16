@@ -477,13 +477,13 @@ post "/api/song/add", :auth => true do
 	end
 	return { :error => true, :message => "Ran into unexpected error." }.to_json if tags.empty?
 	# see if duplicate song exists
-	if Song.first(:title => tags[:title], :artist => tags[:artist], :album => tags[:album], :length => tags[:length])
+	if Song.first(:title => tags[:title], :artist => tags[:artist], :album => tags[:album])
 		FileUtils.rm(tmp_file)
 		return { :error => true, :message => "Song already exists." }.to_json
 	end
 	# move file
-	file_name = tags[:title] + "." + ext
-	target_path = './music/' + tags[:artist] + '/' + tags[:album] + '/'
+	file_name = tags[:title].gsub(/[`~\!\@\#\$\%\^\&\(\):;"'\<\>\?]/, '_') + "." + ext
+	target_path = './music/' + tags[:artist].gsub(/[`~\!\@\#\$\%\^\&\(\):;"'\<\>\?]/, '_') + '/' + tags[:album].gsub(/[`~\!\@\#\$\%\^\&\(\):;"'\<\>\?]/, '_') + '/'
 	FileUtils.mkdir_p target_path unless File.exists? target_path
 	FileUtils.mv(tmp_file, target_path + file_name)
 	# add to MySQL

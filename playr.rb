@@ -101,6 +101,8 @@ class Playr
 				# need to make sure it hasn't been played in the past 8 hours
 				played = History.last(:song => song, :played_at.gt => Time.now - 36000)
 				return song unless played
+				sleep(1)
+				nil
 			end
 		end
 		
@@ -227,6 +229,7 @@ play = fork do
 			sleep(1)
 		else
 			next_song = Playr.next_song
+			break if next_song == nil
 			next_song.adjust!(:plays => 1)
 			History.create(:song => next_song, :played_at => Time.now)
 			Playr.play(next_song.path)

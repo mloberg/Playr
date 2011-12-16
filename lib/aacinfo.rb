@@ -1,3 +1,5 @@
+require 'iconv'
+
 class AACInfo
 
 	def self.open(file)
@@ -20,8 +22,9 @@ class AACInfo
 	private
 	
 	def parse_info
+		ic = Iconv.new('UTF-8//IGNORE', 'UTF-8')
 		# get info with faad
-		info = `faad -i "#{@file}" 2>&1`.split(@file + " file info:\n\n").last.split("\n")
+		info = ic.iconv(`faad -i "#{@file}" 2>&1` + ' ').split(@file + " file info:\n\n").last.split("\n")
 		
 		# get the track length
 		@tags[:length] = info.shift[/\d+\.\d{1,3}/]
@@ -31,6 +34,7 @@ class AACInfo
 		
 		# go through each tag and save it to the instance variable
 		info.each do |tag|
+			next unless tag =~ /^(\w|\d)+:./
 			key, *value = tag.split(": ")
 			@tags[key.to_sym] = value.join(": ")
 		end
