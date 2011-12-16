@@ -15,8 +15,6 @@
 	<true/>
 	<key>Enabled</key>
 	<true/>
-	<key>UserName</key>
-	<string>{{username}}</string>
 	<key>StandardErrorPath</key>
 	<string>/usr/local/var/log/growl-playr.log</string>
 	<key>StandardOutPath</key>

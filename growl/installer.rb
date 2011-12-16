@@ -38,9 +38,13 @@ else
 	end
 	FileUtils.mkdir_p('/usr/local/var/playr')
 	FileUtils.cp('growl.rb', '/usr/local/var/playr/growl.rb')
+	puts "\nYou will need to set a couple of Growl config options."
+	puts "First open up Growl preferences (under System Preferences)."
+	puts "Under Network check 'Listen for incoming notifications' and 'Allow remote application registration'. Do not set a password."
+	puts "Once you have done that, you may have to restart Growl for it to take effect."
 end
 
-puts "What is the host of your Playr install? "
+puts "What is the host of your Playr install?"
 print "> "
 host = STDIN.gets.chomp
 File.open('/usr/local/var/playr/config.yml', 'w') { |f| f.write("host: #{host}") }
@@ -57,6 +61,7 @@ if STDIN.gets.chomp =~ /y|Y|yes/
 	FileUtils.mkdir_p("#{home}/Library/LaunchAgents")
 	FileUtils.cp('com.playr.growl.plist', "#{home}/Library/LaunchAgents/com.playr.growl.plist")
 	`launchctl load ~/Library/LaunchAgents/com.playr.growl.plist`
+	puts "Growl-playr has started and will autoload on login."
 end
 
 puts "Congratulations, you have installed the Growl plugin for Playr."

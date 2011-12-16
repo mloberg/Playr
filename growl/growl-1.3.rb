@@ -20,11 +20,6 @@ growl.register({ :notifications => [{
 	:name => "notify",
 	:enabled => true
 }]})
-growl.notify({
-	:name => "notify",
-	:title => "Growl-Playr Started",
-	:text => "Growl-Playr is now running. Listening to host #{config["host"]}."
-})
 
 while true
 	begin

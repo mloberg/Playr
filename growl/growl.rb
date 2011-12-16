@@ -14,7 +14,6 @@ end
 config = YAML::load_file 'config.yml'
 
 growl = Growl.new "127.0.0.1", "playr-update", ["playr-update Notification"]
-growl.notify "playr-update Notification", "Growl-Playr Started", "Growl-Playr is now running. Listening to host #{config["host"]}."
 
 while true
 	begin
