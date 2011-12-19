@@ -445,7 +445,7 @@ post "/api/song/add", :auth => true do
 			mp3 = Mp3Info.open(tmp_file)
 			unless mp3.tag.title
 				FileUtils.rm(tmp_file)
-				return { :error => true, :message => "No tags found. Please add some tags and try again." }.to_json
+				return { :error => true, :message => "No tags found for #{name}. Please add some tags and try again." }.to_json
 			end
 			tags = {
 				:length => mp3.length,
@@ -460,7 +460,8 @@ post "/api/song/add", :auth => true do
 			aac = AACInfo.open(tmp_file)
 			unless aac.title
 				FileUtils.rm(tmp_file)
-				return { :error => true, :message => "No tags found. Please add some tags and try again." }.to_json
+				puts aac
+				return { :error => true, :message => "No tags found for #{name}. Please add some tags and try again." }.to_json
 			end
 			tags = {
 				:length => aac.length,
