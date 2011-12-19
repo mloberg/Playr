@@ -5,7 +5,15 @@
 
 (function() {
   
-  if (window.WebSocket && !window.WEB_SOCKET_FORCE_FLASH) return;
+  if (window.WEB_SOCKET_FORCE_FLASH) {
+    // Keeps going.
+  } else if (window.WebSocket) {
+    return;
+  } else if (window.MozWebSocket) {
+    // Firefox.
+    window.WebSocket = MozWebSocket;
+    return;
+  }
   
   var logger;
   if (window.WEB_SOCKET_LOGGER) {
@@ -30,14 +38,14 @@
   }
 
   /**
-   * This class represents a faux web socket.
+   * Our own implementation of WebSocket class using Flash.
    * @param {string} url
    * @param {array or string} protocols
    * @param {string} proxyHost
    * @param {int} proxyPort
    * @param {string} headers
    */
-  WebSocket = function(url, protocols, proxyHost, proxyPort, headers) {
+  window.WebSocket = function(url, protocols, proxyHost, proxyPort, headers) {
     var self = this;
     self.__id = WebSocket.__nextId++;
     WebSocket.__instances[self.__id] = self;
@@ -91,10 +99,10 @@
    */
   WebSocket.prototype.close = function() {
     if (this.__createTask) {
-        clearTimeout(this.__createTask);
-        this.__createTask = null;
-        this.readyState = WebSocket.CLOSED;
-        return;
+      clearTimeout(this.__createTask);
+      this.__createTask = null;
+      this.readyState = WebSocket.CLOSED;
+      return;
     }
     if (this.readyState == WebSocket.CLOSED || this.readyState == WebSocket.CLOSING) {
       return;
@@ -370,20 +378,12 @@
   };
   
   if (!window.WEB_SOCKET_DISABLE_AUTO_INITIALIZATION) {
-    var init = function(){
+    // NOTE:
+    //   This fires immediately if web_socket.js is dynamically loaded after
+    //   the document is loaded.
+    swfobject.addDomLoadEvent(function() {
       WebSocket.__initialize();
-    };
-    if (document.readyState == "complete") {
-      // Document is already loaded.
-      init();
-    } else if (window.addEventListener) {
-      // This fires earlier but is not supported by all browsers.
-      document.addEventListener("DOMContentLoaded", init, false);
-      // This is supported by all browsers.
-      window.addEventListener("load", init, false);
-    } else {
-      window.attachEvent("onload", init);
-    }
+    });
   }
   
 })();
