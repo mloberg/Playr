@@ -69,6 +69,7 @@ window.addEvent('domready', function(){
 <% end %>
 	Playr.init();
 	Playr.controls(<%= @volume %>);
+	Playr.socket("<%= request.ip %>");
 	<%= @ready %>
 });
 </script>

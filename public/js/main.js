@@ -12,7 +12,6 @@ Playr = {
 			this.getParent("li").toggleClass("open");
 		});
 		Playr.voting();
-		Playr.updates();
 	},
 	
 	upload: function(){
@@ -44,9 +43,9 @@ Playr = {
 		}
 	},
 	
-	updates: function(){
+	socket: function(host){
 		WEB_SOCKET_SWF_LOCATION = "/WebSocketMain.swf";
-		var ws = new WebSocket("ws://localhost:10081/");
+		var ws = new WebSocket("ws://" + host + ":10081/");
 		ws.onmessage = function(e){
 			humane.timeout = 5000;
 			humane.info(e.data);
