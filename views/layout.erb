@@ -62,10 +62,10 @@ window.addEvent('domready', function(){
 	humane.error("<%= flash[:error].gsub('"', '\"') %>");
 <% end %>
 <% if flash[:notice] %>
-	humane.info("<%= flash[:notice].gsub('"', '\"') %>");
+	humane.success("<%= flash[:notice].gsub('"', '\"') %>");
 <% end %>
-<% if flash[:success] %>
-	humane.success("<%= flash[:success].gsub('"', '\"') %>");
+<% if flash[:info] %>
+	humane.info("<%= flash[:info].gsub('"', '\"') %>");
 <% end %>
 	Playr.init();
 	Playr.controls(<%= @volume %>);

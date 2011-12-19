@@ -517,14 +517,14 @@ end
 put "/api/track", :auth => true do
 	song = Song.get(params[:song_id])
 	song.update(:title => params[:title], :artist => params[:artist], :album => params[:album], :tracknum => params[:tracknum], :year => params[:year], :genre => params[:genre], :updated_at => Time.now)
-	redirect "/track/#{params[:song_id]}", :success => "Track info updated."
+	redirect "/track/#{params[:song_id]}", :notice => "Track info updated."
 end
 
 delete "/api/track", :auth => true do
 	song = Song.get(params[:song_id])
 	if song.destroy
 		`rm -f #{song.path}`
-		redirect '/', :notice => 'Song deleted.'
+		redirect '/', :info => 'Song deleted.'
 	else
 		redirect "/track/#{params[:song_id]}", :error => 'Could not delete song.'
 	end
@@ -616,7 +616,7 @@ post "/user/add", :auth => :admin do
 			:email => params[:email]
 		}
 		u.save
-		redirect '/', :success => "User added"
+		redirect '/', :notice => "User added"
 	end
 end
 
@@ -644,7 +644,7 @@ post "/login" do
 	@auth = Auth.new(user.password, user.secret, session, request.env)
 	if @auth.validate(password)
 		session[:user_id] = user.id
-		redirect '/', :notice => "Welcome back #{user.name}."
+		redirect '/', :info => "Welcome back #{user.name}."
 	else
 		redirect '/login', :error => "Invalid username/password combination."
 	end
