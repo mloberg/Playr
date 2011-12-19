@@ -15,6 +15,7 @@ require 'packr'
 require 'rainpress'
 require 'highline/import'
 require 'thread'
+require 'socket'
 
 require 'lib/database'
 require 'lib/app'
@@ -79,6 +80,7 @@ if User.all.empty?
 end
 
 update_key = ActiveSupport::SecureRandom.hex(10)
+$local_ip = UDPSocket.open {|s| s.connect("64.233.187.99", 1); s.addr.last}
 
 puts "== Starting Playr ..."
 
