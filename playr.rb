@@ -225,7 +225,7 @@ play = fork do
 		Signal.trap("TERM", "kill_process")
 		Signal.trap("VTALRM", "kill_process")
 		
-		if Playr.paused? or Playr.playing? or Song.all.empty?
+		if Playr.paused? or Playr.playing? or Song.all.length == 0
 			sleep(1)
 		else
 			next_song = Playr.next_song
