@@ -1,6 +1,6 @@
 $: << '.'
 
-require 'sinatra'
+require 'sinatra/base'
 require 'sinatra/redirect_with_flash'
 require 'sinatra/redis'
 require 'sinatra/cache_assets'
@@ -23,6 +23,7 @@ require 'lib/auth'
 require 'lib/aacinfo'
 require 'lib/lastfm'
 require 'lib/web_socket'
+require 'lib/server'
 
 unless File.exists?('lastfm_api_key.rb')
 	puts "\nNo Last.fm config file found. Creating one now."
@@ -98,7 +99,15 @@ class Playr
 		else
 			# if queue is empty, pick one at random preferring those with a higher vote
 			loop do
-				tmpid = repository(:default).adapter.select("SELECT `id` FROM `songs` WHERE vote > 300 ORDER BY RAND() LIMIT 1").pop
+				sql = "SELECT `id` FROM `songs` WHERE vote > 300"
+				# no holiday music unless it's between Thanksgiving and Christmas
+				time = Time.new
+				week = ((time.day - (time.wday + 1)) / 7) + 1
+				unless (time.month == 11 and ((week == 4 and time.wday >= 4) or week > 4)) or (time.month == 12 and time.day < 26)
+					sql << " AND (`genre` NOT LIKE 'holiday' OR `genre` NOT LIKE 'christmas' OR `genre` NOT LIKE 'season%')"
+				end
+				sql << " ORDER BY RAND() LIMIT 1"
+				tmpid = repository(:default).adapter.select(sql).pop
 				song = Song.get(tmpid)
 				# need to make sure it hasn't been played in the past 8 hours
 				played = History.last(:song => song, :played_at.gt => Time.now - 36000)
@@ -149,107 +158,10 @@ class Playr
 
 end
 
-ws = fork do
-	def kill_process
-		Process.exit
-	end
-	Signal.trap("INT", "kill_process")
-	Signal.trap("TERM", "kill_process")
-	Signal.trap("VTALRM", "kill_process")
-	server = WebSocketServer.new(:port => 10081, :accepted_domains => ["*"])
-	web_connections = []
-	desk_connections = []
-	
-	server.run do |ws|
-		if ws.path == "/"
-			begin
-				ws.handshake
-				que = Queue.new
-				web_connections.push(que)
-				thread = Thread.new do
-					while true
-						ws.send que.pop
-					end
-				end
-				while true
-					sleep 1
-				end
-			ensure
-				web_connections.delete(que)
-				thread.terminate if thread
-			end
-		elsif ws.path == "/notify"
-			begin
-				ws.handshake
-				que = Queue.new
-				desk_connections.push(que)
-				thread = Thread.new do
-					while true
-						ws.send que.pop
-					end
-				end
-				while true
-					sleep 1
-				end
-			ensure
-				desk_connections.delete(que)
-				thread.terminate if thread
-			end
-		elsif ws.path == "/update?key=#{update_key}"
-			ws.handshake
-			while data = ws.receive
-				for conn in web_connections
-					conn.push data
-				end
-			end
-		elsif ws.path == "/notify?key=#{update_key}"
-			ws.handshake
-			while data = ws.receive
-				for conn in desk_connections
-					conn.push data
-				end
-			end
-		else
-			ws.handshake("404 Not Found")
-		end
-	end
-end
+ws = fork { Server.websocket(update_key) }
 Process.detach(ws)
 
-play = fork do
-	def kill_process
-		puts "== Stopping Playr"
-		Playr.stop
-		Process.exit
-	end
-	while true
-		Signal.trap("INT", "kill_process")
-		Signal.trap("TERM", "kill_process")
-		Signal.trap("VTALRM", "kill_process")
-		
-		if Playr.paused? or Playr.playing? or Song.all.length == 0
-			sleep(1)
-		else
-			next_song = Playr.next_song
-			break if next_song == nil
-			next_song.adjust!(:plays => 1)
-			History.create(:song => next_song, :played_at => Time.now)
-			Playr.play(next_song.path)
-			# web users
-			update = WebSocket.new("ws://127.0.0.1:10081/update?key=#{update_key}")
-			update.send "Now playing <strong>#{next_song.title}</strong> by <strong>#{next_song.artist}</strong>"
-			update.close
-			# growl users
-			growl = WebSocket.new("ws://127.0.0.1:10081/notify?key=#{update_key}")
-			growl.send({ :title => "Playr Now Playing", :message => "#{next_song.title} by #{next_song.artist}" }.to_json)
-			if LASTFM_SESSION
-				$lastfm.update({
-					:album => next_song.album,
-					:track => next_song.title,
-					:artist => next_song.artist
-				})
-			end
-		end
-	end
-end
+play = fork { Server.music(update_key) }
 Process.detach(play)
+
+App.run!
