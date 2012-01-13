@@ -1,11 +1,10 @@
 $: << '.'
 
-require 'sinatra/base'
+require 'sinatra'
 require 'sinatra/redirect_with_flash'
 require 'sinatra/redis'
 require 'sinatra/cache_assets'
 require 'rack-flash'
-require 'active_support'
 require 'fileutils'
 require 'json'
 require 'mp3info'
@@ -80,7 +79,7 @@ if User.all.empty?
 	end
 end
 
-update_key = ActiveSupport::SecureRandom.hex(10)
+update_key = SecureRandom.hex(10)
 $local_ip = UDPSocket.open {|s| s.connect("64.233.187.99", 1); s.addr.last}
 
 puts "== Starting Playr ..."
@@ -163,5 +162,3 @@ Process.detach(ws)
 
 play = fork { Server.music(update_key) }
 Process.detach(play)
-
-App.run!
