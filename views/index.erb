@@ -6,8 +6,8 @@
 	<div class="span16 now-playing" style="box-shadow: none;">
 		<h2>Now Playing</h2>
 		<div class="row">
-			<div class="span4 offset4"><img src="<%= album_artwork @playing.album, @playing.artist %>" alt="<%= @playing.title %>" /></div>
-			<div class="span6">
+			<div class="span4 offset3"><img src="<%= album_artwork @playing.album, @playing.artist %>" alt="<%= @playing.title %>" /></div>
+			<div class="span9">
 				<h3><a href="/track/<%= @playing.id.to_s %>"><%= @playing.title %></a> <small>by <a href="/artist/<%= @playing.artist %>"><%= @playing.artist %></a></small></h3>
 				<p>
 					<strong>Album</strong>: <a href="/album/<%= @playing.album %>/<%= @playing.artist %>"><%= @playing.album %></a><br />
