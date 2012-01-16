@@ -34,6 +34,7 @@ class LastFM
 	
 	def album_artwork(album, artist)
 		resp = self.album(album, artist)
+		return nil unless resp
 		resp["image"].each do |i|
 			return i["#text"] if i["size"] == "large"
 		end
