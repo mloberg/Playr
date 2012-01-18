@@ -211,7 +211,7 @@ get "/track/:track", :auth => true do
 		if @info["album"]
 			@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
 		end
-		@likes = Vote.all(:song => @song)
+		@likes = Vote.all(:song => @song, :like => true)
 		@ready = "Info.track(#{@song.id.to_s});"
 		erb :'info/track'
 	else
@@ -225,7 +225,7 @@ get "/track/:track", :auth => true do
 			if @info["album"]["image"]
 				@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
 			end
-			@likes = Vote.all(:song => @song)
+			@likes = Vote.all(:song => @song, :like => true)
 			@ready = "Info.track(#{@song.id.to_s});"
 			erb :'info/track'
 		else
