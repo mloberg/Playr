@@ -46,6 +46,7 @@ helpers do
 	def album_artwork(album, artist)
 		return redis.hget "album:artwork", album + ":" + artist if redis.hexists "album:artwork", album + ":" + artist
 		artwork = $lastfm.album_artwork album, artist
+		return "http://placehold.it/174&text=No+Artwork+Found" if(artwork == nil or artwork == "")
 		redis.hset "album:artwork", album + ":" + artist, artwork
 		artwork
 	end
