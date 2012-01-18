@@ -10,6 +10,7 @@ Playr is an ruby application to manage music in a community environment (like an
 * MySQL (brew install mysql)
 * Redis (brew install redis)
 * faad (for m4a files) (brew install faad2)
+* aacgain (brew install mp4v2 aacgain)
 * Last.fm API account (http://last.fm/api)
 
 ## Installation

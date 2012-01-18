@@ -50,6 +50,7 @@ Playr = {
 			humane.timeout = 5000;
 			humane.info(e.data);
 			humane.timeout = 2500;
+			// update home
 		};
 	},
 	

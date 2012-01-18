@@ -31,6 +31,7 @@ if STDIN.gets.chomp =~ /y|Y|yes/
 else
 	puts "Installing the ruby-growl gem."
 	puts "Does gem need admin privileges (you need to type sudo gem)?"
+	print "[y/n]> "
 	if STDIN.gets.chomp =~ /y|Y|yes/
 		system("sudo gem install json daemons ruby-growl")
 	else
@@ -42,6 +43,8 @@ else
 	puts "First open up Growl preferences (under System Preferences)."
 	puts "Under Network check 'Listen for incoming notifications' and 'Allow remote application registration'. Do not set a password."
 	puts "Once you have done that, you may have to restart Growl for it to take effect."
+	print "Press enter once you are done..."
+	STDIN.gets.chomp
 end
 
 puts "What is the host of your Playr install?"

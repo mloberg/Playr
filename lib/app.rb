@@ -210,7 +210,7 @@ get "/track/:track", :auth => true do
 		if @info["album"]
 			@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
 		end
-		@likes = Vote.all(:song => @song)
+		@likes = Vote.all(:song => @song, :like => true)
 		@ready = "Info.track(#{@song.id.to_s});"
 		erb :'info/track'
 	else
@@ -224,7 +224,7 @@ get "/track/:track", :auth => true do
 			if @info["album"]["image"]
 				@info["album"]["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
 			end
-			@likes = Vote.all(:song => @song)
+			@likes = Vote.all(:song => @song, :like => true)
 			@ready = "Info.track(#{@song.id.to_s});"
 			erb :'info/track'
 		else
@@ -436,6 +436,10 @@ post "/api/song/add", :auth => true do
 			f.write(params[:qqfile][:tempfile].read)
 		end
 	end
+	# run aacgain to normalize volume
+	Dir.chdir(directory)
+	system("aacgain -r -p -t -k *.mp3 *.m4a *.mp4 *.aac")
+	Dir.chdir("..")
 	# parse song for information
 	tmp_file = directory + name
 	ext = File.extname(name)[1..-1].downcase
