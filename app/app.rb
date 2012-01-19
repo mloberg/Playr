@@ -11,7 +11,6 @@ require 'coffee-script'
 require './app/database'
 require './app/auth'
 require './lib/aacinfo'
-require './lib/lastfm'
 require './lib/info'
 
 module Playr
@@ -57,8 +56,7 @@ module Playr
 				@auth = Auth.new(@user.password, @user.secret, session, request.env)
 			end
 			@config = YAML.load_file("#{dir}/../config.yml")
-			@lastfm = LastFM.new(@config['lfm_key'], @config['lfm_secret'])
-			@info = Playr::Info.new(@lastfm, @config['redis_host'])
+			@info = Playr::Info.new(@config)
 		end
 		
 		############
