@@ -1,1 +1,10 @@
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+.sass-cache/*
+
 lastfm_api_key.rb
+growl.zip
+config.yml

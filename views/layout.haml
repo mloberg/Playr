@@ -1,0 +1,55 @@
+!!! 5
+%html{ :lang => "en" }
+	%head
+		<meta charset="utf-8" />
+		%title #{@title} | Playr
+		%link{ :rel => "stylesheet", :href => "/application.css" }
+	%body
+		.topbar
+			.fill
+				.container
+					%a{ :class => "brand", :href => "/" } Playr
+					- if @user
+						%ul{ :class => "nav" }
+							%li{ :class => "dropdown" }
+								%a{ :class => "dropdown-toggle", :href => "#" } Browse
+								%ul{ :class => "dropdown-menu" }
+									%li
+										%a{ :href => "/artists" } Artists
+									%li
+										%a{ :href => "/albums" } Albums
+									%li
+										%a{ :href => "/browse" } All
+							%li
+								%a{ :href => "/queue" } Queue
+							%li
+								%a{ :href => "/history" } History
+							%li
+								%a{ :href => "/upload" } Upload
+						%form{ :class => "pull-left", :action => "/search" }
+							%input{ :type => "text", :name => "q", :placeholder => "Search" }
+						%ul{ :class => "nav secondary-nav" }
+							%li{ :class => "dropdown" }
+								%a{ :class => "dropdown-toggle", :href => "#" } #{@user.username}
+								%ul{ :class => "dropdown-menu" }
+									%li
+										#slider
+											#knob
+									%li
+										%a{ :href => "#", :id => "mute" }
+											Volume
+											%span{ :id => "volume-label" } #{@volume}
+									%li{ :class => "divider" }
+									%li
+										%a{ :href => "/likes" } Likes
+									%li
+										%a{ :href => "/logout" } Logout
+		.container
+			.content
+				.page-header
+					%h1 #{@title}
+				=yield
+		%script{ :src => "/js/mootools-core.js" }
+		%script{ :src => "/js/humane.js" }
+		%script{ :src => "/js/fileuploader.js" }
+		%script{ :src => "/application.js" }

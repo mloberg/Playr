@@ -47,6 +47,10 @@ class Song
 		q = '%' + query + '%'
 		results = repository(:default).adapter.select("SELECT * FROM `songs` WHERE `title` LIKE ? OR `artist` LIKE ? OR `album` LIKE ? OR `genre` LIKE ?", q, q, q, q)
 	end
+	
+	def self.artists
+		all(:fields => [:artist], :unique => true, :order => [:artist.asc])
+	end
 end
 
 class User

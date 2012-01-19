@@ -1,0 +1,14 @@
+.row
+	#artists{ :class => "span6 list" }
+		%h2 Artists
+		%ul{ :id => "artist-list" }
+			- @artists.each do |artist|
+				%li{ :class => "artist" } #{artist.artist}
+	#list{ :class => "span4 list" }
+		%h2 Albums
+		#artist-info
+		%ul{ :id => "album-list" }
+	#songs{ :class => "span4 list" }
+		%h2 Songs
+		#album-artwork
+		%ul{ :id => "song-list" }

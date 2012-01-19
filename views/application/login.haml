@@ -1,0 +1,15 @@
+.row
+	%div{ :class => "span8 offset4" }
+		%form{ :action => "/login", :method => "post" }
+			%fieldset
+				.clearfix
+					%label{ :for => "username" } Username
+					.input
+						%input{ :type => "text", :id => "username", :name => "username" }
+				.clearfix
+					%label{ :for => "password" } Password
+					.input
+						%input{ :type => "password", :id => "password", :name => "password" }
+				.clearfix
+					.input
+						%input{ :type => "submit", :class => "btn primary", :value => "login" }
