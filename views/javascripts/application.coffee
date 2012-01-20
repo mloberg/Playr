@@ -43,7 +43,7 @@ class @Playr
 							like.removeClass "disabled"
 						that.addClass "disabled"
 				}
-	paginate: ->
+	paginate: (callback) ->
 		self = this
 		url = window.location.pathname
 		$$(".next-page").addEvent "click", (e) ->
@@ -60,7 +60,7 @@ class @Playr
 					$("content").set "html", "<h3 class=\"center\">Loading...</h3>"
 				onComplete: (resp) ->
 					$("content").set "html", resp
-					self.paginate()
+					callback()
 			}
 			request.send()
 		$$(".prev-page").addEvent "click", (e) ->
@@ -77,9 +77,45 @@ class @Playr
 					$("content").set "html", "<h3 class=\"center\">Loading...</h3>"
 				onComplete: (resp) ->
 					$("content").set "html", resp
-					self.paginate()
+					callback()
 			}
 			request.send()
+	artists: ->
+		self = this
+		self._grid 5
+		callback = ->
+			self._grid 5
+			self.paginate callback
+		self.paginate callback
+	albums: ->
+		self = this
+		self._grid 4
+		callback = ->
+			self._grid 4
+			self.paginate callback
+		self.paginate callback
+	_grid: (width) ->
+		items = []
+		height = 0
+		# should trigger once all images are loaded
+		$$(".media-grid li").each (item, key) ->
+			img = new Image()
+			img.src = item.getElement("a img").get "src"
+			img.onload = ->
+				if items[key - width]
+					top = items[key - width]
+					item.setPosition({ x: top.x - 20, y: top.y + top.height + 20 }).setStyle "position", "absolute"
+				position = item.getElement("a").getCoordinates()
+				items[key] = {
+					x: position.left,
+					y: position.top,
+					width: position.width,
+					height: position.height
+				}
+				console.log position
+				if height < position.top
+					height = position.top + 100
+					$$(".grid").setStyle "height", height
 
 class @Browse
 	info: {}

@@ -2,11 +2,11 @@
 	.row
 		%div{ :class => "span15 offset1" }
 			%ul{ :class => "media-grid grid" }
-				- @artists.each do |artist, image|
+				- @albums.each do |album|
 					%li
-						%a{ :class => "thumbnail artist", :href => "/artist/#{artist}" }
-							%img{ :src => image, :alt => "#{artist}" }
-							=artist
+						%a{ :class => "thumbnail album", :href => "/album/#{album[:album]}/#{album[:artist]}" }
+							%img{ :src => "#{album[:image]}", :alt => "#{album[:album]}" }
+							#{album[:album]}<br />by #{album[:artist]}
 	.row
 		.span16
 			- if @page != 1

@@ -90,12 +90,12 @@ module Playr
 		
 		get "/browse/artists", :auth => true do
 			@title = "Artists"
-			@js = "app.paginate();"
+			@js = "app.artists();"
 			# pagination
 			artists = Song.artists
 			@total = artists.size
 			@page = params[:page] ? params[:page].to_i : 1
-			@per_page = 15
+			@per_page = 20
 			@artists = {}
 			offset = (@page - 1) * @per_page
 			artists[(offset)..(offset + @per_page - 1)].each do |artist|
@@ -113,6 +113,26 @@ module Playr
 
 		get "/browse/albums", :auth => true do
 			@title = "Albums"
+			@js = "app.albums();"
+			# pagination
+			albums = Song.albums
+			@total = albums.size
+			@page = params[:page] ? params[:page].to_i : 1
+			@per_page = 16
+			@albums = []
+			offset = (@page - 1) * @per_page
+			albums[(offset)..(offset + @per_page - 1)].each do |album|
+				image = nil
+				@info.album(album.album, album.artist)["image"].each do |i|
+					if image == nil and i['#text'] =~ /\d{3}.?\/\d+\.(png|jpg)$/
+						image = i['#text']
+					end
+				end
+				image = 'http://placehold.it/174&text=No+Artwork+Found' if image == nil
+				@albums << { :album => album.album, :artist => album.artist, :image => image }
+			end
+			return haml :'browse/albums', :layout => false if params[:ajax]
+			haml :'browse/albums'
 		end
 
 		############
@@ -152,7 +172,7 @@ module Playr
 			ext = File.extname(path)[1..-1].downcase
 			case ext
 				when "mp3"
-					mp3 = Mp3Info.open(tmp_file)
+					mp3 = Mp3Info.open(path)
 					unless mp3.tag.title
 						FileUtils.rm(path)
 						return { :error => true, :message => "No tags found for #{name}" }.to_json
