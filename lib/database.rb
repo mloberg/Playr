@@ -1,6 +1,7 @@
 require 'data_mapper'
 require 'dm-adjust'
 require 'dm-aggregates'
+require './lib/auth'
 
 DataMapper::setup(:default, {
 	:adapter => 'mysql',
@@ -43,13 +44,24 @@ class Song
 	
 	belongs_to :user
 	
-	def self.search(query)
-		q = '%' + query + '%'
-		results = repository(:default).adapter.select("SELECT * FROM `songs` WHERE `title` LIKE ? OR `artist` LIKE ? OR `album` LIKE ? OR `genre` LIKE ?", q, q, q, q)
-	end
-	
 	def self.artists
 		all(:fields => [:artist], :unique => true, :order => [:artist.asc])
+	end
+	
+	def self.albums(artist = nil)
+		if artist == nil
+			all(:fields => [:artist, :album], :unique => true, :order => [:album.asc])
+		else
+			all(:artist => artist, :fields => [:artist, :album], :unique => true, :order => [:album.asc])
+		end
+	end
+	
+	def self.tracks(artist, album = nil)
+		if album == nil
+			all(:artist => artist)
+		else
+			all(:artist => artist, :album => album)
+		end
 	end
 end
 
@@ -61,9 +73,22 @@ class User
 	property :secret, String, :length => 1024, :required => true
 	property :name, String
 	property :email, String, :default => 'admin@dkyinc.com', :format => :email_address
+	property :admin, Boolean, :default => false
 	
 	has n, :votes
 	has n, :songs
+
+	def self.add(params)
+		u = new
+		u.attributes = {
+			:username => params[:username],
+			:password => Auth.hash_password(params[:password]),
+			:secret => SecureRandom.hex(16),
+			:name => params[:name],
+			:email => params[:email]
+		}
+		u.save
+	end
 end
 
 class SongQueue

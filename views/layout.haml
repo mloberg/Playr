@@ -53,3 +53,10 @@
 		%script{ :src => "/js/humane.js" }
 		%script{ :src => "/js/fileuploader.js" }
 		%script{ :src => "/application.js" }
+		:javascript
+			humane.clickToClose = true;
+			#{@flash}
+			window.addEvent("domready", function(){
+				var app = new Playr();
+				#{@js}
+			});

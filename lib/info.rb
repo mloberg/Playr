@@ -17,6 +17,10 @@ module Playr
 			self.class.default_params :api_key => options['lastfm']['api_key']
 		end
 		
+		#############################
+		## Last.fm getInfo Methods ##
+		#############################
+		
 		def q(method, params)
 			params[:method] = method
 			self.class.get('', :query => params)
@@ -38,9 +42,79 @@ module Playr
 				JSON.parse(@redis.hget "album", key)
 			else
 				data = self.q('album.getInfo', { :album => album, :artist => artist, :autocorrect => 1 })["album"]
-				@redis.hset "album", album, data.to_json
+				@redis.hset "album", key, data.to_json
 				data
 			end
+		end
+		
+		def track(track, artist)
+			key = "#{artist}:#{track}"
+			if @redis.hexists "track", key
+				JSON.parse(@redis.hget "track", key)
+			else
+				data = self.q('track.getInfo', { :artist => artist, :track => track, :autocorrect => 1 })["track"]
+				@redis.hset "track", key, data.to_json
+				data
+			end
+		end
+		
+		#############################
+		## Last.fm Scrobbe Methods ##
+		#############################
+		
+		def sign(params)
+			params[:api_key] = @options['lastfm']['api_key']
+			str_to_sign = ''
+			params.keys.sort.each { |key| str_to_sign << key.to_s + params[key] }
+			str_to_sign << @options['lastfm']['secret']
+			Digest::MD5.hexdigest(str_to_sign)
+		end
+		
+		def auth_token
+			params = { :method => 'auth.getToken' }
+			params[:api_sig] = sign(params)
+			self.class.post('', :query => params)["token"]
+		end
+		
+		def auth_session(token)
+			params = { :method => 'auth.getSession', :token => token }
+			params[:api_sig] = sign(params)
+			resp = self.class.post('', :query => params)
+			return resp["session"]["key"] if resp["session"]["key"]
+			nil
+		end
+		
+		def update(params)
+			params[:timestamp] = Time.now.to_i.to_s
+			params[:method] = 'track.scrobble'
+			params[:sk] = @options['lastfm']['session']
+			params[:api_sig] = sign(params)
+			self.class.post('', :query => params)
+		end
+		
+		##################
+		## Info Methods ##
+		##################
+		
+		def artists
+			artists = []
+			Song.artists.each do |artist|
+				artists << artist.artist
+			end
+			artists
+		end
+		
+		def albums(artist = nil)
+			albums = []
+			if artist == nil
+				a = Song.albums
+			else
+				a = Song.albums(artist)
+			end
+			a.each do |album|
+				albums << { :artist => album.artist, :album => album.album }
+			end
+			albums
 		end
 	
 	end

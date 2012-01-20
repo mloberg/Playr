@@ -1,10 +1,4 @@
-window.addEvent "domready", ->
-	`// @flash`
-	app = new Playr()
-	`// @js`
-	app
-
-class Playr
+class @Playr
 	constructor: ->
 		this.voting()
 		$$(".dropdown-toggle").addEvent "click", (e) ->
@@ -50,14 +44,14 @@ class Playr
 						that.addClass "disabled"
 				}
 
-class Browse
+class @Browse
 	info: {}
 	currentStep: null
 	constructor: (options) ->
+		this.artist()
 		if typeof options is "undefined"
 			options = {}
-		this.artist()
-		unless options.artist is "undefined"
+		unless typeof options.artist is "undefined"
 			$$(".artist:contains(#{options.artist.replace('"', '\"')})").fireEvent "click"
 			unless options.album is "undefined"
 				browseAlbums = setInterval ->
@@ -83,26 +77,33 @@ class Browse
 			$("artists").morph ".span4"
 			$("albums").morph ".span6"
 			requestArtwork = new Request.JSON {
-				url: "/api/artist/info",
+				url: "/api/info",
 				onSuccess: (artist) ->
-					$("artist-info").set "html", "<img src=\"#{artist.image}\" alt=\"#{self.info.artist}\" />"
+					artwork = null
+					Object.each artist.image, (image) ->
+						if image['#text'].match(/\d{3}.?\/\d+\.(png|jpg)$/) and artwork is null
+							artwork = image['#text']
+					$("artist-info").set "html", "<img src=\"#{artwork}\" alt=\"#{self.info.artist}\" />"
 			}
 			request = new Request.JSON {
 				method: "get",
-				url: "/api/artist/albums",
-				data: { artist: self.info.artist },
+				url: "/api/get",
+				data: {
+					method: "albums",
+					artist: self.info.artist
+				},
 				onRequest: ->
 					$("album-list").set "html", "<li>loading...</li>"
 				onComplete: (albums) ->
 					$("album-list").set "html", ""
-					albums.each (album)->
+					Object.each albums, (album)->
 						$("album-list").adopt(new Element "li", {
 							class: "album",
-							text: album
+							text: album.album
 						})
 					self.album();
 			}
-			requestArtwork.get { artist: self.info.artist }
+			requestArtwork.get { method: "artist", artist: self.info.artist }
 			request.send()
 	album: ->
 		self = this
@@ -115,14 +116,21 @@ class Browse
 			$("albums").morph ".span4"
 			$("songs").morph ".span6"
 			requestArtwork = new Request.JSON {
-				url: "/api/album/artwork",
-				onSuccess: (artwork) ->
+				url: "/api/info",
+				onSuccess: (album) ->
+					artwork = null
+					Object.each album.image, (image) ->
+						if image['#text'].match(/\d{3}.?\/\d+\.(png|jpg)$/) and artwork is null
+							artwork = image['#text']
+					if artwork is null
+						artwork = 'http://placehold.it/174&text=No+Artwork+Found'
 					$("album-artwork").set "html", "<img src=\"#{artwork}\" alt=\"#{self.info.album}\" />"
 			}
 			request = new Request.JSON {
 				method: "get",
-				url: "/api/album/tracks",
+				url: "/api/get",
 				data: {
+					method: "tracks",
 					artist: self.info.artist,
 					album: self.info.album
 				},
@@ -130,20 +138,23 @@ class Browse
 					$("song-list").set "html", "<li>loading...</li>"
 				onComplete: (songs) ->
 					$("song-list").set "html", ""
-					songs.each (song) ->
+					Object.each songs, (song) ->
 						text = song.title
 						unless song.tracknum is null
 							text = song.tracknum + ": " + text
-						$("song-title").adopt(new Element "li", {
+						$("song-list").adopt(new Element "li", {
 							id: song.id,
-							class: "song",
-							text: text
+							html: "<a class=\"song\" href=\"/track/#{song.id}\">#{text}</a>"
 						})
 					self.song()
 			}
-			requestArtwork.get { artist: self.info.artist, album: self.info.album }
+			requestArtwork.get { method: "album", artist: self.info.artist, album: self.info.album }
 			request.send()
 	song: ->
 		self = this
-		$$(".song").addEvent "click", ->
+		$$(".song").addEvent "click", (e) ->
 			self.currentStep = "song"
+			if confirm "Add this song to the queue?"
+				e.preventDefault()
+				# add song to queue
+				

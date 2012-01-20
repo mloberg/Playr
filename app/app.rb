@@ -1,4 +1,5 @@
 require 'sinatra/base'
+require 'redis'
 require 'rack-flash'
 require 'fileutils'
 require 'json'
@@ -8,10 +9,11 @@ require 'haml'
 require 'sass'
 require 'coffee-script'
 
-require './app/database'
-require './app/auth'
+require './app/api'
+require './lib/database'
+require './lib/auth'
 require './lib/aacinfo'
-require './lib/info'
+require './lib/lastfm'
 
 module Playr
 	class App < Sinatra::Base
@@ -45,18 +47,19 @@ module Playr
 		
 		before do
 			if flash[:error]
-				session[:flash] = 'humane.error("' + flash[:error].gsub('"', '\"') + '");'
+				@flash = 'humane.error("' + flash[:error].gsub('"', '\"') + '");'
 			elsif flash[:notice]
-				session[:flash] = 'humane.success("' + flash[:notice].gsub('"', '\"') + '");'
+				@flash = 'humane.success("' + flash[:notice].gsub('"', '\"') + '");'
 			elsif flash[:info]
-				session[:flash] = 'humane.info("' + flash[:info].gsub('"', '\"') + '");'
+				@flash = 'humane.info("' + flash[:info].gsub('"', '\"') + '");'
 			end
 			if session[:user_id]
 				@user = User.get(session[:user_id])
 				@auth = Auth.new(@user.password, @user.secret, session, request.env)
 			end
 			@config = YAML.load_file("#{dir}/../config.yml")
-			@info = Playr::Info.new(@config)
+			@redis = Redis.new(:host => @config['redis']['host'], :port => @config['redis']['port'])
+			@info = Playr::Lastfm.new(@config['lastfm'], @redis)
 		end
 		
 		############
@@ -71,11 +74,6 @@ module Playr
 		get '/application.js' do
 			content_type "text/javascript"
 			render = coffee :'javascripts/application'
-			render.gsub!(/\/\/ @flash;/, session[:flash] || '')
-			session[:flash] = nil
-			render.gsub!(/\/\/ @js;/, session[:js] || '')
-			session[:js] = nil
-			render
 		end
 		
 		get "/", :auth => true do
@@ -86,6 +84,7 @@ module Playr
 		get "/browse", :auth => true do
 			@title = "Browse"
 			@artists = Song.artists
+			@js = "var browse = new Browse();"
 			haml :'browse/all'
 		end
 		
@@ -95,7 +94,7 @@ module Playr
 		
 		get "/upload", :auth => true do
 			@title = "Upload"
-			session[:js] = "app.upload();"
+			@js = "app.upload();"
 			haml :'application/upload'
 		end
 		
@@ -188,20 +187,6 @@ module Playr
 				FileUtils.rm(target + file)
 				return { :error => true, :message => "Could not save #{name}" }.to_json
 			end
-		end
-		
-		###################
-		##    Public     ##
-		## API Functions ##
-		###################
-		
-		get "/info/artist" do
-			return { :error => true, :message => "Must provide artist." }.to_json unless params[:artist]
-			@info.artist(params[:artist]).to_json
-		end
-		
-		get "/info/album" do
-		
 		end
 		
 		##################
