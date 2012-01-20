@@ -1,9 +1,9 @@
 @import "bootstrap";
 @import "jackedup";
 
-.float-right { float: right; }
-.float-left { float: left; }
-.clear { clear: both; }
+.center {
+	text-align: center;
+}
 
 body {
 	padding-top: 40px;

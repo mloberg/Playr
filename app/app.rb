@@ -73,7 +73,7 @@ module Playr
 		
 		get '/application.js' do
 			content_type "text/javascript"
-			render = coffee :'javascripts/application'
+			coffee :'javascripts/application'
 		end
 		
 		get "/", :auth => true do
@@ -88,6 +88,33 @@ module Playr
 			haml :'browse/all'
 		end
 		
+		get "/browse/artists", :auth => true do
+			@title = "Artists"
+			@js = "app.paginate();"
+			# pagination
+			artists = Song.artists
+			@total = artists.size
+			@page = params[:page] ? params[:page].to_i : 1
+			@per_page = 15
+			@artists = {}
+			offset = (@page - 1) * @per_page
+			artists[(offset)..(offset + @per_page - 1)].each do |artist|
+				image = nil
+				@info.artist(artist.artist)["image"].each do |i|
+					if image == nil and i['#text'] =~ /\d{3}.?\/\d+\.(png|jpg)$/
+						image = i['#text']
+					end
+				end
+				@artists[artist.artist] = image
+			end
+			return haml :'browse/artists', :layout => false if params[:ajax]
+			haml :'browse/artists'
+		end
+
+		get "/browse/albums", :auth => true do
+			@title = "Albums"
+		end
+
 		############
 		## Upload ##
 		############

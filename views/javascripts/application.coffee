@@ -43,6 +43,43 @@ class @Playr
 							like.removeClass "disabled"
 						that.addClass "disabled"
 				}
+	paginate: ->
+		self = this
+		url = window.location.pathname
+		$$(".next-page").addEvent "click", (e) ->
+			that = this
+			e.preventDefault()
+			request = new Request {
+				method: "get",
+				url: url,
+				data: {
+					page: that.get("data-page"),
+					ajax: true
+				},
+				onRequest: ->
+					$("content").set "html", "<h3 class=\"center\">Loading...</h3>"
+				onComplete: (resp) ->
+					$("content").set "html", resp
+					self.paginate()
+			}
+			request.send()
+		$$(".prev-page").addEvent "click", (e) ->
+			that = this
+			e.preventDefault()
+			request = new Request {
+				method: "get",
+				url: url,
+				data: {
+					page: that.get("data-page"),
+					ajax: true
+				},
+				onRequest: ->
+					$("content").set "html", "<h3 class=\"center\">Loading...</h3>"
+				onComplete: (resp) ->
+					$("content").set "html", resp
+					self.paginate()
+			}
+			request.send()
 
 class @Browse
 	info: {}
@@ -157,4 +194,3 @@ class @Browse
 			if confirm "Add this song to the queue?"
 				e.preventDefault()
 				# add song to queue
-				
