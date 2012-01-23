@@ -1,9 +1,33 @@
+onImagesLoad = (callback) ->
+	images = 0
+	$$("img").each (item, key) ->
+		images++
+		img = new Image()
+		img.onload = ->
+			images--
+		img.src = item.get "src"
+	check = setInterval ->
+		if images == 0
+			callback()
+			clearInterval check
+	, 50
+getParameterByName = (name) ->
+	name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]")
+	regexS = "[\\?&]#{name}=([^&#]*)"
+	regex = new RegExp regexS
+	results = regex.exec window.location.href
+	if results isnt null
+		return decodeURIComponent(results[1].replace(/\+/g, " "))
+	null
+
 class @Playr
 	constructor: ->
 		this.voting()
 		$$(".dropdown-toggle").addEvent "click", (e) ->
 			e.preventDefault()
 			this.getParent("li").toggleClass "open"
+	socket: ->
+		null
 	upload: ->
 		uploader = new qq.FileUploader({
 			element: $("file-uploader"),
@@ -43,6 +67,67 @@ class @Playr
 							like.removeClass "disabled"
 						that.addClass "disabled"
 				}
+	controls: ->
+		null
+	queue: (id) ->
+		request = Request.JSON {
+			method: "post",
+			url: "/queue",
+			data: {
+				id: id
+			},
+			onComplete: (resp) ->
+				if resp.error
+					humane.error resp.message
+				else
+					humane.success "Song added to queue"
+		}
+	artists: ->
+		self = this
+		window.history.pushState { "html": $("content").get("html"), "pageTitle": document.title }, "", window.location.pathname
+		callback = ->
+			self._grid "artists", 5
+			self.paginate callback
+		callback()
+	albums: ->
+		self = this
+		window.history.pushState { "html": $("content").get("html"), "pageTitle": document.title }, "", window.location.pathname
+		callback = ->
+			self._grid "albums", 4
+			self.paginate callback
+		callback()
+	artist: ->
+		self = this
+		self._grid "similar", 3
+		self._grid "albums", 2
+	track: (id) ->
+		self = this
+		$("delete").addEvent "click", (e) ->
+			e.preventDefault()
+			if confirm "Are you sure?"
+				delete_form = new Element "form", {
+					action: "/track/#{id}",
+					method: "post",
+					styles: { display: "none" }
+				}
+				method = new Element "input", {
+					type: "hidden",
+					name: "_method",
+					value: "delete"
+				}
+				song_id = new Element "input", {
+					type: "hidden",
+					name: "song_id",
+					value: id
+				}
+				method.inject delete_form
+				song_id.inject delete_form
+				delete_form.inject document.body
+				delete_form.submit()
+			$("queue_up").addEvent "click", (e) ->
+				e.preventDefault()
+				if confirm "Add this song to the queue?"
+					self.queue id
 	paginate: (callback) ->
 		self = this
 		url = window.location.pathname
@@ -60,6 +145,7 @@ class @Playr
 					$("content").set "html", "<h3 class=\"center\">Loading...</h3>"
 				onComplete: (resp) ->
 					$("content").set "html", resp
+					window.history.pushState { "html": resp, "pageTitle": document.title }, "", url + "?page=" + that.get("data-page")
 					callback()
 			}
 			request.send()
@@ -77,31 +163,21 @@ class @Playr
 					$("content").set "html", "<h3 class=\"center\">Loading...</h3>"
 				onComplete: (resp) ->
 					$("content").set "html", resp
+					window.history.pushState { "html": resp, "pageTitle": document.title }, "", url + "?page=" + that.get("data-page")
 					callback()
 			}
 			request.send()
-	artists: ->
-		self = this
-		self._grid 5
-		callback = ->
-			self._grid 5
-			self.paginate callback
-		self.paginate callback
-	albums: ->
-		self = this
-		self._grid 4
-		callback = ->
-			self._grid 4
-			self.paginate callback
-		self.paginate callback
-	_grid: (width) ->
+		# watch for back forward
+		window.onpopstate = (e) ->
+			if e.state
+				$("content").set "html", e.state.html
+				callback()
+	_grid: (grid, width) ->
 		items = []
-		height = 0
+		bottom = 0
 		# should trigger once all images are loaded
-		$$(".media-grid li").each (item, key) ->
-			img = new Image()
-			img.src = item.getElement("a img").get "src"
-			img.onload = ->
+		onImagesLoad ->
+			$(grid).getChildren("li").each (item, key) ->
 				if items[key - width]
 					top = items[key - width]
 					item.setPosition({ x: top.x - 20, y: top.y + top.height + 20 }).setStyle "position", "absolute"
@@ -112,10 +188,9 @@ class @Playr
 					width: position.width,
 					height: position.height
 				}
-				console.log position
-				if height < position.top
-					height = position.top + 100
-					$$(".grid").setStyle "height", height
+				if bottom < position.bottom
+					bottom = position.bottom
+					item.getParents(".grid")[0].setStyle "height", position.bottom - items[0].y + 20
 
 class @Browse
 	info: {}

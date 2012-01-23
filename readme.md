@@ -5,7 +5,7 @@ Playr is an ruby application to manage music in a community environment (like an
 ## Requirements
 
 * Mac OS X 10.5 or later
-* Ruby 1.9
+* Ruby 1.9.2
 * bundler (gem install bundler)
 * MySQL (brew install mysql)
 * Redis (brew install redis)

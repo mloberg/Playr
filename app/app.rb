@@ -2,7 +2,9 @@ require 'sinatra/base'
 require 'redis'
 require 'rack-flash'
 require 'fileutils'
+require 'uri'
 require 'json'
+require 'digest'
 require 'yaml'
 require 'mp3info'
 require 'haml'
@@ -25,6 +27,8 @@ module Playr
 		
 		enable :sessions
 		use Rack::Flash, :sweep => true
+
+		use Rack::MethodOverride
 		
 		configure :development, :testing do
 			
@@ -59,7 +63,21 @@ module Playr
 			end
 			@config = YAML.load_file("#{dir}/../config.yml")
 			@redis = Redis.new(:host => @config['redis']['host'], :port => @config['redis']['port'])
-			@info = Playr::Lastfm.new(@config['lastfm'], @redis)
+			@lfm = Playr::Lastfm.new(@config['lastfm'], @redis)
+		end
+
+		helpers do
+			def uri_encode(string)
+				return URI.encode(string)
+			end
+			def uri_decode(string)
+				#URI.unescape(string)
+				return URI.decode(string)
+			end
+			def gravatar(email, size = 80)
+				hash = Digest::MD5.hexdigest(email.downcase)
+				"http://www.gravatar.com/avatar/#{hash}?s=#{size}&d=mm"
+			end
 		end
 		
 		############
@@ -100,7 +118,7 @@ module Playr
 			offset = (@page - 1) * @per_page
 			artists[(offset)..(offset + @per_page - 1)].each do |artist|
 				image = nil
-				@info.artist(artist.artist)["image"].each do |i|
+				@lfm.artist(artist.artist)["image"].each do |i|
 					if image == nil and i['#text'] =~ /\d{3}.?\/\d+\.(png|jpg)$/
 						image = i['#text']
 					end
@@ -123,7 +141,7 @@ module Playr
 			offset = (@page - 1) * @per_page
 			albums[(offset)..(offset + @per_page - 1)].each do |album|
 				image = nil
-				@info.album(album.album, album.artist)["image"].each do |i|
+				@lfm.album(album.album, album.artist)["image"].each do |i|
 					if image == nil and i['#text'] =~ /\d{3}.?\/\d+\.(png|jpg)$/
 						image = i['#text']
 					end
@@ -133,6 +151,103 @@ module Playr
 			end
 			return haml :'browse/albums', :layout => false if params[:ajax]
 			haml :'browse/albums'
+		end
+
+		get "/artist/:artist", :auth => true do
+			@title = params[:artist]
+			@js = "app.artist();"
+			@artist = @lfm.artist params[:artist]
+			@image = 'http://placehold.it/350x250&text=Artist+image+not+found'
+			@artist["image"].each { |i| @image = i["#text"] if i["size"] == "mega" }
+			@albums = {}
+			Song.albums(params[:artist]).each do |album|
+				image = nil
+				@lfm.album(album.album, params[:artist])["image"].each do |i|
+					if image == nil and i["#text"] =~ /\d{3}.?\/\d+\.(png|jpg)$/
+						image = i["#text"]
+					end
+				end
+				image = 'http://placehold.it/174&text=No+Artwork+Found' if image == nil
+				@albums[album.album] = image
+			end
+			@similar = {}
+			@artist["similar"]["artist"].each do |artist|
+				image = nil
+				artist["image"].each do |i|
+					if image == nil and i["#text"] =~ /\d{3}.?\/\d+\.(png|jpg)$/
+						image = i["#text"]
+					end
+				end
+				image = 'http://placehold.it/174&text=No+Artwork+Found' if image == nil
+				@similar[artist["name"]] = image
+			end
+			haml :'info/artist'
+		end
+
+		get "/album/:album/:artist", :auth => true do
+			@title = "#{params[:album]} by #{params[:artist]}"
+			@album = @lfm.album(params[:album], params[:artist])
+			@image = 'http://placehold.it/300x300&text=Artwork+not+found'
+			@album["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
+			@tracks = {}
+			if @album["tracks"]["track"].class == Hash
+				@tracks[1] = {
+					:available => false,
+					:name => @album["tracks"]["name"]
+				}
+			elsif @album["tracks"]["track"].class == Array
+				@album["tracks"]["track"].each do |track|
+					@tracks[track["@attr"]["rank"].to_i] = {
+						:available => false,
+						:name => track["name"]
+					}
+				end
+			end
+			Song.tracks(params[:artist], params[:album]).each do |track|
+				@tracks[track.tracknum.to_i] = {
+					:available => true,
+					:id => track.id,
+					:name => track.title
+				}
+			end
+			haml :'info/album'
+		end
+
+		get "/track/:id", :auth => true do
+			@song = Song.get(params[:id])
+			halt 404, "track not found!" unless @song
+			@title = @song.title
+			@js = "app.track(#{@song.id});"
+			@info = @lfm.track(@song.title, @song.artist)
+			@image = 'http://placehold.it/300x300&text=Artwork+not+found'
+			@lfm.album(@song.album, @song.artist)["image"].each { |i| @image = i["#text"] if i["size"] == "extralarge" }
+			@likes = Vote.song(@song)
+			@liked = Vote.likes(@song.id, @user.id)
+			@queued = false
+			haml :'info/track'
+		end
+
+		get "/track/:id/edit", :auth => true do
+			
+		end
+
+		post "/track/:id", :auth => true do
+			song = Song.get(params[:id])
+			song.update(:title => params[:title], :artist => params[:artist], :album => params[:album], :tracknum => params[:tracknum], :year => params[:year], :genre => params[:genre], :updated_at => Time.now)
+			flash[:notice] = "Track info updated"
+			redirect "/track/#{params[:id]}"
+		end
+
+		delete "/track/:id", :auth => true do
+			song = Song.get(params[:id])
+			if song.destroy
+				`rm -f #{song.path}`
+				flash[:info] = "Song deleted"
+				redirect '/'
+			else
+				flash[:error] = "Could not delete song"
+				redirect "/track/#{params[:id]}"
+			end
 		end
 
 		############
@@ -264,8 +379,8 @@ module Playr
 			end
 		end
 		
-		get "/logout" do
-			# @auth.invalidate
+		get "/logout", :auth => true do
+			@auth.invalidate
 			session.clear
 			redirect '/login'
 		end

@@ -1,10 +1,10 @@
 #content
 	.row
 		%div{ :class => "span15 offset1" }
-			%ul{ :class => "media-grid grid" }
+			%ul{ :class => "media-grid grid", :id => "albums" }
 				- @albums.each do |album|
 					%li
-						%a{ :class => "thumbnail album", :href => "/album/#{album[:album]}/#{album[:artist]}" }
+						%a{ :class => "thumbnail album", :href => "/album/#{uri_encode(album[:album])}/#{uri_encode(album[:artist])}" }
 							%img{ :src => "#{album[:image]}", :alt => "#{album[:album]}" }
 							#{album[:album]}<br />by #{album[:artist]}
 	.row

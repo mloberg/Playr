@@ -1,0 +1,50 @@
+.row
+	.span9
+		%img{ :src => "#{@image}", :alt => "#{@artist["name"]}" }
+	.span7
+		%p
+			=@artist["bio"]["summary"].gsub("\n", "<br />")
+			%br
+			%small
+				Published on
+				= Time.parse(@artist["bio"]["published"]).strftime("%b %d, %Y")
+				to
+				%a{ :href => "http://last.fm/" } Last.fm
+		%h4
+			Tags
+			%small
+				from
+				%a{ :href => "http://last.fm/" } Last.fm
+		%ul
+			- @artist["tags"]["tag"].each do |tag|
+				%li= tag["name"]
+.row
+	.span8
+		%h2 Uploaded Albums
+		- if @albums.empty?
+			%p There are no uploaded albums by this artist.
+		- else
+			%ul{ :class => "media-grid grid", :id => "albums" }
+				- @albums.each do |album, image|
+					%li
+						%a{ :class => "thumbnail album", :href => "/album/#{uri_encode(album)}/#{uri_encode(@artist["name"])}" }
+							%img{ :src => "#{image}", :alt => "#{album}" }
+							= album
+	.span8
+		%h2 Similar Artists
+		%ul{ :class => "media-grid grid", :id => "similar" }
+			- @similar.each do |artist, image|
+				%li
+					%a{ :class => "thumbnail", :href => "/artist/#{uri_encode(artist)}" }
+						%img{ :src => "#{image}", :alt => "#{artist}" }
+							= artist
+%div{ :class => "row", :id => "artist-bio" }
+	.span16
+		%p
+			=@artist["bio"]["content"].gsub("\n", "<br />")
+			%br
+			%small
+				Published on
+				= Time.parse(@artist["bio"]["published"]).strftime("%b, %d, %Y")
+				to
+				%a{ :href => 'http://last.fm/' } Last.fm

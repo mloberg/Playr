@@ -92,24 +92,6 @@ body {
 	text-align: center;
 }
 
-.similar-artist {
-	float: left;
-}
-.similar-artist a img {
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075);
-	margin-left: 15px;
-	padding: 4px;
-}
-.similar-artist a img:hover {
-	border-color: #0069d6;
-	box-shadow: 0 1px 4px rgba(0, 105, 214, 0.25);
-}
-.similar-artist p {
-	text-align: center;
-}
-
 /* List */
 .grid {
 	text-align: center;
@@ -123,9 +105,9 @@ body {
 	a.artist {
 		width: 126px;
 	}
-}
-.user-likes-grid a {
-	width: 64px;
+	a.user {
+		width: 64px;
+	}
 }
 
 /* Volume Slider */

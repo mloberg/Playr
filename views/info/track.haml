@@ -1,0 +1,87 @@
+.row
+	.span6
+		%img{ :src => "#{@image}", :alt => "#{@song.album}" }
+	.span10
+		.row
+			.span5
+				%h4 Track Info
+				%ul
+					%li
+						%strong Track:
+						= @song.title
+					%li
+						%strong Artist:
+						%a{ :href => "/artist/#{uri_encode(@song.artist)}" }
+							= @song.artist
+					%li
+						%strong Album:
+						%a{ :href => "/album/#{uri_encode(@song.album)}/#{uri_encode(@song.artist)}" }
+							= @song.album
+					%li
+						%strong Genre:
+						= @song.genre
+					%li
+						%strong Year:
+						= @song.year
+					%li
+						%strong Plays
+						= @song.plays
+					%li
+						%strong Likes
+						= @likes.size
+			.span5
+				%h4
+					Tags
+					%small
+						from
+						%a{ :href => "http://last.fm/" }
+				- if @info["toptags"]["tag"].class == Hash
+					%ul
+						%li= @info["toptags"]["tag"]["name"]
+				- elsif @info["toptags"]["tag"].class == Array
+					%ul
+						- @info["toptags"]["tag"].each do |tag|
+							%li
+								= tag["name"]
+		.row
+			.span10
+				%p{ :class => "pull-left" }
+					- if @liked
+						%a{ :class => "like btn success disabled", :'data-song' => "#{@song.id}" } Like
+					- else
+						%a{ :class => "like btn success", :'data-song' => "#{@song.id}" } Like
+					- if @liked == false
+						%a{ :class => "dislike btn danger disabled", :'data-song' => "#{@song.id}" } Dislike
+					- else
+						%a{ :class => "dislike btn danger", :'data-song' => "#{@song.id}" } Dislike
+				%p{ :class => "pull-right" }
+					%a{ :class => "btn", :href => "/track/#{@song.id}/edit" } Edit
+					%a{ :class => "btn danger", :id => "delete", :href => "#" } Delete
+					- if @queued
+						%a{ :class => "btn success disabled", :id => "queue-up", :href => "#" } Add To Queue
+					- else
+						%a{ :class => "btn success", :id => "queue-up", :href => "#" } Add To Queue
+.row
+	.span16
+		%h4 Likes
+		- if @likes.empty?
+			%p There's no love for this track...
+		- else
+			%ul{ :class => "media-grid grid" }
+				- @likes.each do |like|
+					%li
+						%a{ :href => "/likes/#{like.user.username}" }
+							%img{ :class => "thumbnail user", :src => "#{gravatar(like.user.email, 64)}" }
+								= like.user.name
+- if @info["wiki"]
+	.row
+		.span16
+			%h4 Wiki
+			%p
+				= @info["wiki"]["content"].gsub("\n", "<br />")
+				%br
+				%small
+					Published on
+					= Time.parse(@info["wiki"]["published"]).strftime("%b %d, %Y")
+					to
+					%a{ :href => "http://last.fm/" } Last.fm

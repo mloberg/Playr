@@ -1,0 +1,56 @@
+.row
+	.span6
+		%img{ :src => "#{@image}", :alt => "#{@title}" }
+	.span10
+		.row
+			.span3
+				%h4 Tracks
+				%ul
+					- @tracks.each do |tracknum, track|
+						%li
+							= "#{tracknum}:"
+							- if track[:available]
+								%a{ :href => "/track/#{track[:id]}" }
+									= track[:name]
+							- else
+								= track[:name]
+			.span4
+				%h4 Album Info
+				%ul
+					%li
+						%strong Album:
+						= @album["name"]
+					%li
+						%strong Artist:
+						%a{ :href => "" }
+							= @album["artist"]
+					- unless @album["releasedate"].gsub(" ", "").empty?
+						%li
+							%strong Released:
+							= Time.parse(@album["releasedate"]).strftime("%b %d, %Y")
+			.span3
+				%h4
+					Tags
+					%small
+						from
+						%a{ :href => "/http://last.fm/" } Last.fm
+				- if @album["toptags"]["tag"].class == Hash
+					%ul
+						%li= @album["toptags"]["tag"]["name"]
+				- elsif @album["toptags"]["tag"].class == Array
+					%ul
+						- @album["toptags"]["tag"].each do |tag|
+							%li
+								= tag["name"]
+- if @album["wiki"]
+	.row
+		.span16
+			%p &nbsp;
+			%p
+				= @album["wiki"]["content"].gsub("\n", "<br />")
+				%br
+				%small
+					Published on 
+					= Time.parse(@album["wiki"]["published"]).strftime("%b %d, %Y")
+					to
+					%a{ :href => "http://last.fm/" } Last.fm

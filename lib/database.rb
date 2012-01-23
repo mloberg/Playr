@@ -97,6 +97,12 @@ class SongQueue
 	property :created_at, DateTime
 	
 	belongs_to :song, :key => true
+
+	def self.in_queue(song)
+		q = all(:song => song)
+		return false if q.empty?
+		true
+	end
 end
 
 class Vote
@@ -129,6 +135,16 @@ class Vote
 			song.adjust!(:vote => -20)
 			create(:user => user, :song => song)
 		end
+	end
+
+	def self.song(song)
+		all(:song => song, :like => true)
+	end
+
+	def self.likes(sid, uid)
+		l = get(sid, uid)
+		return nil unless l
+		l.like
 	end
 end
 
