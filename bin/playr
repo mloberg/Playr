@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+case ARGV[0]
+when 'start'
+	# start music
+	# start web
+when 'stop'
+
+else
+
+end

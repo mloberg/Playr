@@ -1,3 +1,5 @@
+require "socket"
+
 module Playr
 	class App < Sinatra::Base
 		set(:auth) do |value|
@@ -14,6 +16,12 @@ module Playr
 
 		def api_response(resp)
 			resp.to_json
+		end
+
+		def api_request(*args)
+			s = TCPSocket.open('localhost', 2009)
+			s.puts args.join(":")
+			s.close
 		end
 
 		get "/api/info" do
@@ -66,10 +74,6 @@ module Playr
 			
 		end
 		
-		post "/api/queue" do # auth
-		
-		end
-		
 		post "/api/like", :auth => true do
 			return error_response "Missing data" unless params[:song]
 			Vote.up(params[:song], @user.id)
@@ -82,8 +86,8 @@ module Playr
 			{ :success => true, :message => "Disliked song" }.to_json
 		end
 		
-		post "/api/play" do # auth
-		
+		post "/api/play", :auth => true do
+			api_request("play")
 		end
 		
 		post "/api/pause" do # auth

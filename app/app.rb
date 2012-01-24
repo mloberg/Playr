@@ -19,7 +19,6 @@ require './lib/lastfm'
 
 module Playr
 	class App < Sinatra::Base
-		
 		dir = File.dirname(File.expand_path(__FILE__))
 		set :views, "#{dir}/../views"
 		set :public_folder, "#{dir}/../public"

@@ -4,6 +4,8 @@
 		%p
 			%a{ :class => "btn success", :id => "play", :href => "#" } Start Queue
 .row
+	
+.row
 	- @queue.each do |q|
 		%div{ :class => "span8 queue", :id => "song-#{q.song.id}" }
 			%h3
