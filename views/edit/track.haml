@@ -1,0 +1,31 @@
+.row
+	%div{ :class => "span7 offset4" }
+		%form{ :action => "/track/#{@song.id}", :method => "post" }
+			.clearfix
+				%label{ :for => "title" } Title
+				.input
+					%input{ :type => "text", :name => "title", :id => "title", :value => "#{@song.title}" }
+			.clearfix
+				%label{ :for => "artist" } Artist
+				.input
+					%input{ :type => "text", :name => "artist", :id => "artist", :value => "#{@song.artist}" }
+			.clearfix
+				%label{ :for => "album" } Album
+				.input
+					%input{ :type => "text", :name => "album", :id => "album", :value => "#{@song.album}" }
+			.clearfix
+				%label{ :for => "tracknum" } Track Number
+				.input
+					%input{ :type => "text", :name => "tracknum", :id => "tracknum", :value => "#{@song.tracknum}" }
+			.clearfix
+				%label{ :for => "genre" } Genre
+				.input
+					%input{ :type => "text", :name => "genre", :id => "genre", :value => "#{@song.genre}" }
+			.clearfix
+				%label{ :for => "year" } Year
+				.input
+					%input{ :type => "text", :name => "year", :id => "year", :value => "#{@song.year}" }
+			.clearfix
+				.input
+					%input{ :class => "btn primary", :type => "submit", :value => "Save Changes" }
+					%input{ :class => "btn", :type => "button", :value => "Cancel", :onclick => "javascript:window.location.href = '/track/#{@song.id}'" }

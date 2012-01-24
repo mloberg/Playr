@@ -1,5 +1,13 @@
 module Playr
 	class App < Sinatra::Base
+		set(:auth) do |value|
+			condition do
+				unless @auth and @auth.is_valid?
+					return error_response "Must be logged in!"
+				end
+			end
+		end
+
 		def error_response(msg)
 			{ :error => true, :message => msg }.to_json
 		end
@@ -55,19 +63,23 @@ module Playr
 		end
 		
 		get "/api/volume" do
-		
+			
 		end
 		
 		post "/api/queue" do # auth
 		
 		end
 		
-		post "/api/like" do # auth
-		
+		post "/api/like", :auth => true do
+			return error_response "Missing data" unless params[:song]
+			Vote.up(params[:song], @user.id)
+			{ :success => true, :message => "Liked song" }.to_json
 		end
 		
-		post "/api/dislike" do # auth
-		
+		post "/api/dislike", :auth => true do
+			return error_response "Missing data" unless params[:song]
+			Vote.down(params[:song], @user.id)
+			{ :success => true, :message => "Disliked song" }.to_json
 		end
 		
 		post "/api/play" do # auth
@@ -87,16 +99,6 @@ module Playr
 		end
 		
 		post "/api/volume" do # auth
-			
-		end
-		
-		# Edit/Delete tracks
-		
-		put "/api/track" do # auth
-		
-		end
-		
-		delete "/api/track" do # auth
 			
 		end
 	end

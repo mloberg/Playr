@@ -228,7 +228,10 @@ module Playr
 		end
 
 		get "/track/:id/edit", :auth => true do
-			
+			@song = Song.get(params[:id])
+			halt 404, "track not found!" unless @song
+			@title = "Edit #{@song.title}"
+			haml :'edit/track'
 		end
 
 		post "/track/:id", :auth => true do
