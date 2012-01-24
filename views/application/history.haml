@@ -1,0 +1,15 @@
+#content
+	.row
+		%div{ :class => "span15 offset1" }
+			%ul{ :class => "media-grid grid", :id => "history" }
+				- @history.each do |h|
+					%li
+						%a{ :class => "thumbnail album", :href => "/track/#{h.song.id}" }
+							%img{ :src => "#{artwork(h.song.album, h.song.artist)}", :alt => "#{h.song.album}" }
+							#{h.song.title} by #{h.song.artist}
+	.row
+		.span16
+			- if @page != 1
+				%a{ :class => "prev-page pull-left btn", :'data-page' => "#{@page - 1}", :href => "#" } &laquo; Previous
+			- if @total > @page * @per_page
+				%a{ :class => "next-page pull-right btn", :'data-page' => "#{@page + 1}", :href => "#" } Next &raquo;

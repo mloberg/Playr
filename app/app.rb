@@ -78,6 +78,16 @@ module Playr
 				hash = Digest::MD5.hexdigest(email.downcase)
 				"http://www.gravatar.com/avatar/#{hash}?s=#{size}&d=mm"
 			end
+			def artwork(album, artist)
+				image = nil
+				@lfm.album(album, artist)["image"].each do |i|
+					if image == nil and i['#text'] =~ /\d{3}.?\/\d+\.(png|jpg)$/
+						image = i['#text']
+					end
+				end
+				return 'http://placehold.it/174&text=No+Artwork+Found' if image == nil
+				image
+			end
 		end
 		
 		############
@@ -105,7 +115,59 @@ module Playr
 			@js = "var browse = new Browse();"
 			haml :'browse/all'
 		end
+
+		###################
+		## Queue/History ##
+		###################
+
+		get "/history", :auth => true do
+			@title = "History"
+			@js = "app.history();"
+			@total = History.count
+			@page = params[:page] ? params[:page].to_i : 1
+			@per_page = 20
+			@history = History.all(:order => [:played_at.desc], :limit => @per_page, :offset => ((@page - 1) * @per_page))
+			return haml :'application/history', :layout => false if params[:ajax]
+			haml :'application/history'
+		end
+
+		get "/queue", :auth => true do
+			@title = "Queue"
+			@queue = SongQueue.all(:order => [:created_at.asc])
+			haml :'application/queue'
+		end
+
+		put "/queue", :auth => true do
+			return { :error => true, :message => "Missing data" }.to_json unless params[:id]
+			return { :error => true, :message => "Song already in queue" }.to_json if SongQueue.in_queue(params[:id])
+			s = Song.get(params[:id])
+			return { :error => true, :message => "Song doesn't exist" }.to_json unless s
+			q = SongQueue.new
+			q.attributes = {
+				:song => s,
+				:added_by => @user,
+				:created_at => Time.now
+			}
+			if q.save
+				{ :success => true, :message => "Song added to queue" }.to_json
+			else
+				{ :error => true, :message => "Could not add song to queue" }.to_json
+			end
+		end
+
+		delete "/queue", :auth => true do
+			q = SongQueue.first(:song => Song.get(params[:id]))
+			if q.destroy
+				{ :success => true }.to_json
+			else
+				{ :error => true, :message => "Could not remove track from queue" }.to_json
+			end
+		end
 		
+		############
+		## Browse ##
+		############
+
 		get "/browse/artists", :auth => true do
 			@title = "Artists"
 			@js = "app.artists();"

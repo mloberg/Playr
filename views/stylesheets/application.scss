@@ -47,15 +47,35 @@ body {
 }
 
 /* Queue */
-.queue, .now-playing, .search {
+.queue {
+	border-radius: 3px;
+	margin-bottom: 10px;
+	h3 {
+		margin-left: 20px;
+	}
+	img {
+		border: 1px solid #eee;
+		box-shadow: 0 0 5px #000;
+		margin: 0 0 10px 20px;
+	}
+}
+.paused {
+	margin-bottom: 30px;
+	h2, p {
+		margin-bottom: 5px;
+		text-align: center;
+	}
+}
+
+.now-playing, .search {
 	border: 1px solid #000;
 	border-radius: 3px;
 	margin-bottom: 10px;
 }
-.queue h3, .search {
+.search {
 	margin-left: 20px;
 }
-.queue img, .now-playing img, .search img {
+.now-playing img, .search img {
 	border: 1px solid #eee;
 	box-shadow: 0 0 5px #000;
 	margin: 0 0 10px 20px;
@@ -63,13 +83,6 @@ body {
 .now-playing {
 	box-shadow: 0 0 10px #000;
 	margin-bottom: 15px;
-}
-.paused {
-	margin-bottom: 30px;
-}
-.paused h2, .paused p, .now-playing h2 {
-	text-align: center;
-	margin-bottom: 5px;
 }
 .now-playing h3 {
 	margin-top: -14px;
@@ -85,11 +98,6 @@ body {
 }
 .search h3 small a {
 	color: #BFBFBF;
-}
-
-/* Info Pages */
-.artist-image {
-	text-align: center;
 }
 
 /* List */
@@ -187,7 +195,7 @@ body {
 	margin-right: 7px;
 }
 .qq-upload-spinner {
-	background: url("../images/loading.gif");
+	background: url("images/loading.gif");
 	display: inline-block;
 	height: 15px;
 	vertical-align: text-bottom;

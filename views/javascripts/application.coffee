@@ -69,7 +69,7 @@ class @Playr
 				}
 	controls: ->
 		null
-	queue: (id) ->
+	addToQueue: (id) ->
 		request = Request.JSON {
 			method: "post",
 			url: "/queue",
@@ -82,16 +82,40 @@ class @Playr
 				else
 					humane.success "Song added to queue"
 		}
+	queue: ->
+		$("play").addEvent "click", (e) ->
+			
+		$("next").addEvent "click", (e) ->
+			
+		$$(".skip").addEvent "click", (e) ->
+			that = this
+			request = new Request.JSON {
+				method: "post",
+				url: "/queue",
+				data: {
+					_method: "delete",
+					id: that.get "data-song"
+				},
+				onComplete: (resp) ->
+					# hide skipped song
+			}
+	history: ->
+		self = this
+		window.history.pushState { "html": $("content").get("html"), "pageTitle": document.title, "first": true }, "", window.location.pathname
+		callback = ->
+			self._grid "history", 4
+			self.paginate callback
+		callback()
 	artists: ->
 		self = this
-		window.history.pushState { "html": $("content").get("html"), "pageTitle": document.title }, "", window.location.pathname
+		window.history.pushState { "html": $("content").get("html"), "pageTitle": document.title, "first": true }, "", window.location.pathname
 		callback = ->
 			self._grid "artists", 5
 			self.paginate callback
 		callback()
 	albums: ->
 		self = this
-		window.history.pushState { "html": $("content").get("html"), "pageTitle": document.title }, "", window.location.pathname
+		window.history.pushState { "html": $("content").get("html"), "pageTitle": document.title, "first": true }, "", window.location.pathname
 		callback = ->
 			self._grid "albums", 4
 			self.paginate callback
@@ -127,7 +151,7 @@ class @Playr
 			$("queue_up").addEvent "click", (e) ->
 				e.preventDefault()
 				if confirm "Add this song to the queue?"
-					self.queue id
+					self.addToQueue id
 	paginate: (callback) ->
 		self = this
 		url = window.location.pathname
@@ -172,6 +196,8 @@ class @Playr
 			if e.state
 				$("content").set "html", e.state.html
 				callback()
+				if e.state.first is true
+					window.history.back()
 	_grid: (grid, width) ->
 		items = []
 		bottom = 0
@@ -302,6 +328,7 @@ class @Browse
 		self = this
 		$$(".song").addEvent "click", (e) ->
 			self.currentStep = "song"
+			that = this
 			if confirm "Add this song to the queue?"
 				e.preventDefault()
-				# add song to queue
+				Playr.addToQueue that.get "id"

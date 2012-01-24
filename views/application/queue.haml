@@ -1,0 +1,42 @@
+%div{ :class => "row paused" }
+	.span16
+		%h2 Playr is Stopped
+		%p
+			%a{ :class => "btn success", :id => "play", :href => "#" } Start Queue
+.row
+	- @queue.each do |q|
+		%div{ :class => "span8 queue", :id => "song-#{q.song.id}" }
+			%h3
+				= q.song.title
+				%small
+					by
+					= q.song.artist
+			.row
+				.span4
+					%img{ :src => "#{artwork(q.song.album, q.song.artist)}", :alt => "#{q.song.album}" }
+				.span4
+					%p
+						%strong Song:
+						%a{ :href => "/track/#{q.song.id}" }= q.song.title
+						%br
+						%strong Artist:
+						%a{ :href => "/artist/#{uri_encode(q.song.artist)}" }= q.song.artist
+						%br
+						%strong Album:
+						%a{ :href => "/album/#{uri_encode(q.song.album)}/#{uri_encode(q.song.artist)}" }= q.song.album
+						%br
+						%strong Plays:
+						= q.song.plays
+						%br
+						%strong Likes:
+						= Vote.song(q.song).size
+					%p{ :class => "buttons" }
+						- if Vote.likes(q.song.id, @user.id)
+							%a{ :class => "like btn success disabled", :'data-song' => "#{q.song.id}" } Like
+						- else
+							%a{ :class => "like btn success", :'data-song' => "#{q.song.id}" } Like
+						- if Vote.likes(q.song.id, @user.id) == false
+							%a{ :class => "dislike btn danger disabled", :'data-song' => "#{q.song.id}" } Dislike
+						- else
+							%a{ :class => "dislike btn danger", :'data-song' => "#{q.song.id}" } Dislike
+						%a{ :class => "btn skip", :'data-song' => "#{q.song.id}" } Don't Play
