@@ -148,7 +148,7 @@ module Playr
 			q = SongQueue.new
 			q.attributes = {
 				:song => s,
-				:added_by => @user,
+				:added_by => @user.id,
 				:created_at => Time.now
 			}
 			if q.save

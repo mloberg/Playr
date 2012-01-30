@@ -40,7 +40,7 @@ when 'pause'
 		start_pause
 	end
 when 'skip'
-	if Playr::Worker.paused?
+	unless Playr::Worker.paused?
 		kill_afplay
 	end
 when 'volume'

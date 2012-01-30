@@ -58,9 +58,9 @@
 					%a{ :class => "btn", :href => "/track/#{@song.id}/edit" } Edit
 					%a{ :class => "btn danger", :id => "delete", :href => "#" } Delete
 					- if @queued
-						%a{ :class => "btn success disabled", :id => "queue-up", :href => "#" } Add To Queue
+						%a{ :class => "btn success disabled", :href => "#" } Add To Queue
 					- else
-						%a{ :class => "btn success", :id => "queue-up", :href => "#" } Add To Queue
+						%a{ :class => "btn success queue-up", :id => "#{@song.id}", :href => "#" } Add To Queue
 .row
 	.span16
 		%h4 Likes

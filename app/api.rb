@@ -28,13 +28,13 @@ module Playr
 			case params[:method]
 				when 'artist'
 					return error_response "Missing artist." unless params[:artist]
-					api_response @info.artist(params[:artist])
+					api_response @lfm.artist(params[:artist])
 				when 'album'
 					return error_response "Missing album and artist." unless params[:artist] and params[:album]
-					api_response @info.album(params[:album], params[:artist])
+					api_response @lfm.album(params[:album], params[:artist])
 				when 'track'
 					return error_response "Missing track and artist." unless params[:artist] and params[:track]
-					api_response @info.track(params[:track], params[:artist])
+					api_response @lfm.track(params[:track], params[:artist])
 				else
 					error_response "Missing parameters"
 			end

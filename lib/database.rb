@@ -38,6 +38,7 @@ class Song
 	property :plays, Integer, :default => 0
 	property :created_at, DateTime
 	property :updated_at, DateTime
+	property :last_played, DateTime
 	
 	has n, :votes
 	has n, :songQueues

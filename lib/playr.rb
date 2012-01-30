@@ -12,24 +12,25 @@ def quit_process
 	Process.exit!
 end
 
+Signal.trap("QUIT") do # god stop
+	`killall afplay > /dev/null 2>&1`
+	quit_process
+end
+Signal.trap("USR2") do # god restart
+	quit_process
+end
+
 # auto-play thread
 loop do
-	Signal.trap("QUIT") do # god stop
-		`killall afplay > /dev/null 2>&1`
-		quit_process
-	end
-	Signal.trap("USR2") do # god restart
-		quit_process
-	end
 	if Playr::Worker.playing? or Playr::Worker.paused?
 		sleep(1)
 	else
-		queued = SongQueue.first
+		queued = SongQueue.first(:order => [:created_at.asc])
 		if queued
 			song = queued.song
 			queued.destroy
 		else
-			sql = "SELECT `id` FROM `songs` AS r1 JOIN(SELECT ROUND(RAND() * (SELECT MAX(id) FROM `songs`)) AS 'tmpid') AS r2 WHERE r1.id >= r2.tmpid AND vote > 300"
+			sql = "SELECT `id` FROM `songs` AS r1 JOIN(SELECT ROUND(RAND() * (SELECT MAX(id) FROM `songs`)) AS 'tmpid') AS r2 WHERE r1.id >= r2.tmpid AND r1.vote > 300 AND (r1.last_played > '#{Time.now - 86400}' OR r1.last_played is null)"
 			# no christmas music
 			time = Time.new
 			week = ((time.day - (time.wday + 1)) / 7) + 1
@@ -42,12 +43,14 @@ loop do
 		end
 
 		if song
-			History.create(:song => song, :played_at => Time.now)
-			# update websocket
-			# update Last.fm
 			song_path = song.path.to_s
 			path = APP_DIR + song_path[1..song_path.length]
 			Thread.new{ system("afplay -q 1 '#{path}'") }
+			History.create(:song => song, :played_at => Time.now)
+			song.update(:last_played => Time.now)
+			song.adjust!(:plays => 1)
+			# update websocket
+			# update Last.fm
 		else
 			sleep(1)
 		end

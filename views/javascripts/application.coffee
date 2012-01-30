@@ -19,10 +19,26 @@ getParameterByName = (name) ->
 	if results isnt null
 		return decodeURIComponent(results[1].replace(/\+/g, " "))
 	null
-
+addToQueue = (id) ->
+	request = new Request.JSON {
+		method: "post",
+		url: "/queue",
+		data: {
+			id: id,
+			_method: "put"
+		},
+		onComplete: (resp) ->
+			if resp.error
+				humane.error resp.message
+			else
+				humane.success "Song added to queue"
+	}
+	request.send()
+	
 class @Playr
 	constructor: ->
 		this.voting()
+		this.controls()
 		$$(".dropdown-toggle").addEvent "click", (e) ->
 			e.preventDefault()
 			this.getParent("li").toggleClass "open"
@@ -68,20 +84,10 @@ class @Playr
 						that.addClass "disabled"
 				}
 	controls: ->
-		null
-	addToQueue: (id) ->
-		request = Request.JSON {
-			method: "post",
-			url: "/queue",
-			data: {
-				id: id
-			},
-			onComplete: (resp) ->
-				if resp.error
-					humane.error resp.message
-				else
-					humane.success "Song added to queue"
-		}
+		$$(".queue-up").addEvent "click", (e) ->
+			e.preventDefault()
+			addToQueue this.get "id"
+			this.addClass "disabled"
 	queue: ->
 		# $("play").addEvent "click", (e) ->
 			
@@ -323,8 +329,7 @@ class @Browse
 						unless song.tracknum is null
 							text = song.tracknum + ": " + text
 						$("song-list").adopt(new Element "li", {
-							id: song.id,
-							html: "<a class=\"song\" href=\"/track/#{song.id}\">#{text}</a>"
+							html: "<a id=\"#{song.id}\" class=\"song\" href=\"/track/#{song.id}\">#{text}</a>"
 						})
 					self.song()
 			}
@@ -337,4 +342,4 @@ class @Browse
 			that = this
 			if confirm "Add this song to the queue?"
 				e.preventDefault()
-				Playr.addToQueue that.get "id"
+				addToQueue that.get "id"

@@ -1,16 +1,11 @@
 .row
-	- if Playr::Worker.paused?
-		%div{ :class => "span16 paused" }
-			%h2 Playr is Stopped
-			%p
-				%a{ :class => "btn success", :id => "play", :href => "#" } Start Queue
-	- elsif @playing
+	- if @playing
 		%div{ :class => "span16 now-playing" }
 			%h2 Now Playing
 			.row
 				%div{ :class => "span4 offset4" }
 					%img{ :src => "#{artwork(@playing.album, @playing.artist)}", :alt => "" }
-				.span6
+				.span8
 					%h3
 						= @playing.title
 						%small
@@ -41,6 +36,11 @@
 						- else
 							%a{ :class => "dislike btn danger", :'data-song' => "#{@playing.id}" } Dislike
 						%a{ :class => "btn", :id => "play-next" } Next
+	- else
+		%div{ :class => "span16 paused" }
+			%h2 Playr is Stopped
+			%p
+				%a{ :class => "btn success", :id => "play", :href => "#" } Start Queue
 .row
 	- @queue.each do |q|
 		%div{ :class => "span8 queue", :id => "song-#{q.song.id}" }
