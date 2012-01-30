@@ -1,7 +1,8 @@
+$: << File.expand_path(File.dirname(__FILE__) + '/../')
 require 'data_mapper'
 require 'dm-adjust'
 require 'dm-aggregates'
-require './lib/auth'
+require 'lib/auth'
 
 DataMapper::setup(:default, {
 	:adapter => 'mysql',

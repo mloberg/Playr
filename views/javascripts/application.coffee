@@ -83,22 +83,28 @@ class @Playr
 					humane.success "Song added to queue"
 		}
 	queue: ->
-		$("play").addEvent "click", (e) ->
+		# $("play").addEvent "click", (e) ->
 			
-		$("next").addEvent "click", (e) ->
+		# $("next").addEvent "click", (e) ->
 			
 		$$(".skip").addEvent "click", (e) ->
 			that = this
+			sid = that.get "data-song"
 			request = new Request.JSON {
 				method: "post",
 				url: "/queue",
 				data: {
 					_method: "delete",
-					id: that.get "data-song"
+					id: sid
 				},
 				onComplete: (resp) ->
 					# hide skipped song
+					$("song-#{sid}").fade "out"
+					setTimeout ->
+						$("song-#{sid}").destroy()
+					, 500
 			}
+			request.send()
 	history: ->
 		self = this
 		window.history.pushState { "html": $("content").get("html"), "pageTitle": document.title, "first": true }, "", window.location.pathname

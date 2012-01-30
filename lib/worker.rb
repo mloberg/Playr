@@ -1,5 +1,3 @@
-APP_DIR = File.expand_path(File.dirname(__FILE__) + '/../')
-
 module Playr
 	class Worker
 

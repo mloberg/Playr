@@ -132,6 +132,7 @@ module Playr
 
 		get "/queue", :auth => true do
 			@title = "Queue"
+			@js = "app.queue();"
 			@queue = SongQueue.all(:order => [:created_at.asc])
 			if Playr::Worker.playing?
 				@playing = History.last.song

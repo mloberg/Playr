@@ -57,6 +57,8 @@ God.watch do |w|
 	
 	w.start_grace = 10.seconds
 	w.restart_grace = 10.seconds
+	w.pid_file = "#{APP_DIR}/tmp/music.pid"
+	w.behavior(:clean_pid_file)
 
 	w.start_if do |start|
 		start.condition(:process_running) do |c|

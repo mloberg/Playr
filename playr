@@ -4,8 +4,10 @@ APP_DIR = File.expand_path(File.dirname(__FILE__))
 
 require "./lib/worker"
 
-# make sure god is running
-`god -c #{APP_DIR}/playr.god`
+if `ps aux | grep god | grep -v grep | wc -l | tr -d ' '`.chomp == "0"
+	# make sure god is running
+	`god -c #{APP_DIR}/playr.god`
+end
 
 def start_pause
 	`touch #{APP_DIR}/tmp/pause`
