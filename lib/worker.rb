@@ -1,4 +1,4 @@
-dir = File.expand_path(File.dirname(__FILE__) + '/../')
+APP_DIR = File.expand_path(File.dirname(__FILE__) + '/../')
 
 module Playr
 	class Worker
@@ -8,7 +8,7 @@ module Playr
 		end
 
 		def self.paused?
-			File.exists?("#{dir}/tmp/pause")
+			File.exists?("#{APP_DIR}/tmp/pause")
 		end
 
 		def self.volume

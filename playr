@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+
+APP_DIR = File.expand_path(File.dirname(__FILE__))
+
+require "./lib/worker"
+
+# make sure god is running
+`god -c #{APP_DIR}/playr.god`
+
+def start_pause
+	`touch #{APP_DIR}/tmp/pause`
+	kill_afplay
+end
+def kill_afplay
+	`killall afplay > /dev/null 2>&1`
+end
+def stop_pause
+	`rm -f #{APP_DIR}/tmp/pause`
+end
+
+case ARGV[0]
+when 'start'
+	`god start playr`
+when 'stop'
+	start_pause
+	`god stop playr`
+	stop_pause
+when 'restart'
+	`god restart playr`
+when 'play'
+	if Playr::Worker.paused?
+		stop_pause
+	end
+when 'pause'
+	if Playr::Worker.paused?
+		stop_pause
+	else
+		start_pause
+	end
+when 'skip'
+	if Playr::Worker.paused?
+		kill_afplay
+	end
+when 'volume'
+	volume = ARGV[1]
+	if volume.to_i != 0
+		system("osascript -e 'set volume output volume #{volume}' 2>/dev/null")
+	end
+else
+	puts "playr >>"
+	puts ""
+	puts "USAGE:    playr [command]"
+	puts "COMMANDS: "
+	puts "          start   - starts web and music servers."
+	puts "          stop    - stops web and music servers."
+	puts "          restart - restart web and music servers."
+	puts "          play    - unpause music server."
+	puts "          pause   - pauses music server."
+	puts "          skip    - skip current song."
+	puts "          volume  - set the system volume. Requires one argument."
+end

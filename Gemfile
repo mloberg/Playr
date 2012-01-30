@@ -4,6 +4,7 @@ gem "rack", "1.3.5"
 gem "sinatra"
 gem "rack-flash"
 gem "unicorn"
+gem "god"
 
 gem "mysql2"
 gem "data_mapper"

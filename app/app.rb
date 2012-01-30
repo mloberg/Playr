@@ -16,6 +16,7 @@ require './lib/database'
 require './lib/auth'
 require './lib/aacinfo'
 require './lib/lastfm'
+require './lib/worker'
 
 module Playr
 	class App < Sinatra::Base
@@ -70,7 +71,6 @@ module Playr
 				return URI.encode(string)
 			end
 			def uri_decode(string)
-				#URI.unescape(string)
 				return URI.decode(string)
 			end
 			def gravatar(email, size = 80)
@@ -133,6 +133,9 @@ module Playr
 		get "/queue", :auth => true do
 			@title = "Queue"
 			@queue = SongQueue.all(:order => [:created_at.asc])
+			if Playr::Worker.playing?
+				@playing = History.last.song
+			end
 			haml :'application/queue'
 		end
 

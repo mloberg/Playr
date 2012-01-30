@@ -59,14 +59,31 @@ body {
 		margin: 0 0 10px 20px;
 	}
 }
-.paused {
+.paused, .now-playing {
+	border-bottom: 1px solid #ddd;
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 	margin-bottom: 30px;
 	h2, p {
 		margin-bottom: 5px;
+	}
+	h2 {
 		text-align: center;
 	}
 }
+.paused {
+	p {
+		text-align: center;
+	}
+}
+.now-playing {
+	img {
+		border: 1px solid #eee;
+		box-shadow: 0 0 5px #000;
+		margin: 0 0 10px 20px;
+	}
+}
 
+/*
 .now-playing, .search {
 	border: 1px solid #000;
 	border-radius: 3px;
@@ -87,6 +104,7 @@ body {
 .now-playing h3 {
 	margin-top: -14px;
 }
+*/
 
 /* Search */
 .search {

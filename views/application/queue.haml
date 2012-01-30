@@ -1,10 +1,46 @@
-%div{ :class => "row paused" }
-	.span16
-		%h2 Playr is Stopped
-		%p
-			%a{ :class => "btn success", :id => "play", :href => "#" } Start Queue
 .row
-	
+	- if Playr::Worker.paused?
+		%div{ :class => "span16 paused" }
+			%h2 Playr is Stopped
+			%p
+				%a{ :class => "btn success", :id => "play", :href => "#" } Start Queue
+	- elsif @playing
+		%div{ :class => "span16 now-playing" }
+			%h2 Now Playing
+			.row
+				%div{ :class => "span4 offset4" }
+					%img{ :src => "#{artwork(@playing.album, @playing.artist)}", :alt => "" }
+				.span6
+					%h3
+						= @playing.title
+						%small
+							by
+							%a{ :href => "/artist/#{uri_encode(@playing.artist)}" }= @playing.artist
+					%p
+						%strong Album:
+						%a{ :href => "/album/#{uri_encode(@playing.album)}/#{uri_encode(@playing.artist)}" }= @playing.album
+						%br
+						%strong Year:
+						= @playing.year
+						%br
+						%strong Genre:
+						= @playing.genre
+						%br
+						%strong Plays:
+						= @playing.plays
+						%br
+						%strong Likes:
+						= Vote.song(@playing).size
+					%p
+						- if Vote.likes(@playing.id, @user.id)
+							%a{ :class => "like btn success disabled", :'data-song' => "#{@playing.id}" } Like
+						- else
+							%a{ :class => "like btn success", :'data-song' => "#{@playing.id}" } Like
+						- if Vote.likes(@playing.id, @user.id) == false
+							%a{ :class => "dislike btn danger disabled", :'data-song' => "#{@playing.id}" } Dislike
+						- else
+							%a{ :class => "dislike btn danger", :'data-song' => "#{@playing.id}" } Dislike
+						%a{ :class => "btn", :id => "play-next" } Next
 .row
 	- @queue.each do |q|
 		%div{ :class => "span8 queue", :id => "song-#{q.song.id}" }
