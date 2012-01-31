@@ -11,7 +11,7 @@ module Playr
 		default_params :format => 'json'
 		format :json
 		
-		def initialize(options, redis)
+		def initialize(options, redis = nil)
 			@options = options
 			@redis = redis
 			self.class.default_params :api_key => @options['api_key']

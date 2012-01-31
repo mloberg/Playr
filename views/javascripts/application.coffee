@@ -39,11 +39,18 @@ class @Playr
 	constructor: (options) ->
 		this.voting()
 		this.controls(options.volume)
+		this.socket()
 		$$(".dropdown-toggle").addEvent "click", (e) ->
 			e.preventDefault()
 			this.getParent("li").toggleClass "open"
 	socket: ->
-		null
+		`WEB_SOCKET_SWF_LOCATION = "/WebSocketMain.swf"`
+		ws = new WebSocket "ws://#{window.location.hostname}:10081/"
+		ws.onmessage = (e) ->
+			humane.timeout = 5000
+			humane.info e.data
+			humane.timeout = 2500
+			# update queue and home page
 	upload: ->
 		uploader = new qq.FileUploader({
 			element: $("file-uploader"),

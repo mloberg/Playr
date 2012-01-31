@@ -1,22 +1,22 @@
-require 'sinatra/base'
-require 'redis'
-require 'rack-flash'
-require 'fileutils'
-require 'uri'
-require 'json'
-require 'digest'
-require 'yaml'
-require 'mp3info'
-require 'haml'
-require 'sass'
-require 'coffee-script'
+require "sinatra/base"
+require "redis"
+require "rack-flash"
+require "fileutils"
+require "uri"
+require "json"
+require "digest"
+require "yaml"
+require "mp3info"
+require "haml"
+require "sass"
+require "coffee-script"
 
-require './app/api'
-require './lib/database'
-require './lib/auth'
-require './lib/aacinfo'
-require './lib/lastfm'
-require './lib/worker'
+require "./app/api"
+require "./lib/database"
+require "./lib/auth"
+require "./lib/aacinfo"
+require "./lib/lastfm"
+require "./lib/worker"
 
 module Playr
 	class App < Sinatra::Base
@@ -61,7 +61,7 @@ module Playr
 				@user = User.get(session[:user_id])
 				@auth = Auth.new(@user.password, @user.secret, session, request.env)
 			end
-			@config = YAML.load_file("#{APP_DIR}/config.yml")
+			@config = YAML.load_file("#{APP_DIR}/config/config.yml")
 			@redis = Redis.new(:host => @config['redis']['host'], :port => @config['redis']['port'])
 			@lfm = Playr::Lastfm.new(@config['lastfm'], @redis)
 			@volume = Playr::Worker.volume

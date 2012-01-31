@@ -2,6 +2,10 @@ APP_DIR = File.expand_path(File.dirname(__FILE__) + '/../')
 $: << APP_DIR
 require "lib/database"
 require "lib/worker"
+require "lib/lastfm"
+require "lib/web_socket"
+require "yaml"
+require "json"
 
 `rm -f #{APP_DIR}/tmp/music.pid`
 File.open("#{APP_DIR}/tmp/music.pid", "w") do |file|
@@ -15,11 +19,16 @@ end
 
 Signal.trap("QUIT") do # god stop
 	`killall afplay`
+	`rm -f #{APP_DIR}/tmp/pause`
 	quit_process
 end
 Signal.trap("USR2") do # god restart
 	quit_process
 end
+
+config = YAML.load_file("#{APP_DIR}/config/config.yml")
+
+lastfm = Playr::Lastfm.new(config['lastfm'])
 
 # auto-play thread
 loop do
@@ -47,8 +56,16 @@ loop do
 			History.create(:song => song, :played_at => Time.now)
 			song.update(:last_played => Time.now)
 			song.adjust!(:plays => 1)
-			# update websocket
-			# update Last.fm
+			update = WebSocket.new("ws://127.0.0.1:10081/update?key=#{config["ws_key"]}")
+			update.send(song.to_h.to_json)
+			update.close
+			unless config['lastfm']['session'].empty?
+				lastfm.update({
+					:album => song.album,
+					:track => song.title,
+					:artist => song.artist
+				})
+			end
 			song_path = song.path.to_s
 			path = APP_DIR + song_path[1..song_path.length]
 			system("afplay -q 1 '#{path}'")

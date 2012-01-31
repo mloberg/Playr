@@ -1,0 +1,8 @@
+lastfm:
+  api_key: 
+  secret: 
+  session: 
+redis:
+  host: 127.0.0.1
+  port: 6379
+ws_key: r@nd0mChaR@cT3r$

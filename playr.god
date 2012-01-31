@@ -65,7 +65,17 @@ God.watch do |w|
 	monitoring(w, :cpu_limit => 50.percent, :memory_limit => 300.megabytes)
 end
 
-# God.watch do |w|
-# 	w.name = "playr_socket"
-# 	w.group = "playr"
-# end
+God.watch do |w|
+	w.name = "playr-ws"
+	w.group = "playr"
+	w.interval = 30.seconds
+
+	w.start = "ruby #{APP_DIR}/lib/server.rb"
+	w.stop = "kill -QUIT `cat #{APP_DIR}/tmp/ws.pid`"
+	w.restart = "kill -USR2 `cat #{APP_DIR}/tmp/ws.pid`"
+	
+	w.start_grace = 10.seconds
+	w.restart_grace = 10.seconds
+
+	monitoring(w, :cpu_limit => 50.percent, :memory_limit => 150.megabytes)
+end
