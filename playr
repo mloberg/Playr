@@ -4,11 +4,6 @@ APP_DIR = File.expand_path(File.dirname(__FILE__))
 
 require "./lib/worker"
 
-if `ps aux | grep god | grep -v grep | wc -l | tr -d ' '`.chomp == "0"
-	# make sure god is running
-	`god -c #{APP_DIR}/playr.god`
-end
-
 def start_pause
 	`touch #{APP_DIR}/tmp/pause`
 	kill_afplay
@@ -22,6 +17,10 @@ end
 
 case ARGV[0]
 when 'start'
+	if `ps aux | grep god | grep -v grep | wc -l | tr -d ' '`.chomp == "0"
+		# make sure god is running
+		`god -c #{APP_DIR}/playr.god`
+	end
 	`god start playr`
 when 'stop'
 	start_pause
@@ -39,7 +38,7 @@ when 'pause'
 	else
 		start_pause
 	end
-when 'skip'
+when 'skip', 'next'
 	unless Playr::Worker.paused?
 		kill_afplay
 	end

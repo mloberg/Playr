@@ -38,7 +38,13 @@
 									%li
 										%a{ :href => "#", :id => "mute" }
 											Volume
-											%span{ :id => "volume-label" } #{@volume}
+											%span{ :id => "volume-label" }= @volume
+									- if @playing
+										%li
+											%a{ :href => "#", :class => "start-stop" } Stop
+									- else
+										%li
+											%a{ :href => "#", :class => "start-stop" } Play
 									%li{ :class => "divider" }
 									%li
 										%a{ :href => "/likes" } Likes
@@ -50,6 +56,7 @@
 					%h1 #{@title}
 				=yield
 		%script{ :src => "/js/mootools-core.js" }
+		%script{ :src => "/js/mootools-more.js" }
 		%script{ :src => "/js/humane.js" }
 		%script{ :src => "/js/fileuploader.js" }
 		%script{ :src => "/application.js" }
@@ -57,6 +64,8 @@
 			humane.clickToClose = true;
 			#{@flash}
 			window.addEvent("domready", function(){
-				var app = new Playr();
+				var app = new Playr({
+					volume: #{@volume}
+				});
 				#{@js}
 			});

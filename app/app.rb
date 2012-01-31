@@ -20,9 +20,9 @@ require './lib/worker'
 
 module Playr
 	class App < Sinatra::Base
-		dir = File.dirname(File.expand_path(__FILE__))
-		set :views, "#{dir}/../views"
-		set :public_folder, "#{dir}/../public"
+		APP_DIR = File.expand_path(File.dirname(__FILE__) + '/../')
+		set :views, "#{APP_DIR}/views"
+		set :public_folder, "#{APP_DIR}/public"
 		set :static, true
 		
 		enable :sessions
@@ -61,9 +61,12 @@ module Playr
 				@user = User.get(session[:user_id])
 				@auth = Auth.new(@user.password, @user.secret, session, request.env)
 			end
-			@config = YAML.load_file("#{dir}/../config.yml")
+			@config = YAML.load_file("#{APP_DIR}/config.yml")
 			@redis = Redis.new(:host => @config['redis']['host'], :port => @config['redis']['port'])
 			@lfm = Playr::Lastfm.new(@config['lastfm'], @redis)
+			@volume = Playr::Worker.volume
+			@playing = Playr::Worker.playing?
+			@paused = Playr::Worker.paused?
 		end
 
 		helpers do
@@ -135,7 +138,7 @@ module Playr
 			@js = "app.queue();"
 			@queue = SongQueue.all(:order => [:created_at.asc])
 			if Playr::Worker.playing?
-				@playing = History.last.song
+				@song = History.last.song
 			end
 			haml :'application/queue'
 		end

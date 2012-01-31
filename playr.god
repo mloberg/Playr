@@ -55,16 +55,14 @@ God.watch do |w|
 	w.group = "playr"
 	w.interval = 30.seconds
 
-	w.log = "#{APP_DIR}/tmp/music.log"
-
 	w.start = "ruby #{APP_DIR}/lib/playr.rb"
 	w.stop = "kill -QUIT `cat #{APP_DIR}/tmp/music.pid`"
 	w.restart = "kill -USR2 `cat #{APP_DIR}/tmp/music.pid`"
 	
 	w.start_grace = 20.seconds
-	w.restart_grace = 20.seconds
+	w.restart_grace = 10.seconds
 
-	monitoring(w, :cpu_limit => 50.percent, :memory_limit => 150.megabytes)
+	monitoring(w, :cpu_limit => 50.percent, :memory_limit => 300.megabytes)
 end
 
 # God.watch do |w|

@@ -36,9 +36,9 @@ addToQueue = (id) ->
 	request.send()
 	
 class @Playr
-	constructor: ->
+	constructor: (options) ->
 		this.voting()
-		this.controls()
+		this.controls(options.volume)
 		$$(".dropdown-toggle").addEvent "click", (e) ->
 			e.preventDefault()
 			this.getParent("li").toggleClass "open"
@@ -83,39 +83,102 @@ class @Playr
 							like.removeClass "disabled"
 						that.addClass "disabled"
 				}
-	controls: ->
+	controls: (volume) ->
+		if $("slider")
+			this.volume volume
 		$$(".queue-up").addEvent "click", (e) ->
 			e.preventDefault()
 			addToQueue this.get "id"
 			this.addClass "disabled"
-	queue: ->
-		# $("play").addEvent "click", (e) ->
-			
-		# $("next").addEvent "click", (e) ->
-			
-		$$(".skip").addEvent "click", (e) ->
+		$$(".play-next").addEvent "click", (e) ->
+			e.preventDefault()
+			if confirm "Are you sure?"
+				request = new Request {
+					method: "post",
+					url: "/api/next",
+					onComplete: (msg) ->
+						$$(".now-playing").fade "out"
+						setTimeout ->
+							$$(".now-playing").destroy()
+						, 500
+				}
+				request.send()
+		$$(".start-stop").addEvent "click", (e) ->
+			e.preventDefault()
 			that = this
-			sid = that.get "data-song"
+			if confirm "Are you sure?"
+				request = new Request.JSON {
+					method: "post",
+					url: "/api/start-stop",
+					onComplete: (resp) ->
+						if resp.success and that.get "text" is "Stop"
+							that.set "text", "Play"
+						else if resp.success
+							that.set "text", "Stop"
+				}
+				request.send()
+	volume: (volume) ->
+		requestRunning = false
+		volumeSlider = new Slider $("slider"), $("knob"), {
+			initialStep: volume,
+			onChange: (pos) ->
+				if pos != volume and requestRunning is false
+					requestRunning = true
+					req = new Request.JSON {
+						method: "post",
+						url: "/api/volume",
+						data: { level: pos },
+						onComplete: ->
+							requestRunning = false
+					}
+					req.send()
+				volume = pos
+				$("volume-label").set "html", pos
+			onComplete: (pos) ->
+				requestRunning = true
+				request = new Request.JSON {
+					method: "post",
+					url: "/api/volume",
+					data: { level: pos },
+					onComplete: ->
+						requestRunning = false
+				}
+				request.send()
+		}
+		$("mute").addEvent "click", (e) ->
+			e.preventDefault()
+			volumeSlider.set(0)
+	queue: ->
+		$$(".start-queue").addEvent "click", (e) ->
 			request = new Request.JSON {
 				method: "post",
-				url: "/queue",
-				data: {
-					_method: "delete",
-					id: sid
-				},
+				url: "/api/start-stop",
 				onComplete: (resp) ->
-					# hide skipped song
-					$("song-#{sid}").fade "out"
-					setTimeout ->
-						$("song-#{sid}").destroy()
-					, 500
+					if resp.success
+						that.set "text", "Stop"
 			}
 			request.send()
+		$$(".skip").addEvent "click", (e) ->
+			e.preventDefault()
+			sid = this.get "data-song"
+			if confirm "Are you sure?"
+				request = new Request {
+					method: "post",
+					url: "/api/skip",
+					data: {
+						id: sid
+					},
+					onComplete: ->
+						$("song-#{sid}").fade "out"
+						setTimeout ->
+							$("song-#{sid}").destroy()
+						, 500
+				}
+				request.send()
 	history: ->
 		self = this
 		window.history.pushState { "html": $("content").get("html"), "pageTitle": document.title, "first": true }, "", window.location.pathname
 		callback = ->
-			self._grid "history", 4
 			self.paginate callback
 		callback()
 	artists: ->

@@ -1,12 +1,40 @@
 #content
 	.row
-		%div{ :class => "span15 offset1" }
-			%ul{ :class => "media-grid grid", :id => "history" }
-				- @history.each do |h|
-					%li
-						%a{ :class => "thumbnail album", :href => "/track/#{h.song.id}" }
-							%img{ :src => "#{artwork(h.song.album, h.song.artist)}", :alt => "#{h.song.album}" }
-							#{h.song.title} by #{h.song.artist}
+		- @history.each do |h|
+			%div{ :class => "span8 song-box", :id => "song-#{h.song.id}" }
+				%h3
+					= h.song.title
+					%small
+						by
+						= h.song.artist
+				.row
+					.span4
+						%img{ :src => "#{artwork(h.song.album, h.song.artist)}", :alt => "#{h.song.album}" }
+					.span4
+						%p
+							%strong Song:
+							%a{ :href => "/track/#{h.song.id}" }= h.song.title
+							%br
+							%strong Artist:
+							%a{ :href => "/artist/#{uri_encode(h.song.artist)}" }= h.song.artist
+							%br
+							%strong Album:
+							%a{ :href => "/album/#{uri_encode(h.song.album)}/#{uri_encode(h.song.artist)}" }= h.song.album
+							%br
+							%strong Plays:
+							= h.song.plays
+							%br
+							%strong Likes:
+							= Vote.song(h.song).size
+						%p{ :class => "buttons" }
+							- if Vote.likes(h.song.id, @user.id)
+								%a{ :class => "like btn success disabled", :'data-song' => "#{h.song.id}" } Like
+							- else
+								%a{ :class => "like btn success", :'data-song' => "#{h.song.id}" } Like
+							- if Vote.likes(h.song.id, @user.id) == false
+								%a{ :class => "dislike btn danger disabled", :'data-song' => "#{h.song.id}" } Dislike
+							- else
+								%a{ :class => "dislike btn danger", :'data-song' => "#{h.song.id}" } Dislike
 	.row
 		.span16
 			- if @page != 1

@@ -4,46 +4,46 @@
 			%h2 Now Playing
 			.row
 				%div{ :class => "span4 offset4" }
-					%img{ :src => "#{artwork(@playing.album, @playing.artist)}", :alt => "" }
+					%img{ :src => "#{artwork(@song.album, @song.artist)}", :alt => "#{@song.title}" }
 				.span8
 					%h3
-						= @playing.title
+						= @song.title
 						%small
 							by
-							%a{ :href => "/artist/#{uri_encode(@playing.artist)}" }= @playing.artist
+							%a{ :href => "/artist/#{uri_encode(@song.artist)}" }= @song.artist
 					%p
 						%strong Album:
-						%a{ :href => "/album/#{uri_encode(@playing.album)}/#{uri_encode(@playing.artist)}" }= @playing.album
+						%a{ :href => "/album/#{uri_encode(@song.album)}/#{uri_encode(@song.artist)}" }= @song.album
 						%br
 						%strong Year:
-						= @playing.year
+						= @song.year
 						%br
 						%strong Genre:
-						= @playing.genre
+						= @song.genre
 						%br
 						%strong Plays:
-						= @playing.plays
+						= @song.plays
 						%br
 						%strong Likes:
-						= Vote.song(@playing).size
+						= Vote.song(@song).size
 					%p
-						- if Vote.likes(@playing.id, @user.id)
-							%a{ :class => "like btn success disabled", :'data-song' => "#{@playing.id}" } Like
+						- if Vote.likes(@song.id, @user.id)
+							%a{ :class => "like btn success disabled", :'data-song' => "#{@song.id}" } Like
 						- else
-							%a{ :class => "like btn success", :'data-song' => "#{@playing.id}" } Like
-						- if Vote.likes(@playing.id, @user.id) == false
-							%a{ :class => "dislike btn danger disabled", :'data-song' => "#{@playing.id}" } Dislike
+							%a{ :class => "like btn success", :'data-song' => "#{@song.id}" } Like
+						- if Vote.likes(@song.id, @user.id) == false
+							%a{ :class => "dislike btn danger disabled", :'data-song' => "#{@song.id}" } Dislike
 						- else
-							%a{ :class => "dislike btn danger", :'data-song' => "#{@playing.id}" } Dislike
-						%a{ :class => "btn", :id => "play-next" } Next
-	- else
+							%a{ :class => "dislike btn danger", :'data-song' => "#{@song.id}" } Dislike
+						%a{ :class => "btn play-next" } Next
+	- elsif @paused
 		%div{ :class => "span16 paused" }
 			%h2 Playr is Stopped
 			%p
-				%a{ :class => "btn success", :id => "play", :href => "#" } Start Queue
+				%a{ :class => "btn success start-queue", :href => "#" } Start Queue
 .row
 	- @queue.each do |q|
-		%div{ :class => "span8 queue", :id => "song-#{q.song.id}" }
+		%div{ :class => "span8 song-box", :id => "song-#{q.song.id}" }
 			%h3
 				= q.song.title
 				%small

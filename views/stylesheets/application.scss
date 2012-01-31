@@ -47,18 +47,6 @@ body {
 }
 
 /* Queue */
-.queue {
-	border-radius: 3px;
-	margin-bottom: 10px;
-	h3 {
-		margin-left: 20px;
-	}
-	img {
-		border: 1px solid #eee;
-		box-shadow: 0 0 5px #000;
-		margin: 0 0 10px 20px;
-	}
-}
 .paused, .now-playing {
 	border-bottom: 1px solid #ddd;
 	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -69,6 +57,10 @@ body {
 	h2 {
 		text-align: center;
 	}
+	h3 {
+		line-height: 18px;
+		margin-bottom: 10px;
+	}
 }
 .paused {
 	p {
@@ -76,6 +68,20 @@ body {
 	}
 }
 .now-playing {
+	img {
+		border: 1px solid #eee;
+		box-shadow: 0 0 5px #000;
+		margin: 0 0 10px 20px;
+	}
+}
+.song-box {
+	height: 220px;
+	margin-bottom: 10px;
+	h3 {
+		line-height: 18px;
+		margin-bottom: 10px;
+		margin-left: 20px;
+	}
 	img {
 		border: 1px solid #eee;
 		box-shadow: 0 0 5px #000;
@@ -103,6 +109,15 @@ body {
 }
 .now-playing h3 {
 	margin-top: -14px;
+}
+
+FIX FOR HISTORY PAGE
+.search { // or the main div
+	height: 220px;
+	h3 {
+		line-height: 0;
+		margin-bottom: 10px;
+	}
 }
 */
 

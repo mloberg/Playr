@@ -1,5 +1,3 @@
-require "socket"
-
 module Playr
 	class App < Sinatra::Base
 		set(:auth) do |value|
@@ -16,12 +14,6 @@ module Playr
 
 		def api_response(resp)
 			resp.to_json
-		end
-
-		def api_request(*args)
-			s = TCPSocket.open('localhost', 2009)
-			s.puts args.join(":")
-			s.close
 		end
 
 		get "/api/info" do
@@ -67,43 +59,52 @@ module Playr
 		end
 		
 		get "/api/playing" do
-			
+			if Playr::Worker.playing?
+				api_response({ :playing => true, :song => @playing = History.last.song.to_h })
+			else
+				api_response({ :playing => false })
+			end
 		end
 		
 		get "/api/volume" do
-			
+			api_response @volume
 		end
 		
 		post "/api/like", :auth => true do
 			return error_response "Missing data" unless params[:song]
 			Vote.up(params[:song], @user.id)
-			{ :success => true, :message => "Liked song" }.to_json
+			api_response({ :success => true, :message => "Liked song" })
 		end
 		
 		post "/api/dislike", :auth => true do
 			return error_response "Missing data" unless params[:song]
 			Vote.down(params[:song], @user.id)
-			{ :success => true, :message => "Disliked song" }.to_json
+			api_response({ :success => true, :message => "Disliked song" })
 		end
 		
-		post "/api/play", :auth => true do
-			api_request("play")
+		post "/api/start-stop", :auth => true do
+			`#{APP_DIR}/playr pause`
+			api_response({ :success => true })
 		end
 		
-		post "/api/pause" do # auth
-			
+		post "/api/next", :auth => true do
+			`#{APP_DIR}/playr skip`
 		end
 		
-		post "/api/next" do # auth
-		
+		post "/api/skip", :auth => true do
+			# remove song from queue
+			return error_response "Missing data" unless params[:id]
+			q = SongQueue.first(:song => Song.get(params[:id]))
+			if q.destroy
+				api_response({ :success => true })
+			else
+				error_response "Could not remove track from queue"
+			end
 		end
 		
-		post "/api/skip" do # auth
-		
-		end
-		
-		post "/api/volume" do # auth
-			
+		post "/api/volume", :auth => true do
+			return error_response "Missing data" unless params[:level]
+			`#{APP_DIR}/playr volume #{params[:level]}`
 		end
 	end
 end
