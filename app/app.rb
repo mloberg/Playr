@@ -90,6 +90,9 @@ module Playr
 				return 'http://placehold.it/174&text=No+Artwork+Found' if image == nil
 				image
 			end
+			def partial(page, options = {})
+				haml page.to_sym, options.merge!(:layout => false)
+			end
 		end
 		
 		############
@@ -318,6 +321,13 @@ module Playr
 			else
 				flash[:error] = "Could not delete song"
 				redirect "/track/#{params[:id]}"
+			end
+		end
+
+		get "/now_playing", :auth => true do
+			if Playr::Worker.playing?
+				@song = History.last.song
+				haml :'partials/now-playing', :layout => false
 			end
 		end
 

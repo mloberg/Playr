@@ -44,22 +44,35 @@ class @Playr
 			e.preventDefault()
 			this.getParent("li").toggleClass "open"
 	socket: ->
+		self = this
 		`WEB_SOCKET_SWF_LOCATION = "/WebSocketMain.swf"`
 		ws = new WebSocket "ws://#{window.location.hostname}:10081/"
 		ws.onmessage = (e) ->
 			humane.timeout = 5000
 			humane.info e.data
 			humane.timeout = 2500
-			# update queue and home page
+			if $("now-playing") isnt null
+				update = setInterval ->
+					$("now-playing").load("/now_playing")
+					if $("now-playing").get("html") is ""
+						clearInterval update
+						self.voting()
+						self.controls()
+						queued = $$(".song-box")[0]
+						queued.fade "out"
+						setTimeout ->
+							queued.destroy()
+						, 500
+				, 500
 	upload: ->
-		uploader = new qq.FileUploader({
+		uploader = new qq.FileUploader {
 			element: $("file-uploader"),
 			action: "/upload",
 			debug: false,
 			onComplete: (id, fileName, resp) ->
 				if resp.error is true
 					alert resp.message
-		})
+		}
 	voting: ->
 		$$(".like").addEvent "click", ->
 			if !this.hasClass "disabled"
@@ -91,7 +104,7 @@ class @Playr
 						that.addClass "disabled"
 				}
 	controls: (volume) ->
-		if $("slider")
+		if $("slider") and volume
 			this.volume volume
 		$$(".queue-up").addEvent "click", (e) ->
 			e.preventDefault()
@@ -157,6 +170,7 @@ class @Playr
 			volumeSlider.set(0)
 	queue: ->
 		$$(".start-queue").addEvent "click", (e) ->
+			that = this
 			request = new Request.JSON {
 				method: "post",
 				url: "/api/start-stop",

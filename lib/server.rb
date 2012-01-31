@@ -22,7 +22,7 @@ Signal.trap("USR2") do # god restart
 	quit_process
 end
 
-CONFIG = YAML.load_file("#{APP_DIR}/config/config.yml")
+config = YAML.load_file("#{APP_DIR}/config/config.yml")
 
 server = WebSocketServer.new(:port => 10081, :accepted_domains => ["*"])
 web_conn = []
@@ -63,7 +63,7 @@ server.run do |ws|
 			desk_conn.delete(q)
 			thread.terminate if thread
 		end
-	elsif ws.path == "/update?key=#{CONFIG["ws_key"]}"
+	elsif ws.path == "/update?key=#{config["ws_key"]}"
 		ws.handshake
 		while data = ws.receive
 			song = JSON.parse(data)

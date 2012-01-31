@@ -1,0 +1,36 @@
+%div{ :class => "span16 now-playing" }
+	%h2 Now Playing
+	.row
+		%div{ :class => "span4 offset4" }
+			%img{ :src => "#{artwork(@song.album, @song.artist)}", :alt => "#{@song.title}" }
+		.span8
+			%h3
+				= @song.title
+				%small
+					by
+					%a{ :href => "/artist/#{uri_encode(@song.artist)}" }= @song.artist
+			%p
+				%strong Album:
+				%a{ :href => "/album/#{uri_encode(@song.album)}/#{uri_encode(@song.artist)}" }= @song.album
+				%br
+				%strong Year:
+				= @song.year
+				%br
+				%strong Genre:
+				= @song.genre
+				%br
+				%strong Plays:
+				= @song.plays
+				%br
+				%strong Likes:
+				= Vote.song(@song).size
+			%p
+				- if Vote.likes(@song.id, @user.id)
+					%a{ :class => "like btn success disabled", :'data-song' => "#{@song.id}" } Like
+				- else
+					%a{ :class => "like btn success", :'data-song' => "#{@song.id}" } Like
+				- if Vote.likes(@song.id, @user.id) == false
+					%a{ :class => "dislike btn danger disabled", :'data-song' => "#{@song.id}" } Dislike
+				- else
+					%a{ :class => "dislike btn danger", :'data-song' => "#{@song.id}" } Dislike
+				%a{ :class => "btn play-next" } Next
