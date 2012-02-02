@@ -1,15 +1,19 @@
-$: << File.expand_path(File.dirname(__FILE__) + '/../')
-require 'data_mapper'
-require 'dm-adjust'
-require 'dm-aggregates'
-require 'lib/auth'
+app_dir = File.expand_path(File.dirname(__FILE__) + '/../')
+$: << app_dir
+require "yaml"
+require "data_mapper"
+require "dm-adjust"
+require "dm-aggregates"
+require "lib/auth"
+
+config = YAML.load_file("#{app_dir}/config/config.yml")
 
 DataMapper::setup(:default, {
-	:adapter => 'mysql',
-	:host => 'localhost',
-	:username => 'root',
-	:password => 'root',
-	:database => 'playr'
+	:adapter => "mysql",
+	:host => config["db"]["host"],
+	:username => config["db"]["user"],
+	:password => config["db"]["pass"],
+	:database => config["db"]["db"]
 })
 
 module Helper
@@ -64,6 +68,16 @@ class Song
 		else
 			all(:artist => artist, :album => album)
 		end
+	end
+
+	def self.search(term)
+		like = "%#{term}%"
+		results = {}
+		results[:tracks] = all(:title.like => like)
+		results[:albums] = all(:album.like => like, :fields => [:artist, :album], :unique => true)
+		results[:artists] = all(:artist.like => like, :fields => [:artist], :unique => true)
+		# results[:genre] = all(:genre.like => like, :fields => [:genre], :unique => true)
+		results
 	end
 end
 

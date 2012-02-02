@@ -1,9 +1,10 @@
 APP_DIR = File.expand_path(File.dirname(__FILE__) + '/../')
 
-listen 8080
 working_directory APP_DIR
 preload_app true
 worker_processes 2
+
+listen 7000
 
 pid "#{APP_DIR}/tmp/web.pid"
 

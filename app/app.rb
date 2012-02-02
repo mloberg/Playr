@@ -77,6 +77,16 @@ module Playr
 				return 'http://placehold.it/174&text=No+Artwork+Found' if image == nil
 				image
 			end
+			def artist_image(artist)
+				image = nil
+				@lfm.artist(artist)["image"].each do |i|
+					if image == nil and i['#text'] =~ /\d{3}.?\/\d+\.(png|jpg)$/
+						image = i['#text']
+					end
+				end
+				return 'http://placehold.it/174&text=Artist+Image+Not+Found' if image == nil
+				image
+			end
 			def partial(page, options = {})
 				haml page.to_sym, options.merge!(:layout => false)
 			end
@@ -90,17 +100,6 @@ module Playr
 			@title = "Home"
 			haml :'application/index'
 		end
-		
-		get "/browse", :auth => true do
-			@title = "Browse"
-			@artists = Song.artists
-			@js = "var browse = new Browse();"
-			haml :'browse/all'
-		end
-
-		###################
-		## Queue/History ##
-		###################
 
 		get "/history", :auth => true do
 			@title = "History"
@@ -153,6 +152,20 @@ module Playr
 		############
 		## Browse ##
 		############
+
+		get "/browse", :auth => true do
+			@title = "Browse"
+			@artists = Song.artists
+			@js = "var browse = new Browse();"
+			haml :'browse/all'
+		end
+
+		get "/search", :auth => true do
+			@title = "Search"
+			@js = "app.search();"
+			@results = Song.search(params[:q])
+			haml :'browse/search'
+		end
 
 		get "/browse/artists", :auth => true do
 			@title = "Artists"

@@ -55,11 +55,7 @@
 				.page-header
 					%h1 #{@title}
 				=yield
-		%script{ :src => "/js/mootools.js" }
-		%script{ :src => "/js/humane.js" }
-		%script{ :src => "/js/fileuploader.js" }
-		%script{ :src => "/js/swfobject.js" }
-		%script{ :src => "/js/web_socket.js" }
+		%script{ :src => "/javascripts/support.js" }
 		%script{ :src => "/javascripts/application.js" }
 		:javascript
 			humane.clickToClose = true;

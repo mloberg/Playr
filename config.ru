@@ -7,6 +7,7 @@ APP_DIR = File.expand_path(File.dirname(__FILE__))
 
 Sass::Plugin.options[:template_location] = 'public/scss'
 Sass::Plugin.options[:stylesheet_location] = 'public/stylesheets'
+Sass::Plugin.options[:style] = 'compressed'
 
 Barista.root = "public/coffeescript"
 Barista.output_root = "public/javascripts"

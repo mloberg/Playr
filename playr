@@ -17,8 +17,8 @@ end
 
 case ARGV[0]
 when 'start'
+	# make sure god is running
 	if `ps aux | grep god | grep -v grep | wc -l | tr -d ' '`.chomp == "0"
-		# make sure god is running
 		`god -c #{APP_DIR}/playr.god`
 	end
 	`god start playr`
@@ -26,7 +26,7 @@ when 'stop'
 	start_pause
 	`god stop playr`
 	stop_pause
-when 'restart'
+when 'restart' # should extend to restart specific processes
 	`god restart playr`
 when 'play'
 	if Playr::Worker.paused?

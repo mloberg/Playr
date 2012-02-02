@@ -84,7 +84,7 @@ class @Playr
 					alert resp.message
 		}
 	voting: ->
-		$$(".like").addEvent "click", ->
+		$$(".like").removeEvents().addEvent "click", ->
 			if !this.hasClass "disabled"
 				that = this
 				sid = that.get "data-song"
@@ -99,7 +99,7 @@ class @Playr
 						that.addClass "disabled"
 				}
 				request.send()
-		$$(".dislike").addEvent "click", ->
+		$$(".dislike").removeEvents().addEvent "click", ->
 			if !this.hasClass "disabled"
 				that = this
 				sid = that.get "data-song"
@@ -116,21 +116,7 @@ class @Playr
 	controls: (volume) ->
 		if $("slider") and volume
 			this.volume volume
-		$$(".queue-up").addEvent "click", (e) ->
-			e.preventDefault()
-			addToQueue this.get "id"
-			this.addClass "disabled"
-		$$(".play-next").addEvent "click", (e) ->
-			e.preventDefault()
-			if confirm "Are you sure?"
-				request = new Request {
-					method: "post",
-					url: "/api/next",
-					onComplete: (msg) ->
-						$$(".now-playing").fadeAndDestroy()
-				}
-				request.send()
-		$$(".start-stop").addEvent "click", (e) ->
+		$$(".start-stop").removeEvents().addEvent "click", (e) ->
 			e.preventDefault()
 			that = this
 			if confirm "Are you sure?"
@@ -142,6 +128,20 @@ class @Playr
 							that.set "text", "Play"
 						else if resp.success
 							that.set "text", "Stop"
+				}
+				request.send()
+		$$(".queue-up").removeEvents().addEvent "click", (e) ->
+			e.preventDefault()
+			addToQueue this.get "id"
+			this.addClass "disabled"
+		$$(".play-next").removeEvents().addEvent "click", (e) ->
+			e.preventDefault()
+			if confirm "Are you sure?"
+				request = new Request {
+					method: "post",
+					url: "/api/next",
+					onComplete: (msg) ->
+						$$(".now-playing").fadeAndDestroy()
 				}
 				request.send()
 	volume: (volume) ->
@@ -183,7 +183,7 @@ class @Playr
 				url: "/api/start-stop",
 				onComplete: (resp) ->
 					if resp.success
-						that.set "text", "Stop"
+						$$(".start-stop").set "text", "Stop"
 			}
 			request.send()
 		$$(".skip").addEvent "click", (e) ->
@@ -252,6 +252,9 @@ class @Playr
 				e.preventDefault()
 				if confirm "Add this song to the queue?"
 					self.addToQueue id
+	search: ->
+		this._grid "albums", 2
+		this._grid "artists", 3
 	paginate: (callback) ->
 		self = this
 		url = window.location.pathname

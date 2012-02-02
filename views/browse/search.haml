@@ -1,0 +1,71 @@
+.row
+	.span16
+		%h2 Tracks
+	- if @results[:tracks].empty?
+		%p No results
+	- @results[:tracks].each do |t|
+		%div{ :class => "span8 song-box", :id => "song-#{t.id}" }
+			%h3
+				= t.title
+				%small
+					by
+					= t.artist
+			.row
+				.span4
+					%img{ :src => "#{artwork(t.album, t.artist)}", :alt => "#{t.album}" }
+				.span4
+					%p
+						%strong Song:
+						%a{ :href => "/track/#{t.id}" }= t.title
+						%br
+						%strong Artist:
+						%a{ :href => "/artist/#{uri_encode(t.artist)}" }= t.artist
+						%br
+						%strong Album:
+						%a{ :href => "/album/#{uri_encode(t.album)}/#{uri_encode(t.artist)}" }= t.album
+						%br
+						%strong Plays:
+						= t.plays
+						%br
+						%strong Likes:
+						= Vote.song(t).size
+					%p{ :class => "buttons" }
+						- if Vote.likes(t.id, @user.id)
+							%a{ :class => "like btn success disabled", :'data-song' => "#{t.id}" } Like
+						- else
+							%a{ :class => "like btn success", :'data-song' => "#{t.id}" } Like
+						- if Vote.likes(t.id, @user.id) == false
+							%a{ :class => "dislike btn danger disabled", :'data-song' => "#{t.id}" } Dislike
+						- else
+							%a{ :class => "dislike btn danger", :'data-song' => "#{t.id}" } Dislike
+					%p
+						- if SongQueue.in_queue(t)
+							%a{ :class => "btn success disabled", :href => "#" } Add To Queue
+						- else
+							%a{ :class => "btn info queue-up", :id => "#{t.id}", :href => "#" } Add To Queue
+.row
+	.span8
+		%h2 Albums
+		- if @results[:albums].empty?
+			%p No results
+		- else
+			%ul{ :class => "media-grid grid", :id => "albums" }
+				- @results[:albums].each do |album|
+					%li
+						%a{ :class => "thumbnail album", :href => "/album/#{uri_encode(album.album)}/#{uri_encode(album.artist)}" }
+							%img{ :src => "#{artwork(album.album, album.artist)}", :alt => "#{album.album}" }
+							= album.album
+							%br
+							by
+							= album.artist
+	.span8
+		%h2 Artists
+		- if @results[:artists].empty?
+			%p No results
+		- else
+			%ul{ :class => "media-grid grid", :id => "artists" }
+				- @results[:artists].each do |artist|
+					%li
+						%a{ :class => "thumbnail artist", :href => "/artist/#{uri_encode(artist.artist)}" }
+							%img{ :src => "#{artist_image(artist.artist)}", :alt => "#{artist.artist}" }
+							= artist.artist

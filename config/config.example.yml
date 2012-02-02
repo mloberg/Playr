@@ -5,4 +5,9 @@ lastfm:
 redis:
   host: 127.0.0.1
   port: 6379
+db:
+  host: localhost
+  user: root
+  pass: root
+  db: playr
 ws_key: r@nd0mChaR@cT3r$

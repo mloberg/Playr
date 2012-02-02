@@ -54,31 +54,3 @@ mp3 and mp4 (m4a, aac, mp4)
 ### Playr keeps crashing on startup
 
 Production mode uses port 80. Any port below 1024 requires admin privileges. Either run `sudo ruby playr.rb` or change (or comment out) the port line in *lib/app.rb*.
-
-# Growl Playr
-
-Included is a Growl plugin for Playr that will update the currently playing song using Growl. It supports both Growl 1.3 and 1.2.x.
-
-## Requirements
-
-* Mac OS X 10.5 or later
-* Growl 1.2.x or 1.3
-* Ruby 1.8.7 or later
-* Shell access
-
-## Installation
-
-To install growl-playr, you will need to copy the `growl` directory to the users system, cd to the directory and run `ruby installer.rb`. It will ask you a few things and move all the necessary files into place.
-
-## Usage
-
-Once you have run the installation, the growl plugin is available with `growl-playr`.
-
-	growl-playr start # start growl-playr
-	growl-playr stop # stop growl-playr
-	growl-playr restart # restart growl-playr
-	growl-playr status # check if growl-playr is running
-
-## Important Notes
-
-If you are using RVM on your system, you will need to make sure you are running the system default Ruby so the necessary gems are installed. To use the system's Ruby install run `rvm system`. Then after the install is done, `rvm use 1.9.3` or whatever version of Ruby you were using.
