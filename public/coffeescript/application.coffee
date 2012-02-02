@@ -34,7 +34,17 @@ addToQueue = (id) ->
 				humane.success "Song added to queue"
 	}
 	request.send()
-	
+
+Element.implement {
+	fadeAndDestroy: (duration) ->
+		duration = duration || 500
+		el = this
+		this.set("tween", {
+			duration: duration
+		}).fade("out").get("tween").chain ->
+			el.dispose()
+}
+
 class @Playr
 	constructor: (options) ->
 		this.voting()
@@ -48,13 +58,22 @@ class @Playr
 		`WEB_SOCKET_SWF_LOCATION = "/WebSocketMain.swf"`
 		ws = new WebSocket "ws://#{window.location.hostname}:10081/"
 		ws.onmessage = (e) ->
+			humane.timeout = 5000
+			humane.info e.data
+			humane.timeout = 2500
 			if $("now-playing") isnt null
-				# reload the page
-				window.location.reload true
-			else
-				humane.timeout = 5000
-				humane.info e.data
-				humane.timeout = 2500
+				request = new Request.HTML {
+					method: "get",
+					url: "/api/now-playing",
+					update: $("now-playing"),
+					onSuccess: (tree, elems, html, js) ->
+						self.voting()
+						self.controls()
+						queued = $$(".song-box")[0]
+						if queued
+							queued.fadeAndDestroy()
+				}
+				request.send()
 	upload: ->
 		uploader = new qq.FileUploader {
 			element: $("file-uploader"),
@@ -108,10 +127,7 @@ class @Playr
 					method: "post",
 					url: "/api/next",
 					onComplete: (msg) ->
-						$$(".now-playing").fade "out"
-						setTimeout ->
-							$$(".now-playing").destroy()
-						, 500
+						$$(".now-playing").fadeAndDestroy()
 				}
 				request.send()
 		$$(".start-stop").addEvent "click", (e) ->
@@ -181,10 +197,7 @@ class @Playr
 						id: sid
 					},
 					onComplete: ->
-						$("song-#{sid}").fade "out"
-						setTimeout ->
-							$("song-#{sid}").destroy()
-						, 500
+						$("song-#{sid}").fadeAndDestroy()
 				}
 				request.send()
 	history: ->

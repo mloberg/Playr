@@ -1,6 +1,5 @@
 require "sinatra/base"
 require "redis"
-require "rack-flash"
 require "fileutils"
 require "uri"
 require "json"
@@ -23,15 +22,6 @@ module Playr
 		set :views, "#{APP_DIR}/views"
 		set :public_folder, "#{APP_DIR}/public"
 		set :static, true
-		
-		use Rack::Flash, :sweep => true
-		use Rack::MethodOverride
-		
-		configure :development, :testing do
-			
-		end
-		
-		set :scss, { :style => :compressed, :debug_info => false }
 		
 		set(:auth) do |value|
 			condition do

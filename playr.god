@@ -49,7 +49,7 @@ God.watch do |w|
 
 	w.log = "#{APP_DIR}/tmp/web.log"
 
-	monitoring(w, :cpu_limit => 50.percent, :memory_limit => 150.megabytes)
+	monitoring(w, :cpu_limit => 20.percent, :memory_limit => 150.megabytes)
 end
 
 God.watch do |w|
@@ -66,7 +66,7 @@ God.watch do |w|
 
 	w.log = "#{APP_DIR}/tmp/music.log"
 
-	monitoring(w, :cpu_limit => 50.percent, :memory_limit => 300.megabytes)
+	monitoring(w, :cpu_limit => 30.percent, :memory_limit => 300.megabytes)
 end
 
 God.watch do |w|
@@ -83,7 +83,7 @@ God.watch do |w|
 
 	w.log = "#{APP_DIR}/tmp/ws.log"
 
-	monitoring(w, :cpu_limit => 50.percent, :memory_limit => 150.megabytes)
+	monitoring(w, :cpu_limit => 30.percent, :memory_limit => 150.megabytes)
 end
 
 God.watch do |w|
@@ -100,5 +100,5 @@ God.watch do |w|
 
 	w.log = "#{APP_DIR}/tmp/tasks.log"
 
-	monitoring(w, :cpu_limit => 20.percent, :memory_limit => 100.megabytes)
+	monitoring(w, :cpu_limit => 20.percent, :memory_limit => 150.megabytes)
 end

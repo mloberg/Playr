@@ -65,6 +65,13 @@ module Playr
 				api_response({ :playing => false })
 			end
 		end
+
+		get "/api/now-playing", :auth => true do
+			if Playr::Worker.playing?
+				@song = History.last.song
+				haml :'partials/now-playing', :layout => false
+			end
+		end
 		
 		get "/api/volume" do
 			api_response @volume

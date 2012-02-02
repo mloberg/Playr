@@ -1,4 +1,5 @@
 @import "bootstrap";
+@import "qq.upload";
 @import "jackedup";
 
 .clear {
@@ -50,7 +51,8 @@ body {
 .paused, .now-playing {
 	border-bottom: 1px solid #ddd;
 	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
-	margin-bottom: 30px;
+	margin-bottom: 15px;
+	padding-bottom: 15px;
 	h2, p {
 		margin-bottom: 5px;
 	}
@@ -160,79 +162,4 @@ FIX FOR HISTORY PAGE
 	position: relative;
 	top: -7px;
 	width: 20px;
-}
-
-/* Uploader */
-.qq-uploader {
-	margin-bottom: 30px;
-	position: relative;
-	width: 100%;
-}
-.qq-upload-button {
-	background: #999;
-	border-bottom: 1px solid #ddd;
-	color: #fff;
-	display: block;
-	padding: 7px 0;
-	text-align: center;
-	width: 105px;
-}
-.qq-upload-button-hover {
-	background: #000;
-}
-.qq-upload-button-focus {
-	outline: 1px dotted black;
-}
-.qq-upload-drop-area {
-	background: #999;
-	color: #fff;
-	height: 100%;
-	left: 0;
-	min-height: 70px;
-	position: absolute;
-	text-align: center;
-	top: 0;
-	width: 100%;
-	z-index: 2;
-}
-.qq-upload-drop-area span {
-	display: block;
-	font-size: 16px;
-	margin-top: -8px;
-	position: absolute;
-	top: 50%;
-	width: 100%;
-}
-.qq-upload-drop-area-active {
-	background: #000;
-}
-.qq-upload-list {
-	list-style: disc;
-	margin: 15px 35px;
-	padding: 0;
-}
-.qq-upload-list li {
-	font-size: 12px;
-	line-height: 15px;
-	margin: 0;
-	padding: 0;
-}
-.qq-upload-file, .qq-upload-spinner, .qq-upload-size, .qq-upload-cancel, .qq-upload-failed-text {
-	margin-right: 7px;
-}
-.qq-upload-spinner {
-	background: url("images/loading.gif");
-	display: inline-block;
-	height: 15px;
-	vertical-align: text-bottom;
-	width: 15px;
-}
-.qq-upload-size,.qq-upload-cancel {
-	font-size: 11px;
-}
-.qq-upload-failed-text {
-	display: none;
-}
-.qq-upload-fail .qq-upload-failed-text {
-	display: inline;
 }
