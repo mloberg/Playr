@@ -8,6 +8,7 @@ require "yaml"
 require "json"
 
 `rm -f #{APP_DIR}/tmp/music.pid`
+sleep(5)
 File.open("#{APP_DIR}/tmp/music.pid", "w") do |file|
 	file.puts Process.pid
 end
@@ -56,10 +57,14 @@ loop do
 			History.create(:song => song, :played_at => Time.now)
 			song.update(:last_played => Time.now)
 			song.adjust!(:plays => 1)
-			update = WebSocket.new("ws://127.0.0.1:10081/update?key=#{config["ws_key"]}")
-			update.send(song.to_h.to_json)
-			update.close
-			unless config['lastfm']['session'].empty?
+			begin
+				update = WebSocket.new("ws://127.0.0.1:10081/update?key=#{config["ws_key"]}")
+				update.send(song.to_h.to_json)
+				update.close
+			rescue
+				# our web socket process isn't up yet, let's forget about it
+			end
+			if config['lastfm']['session'] != nil
 				lastfm.update({
 					:album => song.album,
 					:track => song.title,

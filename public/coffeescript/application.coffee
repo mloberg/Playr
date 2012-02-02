@@ -48,22 +48,13 @@ class @Playr
 		`WEB_SOCKET_SWF_LOCATION = "/WebSocketMain.swf"`
 		ws = new WebSocket "ws://#{window.location.hostname}:10081/"
 		ws.onmessage = (e) ->
-			humane.timeout = 5000
-			humane.info e.data
-			humane.timeout = 2500
 			if $("now-playing") isnt null
-				update = setInterval ->
-					$("now-playing").load("/now_playing")
-					if $("now-playing").get("html") is ""
-						clearInterval update
-						self.voting()
-						self.controls()
-						queued = $$(".song-box")[0]
-						queued.fade "out"
-						setTimeout ->
-							queued.destroy()
-						, 500
-				, 500
+				# reload the page
+				window.location.reload true
+			else
+				humane.timeout = 5000
+				humane.info e.data
+				humane.timeout = 2500
 	upload: ->
 		uploader = new qq.FileUploader {
 			element: $("file-uploader"),

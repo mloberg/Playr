@@ -1,9 +1,9 @@
 !!! 5
 %html{ :lang => "en" }
 	%head
-		<meta charset="utf-8" />
+		%meta{ :charset => "utf-8" }
 		%title #{@title} | Playr
-		%link{ :rel => "stylesheet", :href => "/application.css" }
+		%link{ :rel => "stylesheet", :href => "/stylesheets/application.css" }
 	%body
 		.topbar
 			.fill
@@ -61,7 +61,7 @@
 		%script{ :src => "/js/fileuploader.js" }
 		%script{ :src => "/js/swfobject.js" }
 		%script{ :src => "/js/web_socket.js" }
-		%script{ :src => "/application.js" }
+		%script{ :src => "/javascripts/application.js" }
 		:javascript
 			humane.clickToClose = true;
 			#{@flash}

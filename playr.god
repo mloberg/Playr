@@ -47,6 +47,8 @@ God.watch do |w|
 	w.pid_file = "#{APP_DIR}/tmp/web.pid"
 	w.behavior(:clean_pid_file)
 
+	w.log = "#{APP_DIR}/tmp/web.log"
+
 	monitoring(w, :cpu_limit => 50.percent, :memory_limit => 150.megabytes)
 end
 
@@ -61,6 +63,8 @@ God.watch do |w|
 	
 	w.start_grace = 20.seconds
 	w.restart_grace = 10.seconds
+
+	w.log = "#{APP_DIR}/tmp/music.log"
 
 	monitoring(w, :cpu_limit => 50.percent, :memory_limit => 300.megabytes)
 end
@@ -77,5 +81,24 @@ God.watch do |w|
 	w.start_grace = 10.seconds
 	w.restart_grace = 10.seconds
 
+	w.log = "#{APP_DIR}/tmp/ws.log"
+
 	monitoring(w, :cpu_limit => 50.percent, :memory_limit => 150.megabytes)
+end
+
+God.watch do |w|
+	w.name = "playr-tasks"
+	w.group = "playr"
+	w.interval = 30.seconds
+
+	w.start = "ruby #{APP_DIR}/lib/tasks.rb"
+	w.stop = "kill -QUIT `cat #{APP_DIR}/tmp/tasks.pid`"
+	w.restart = "kill -USR2 `cat #{APP_DIR}/tmp/tasks.pid`"
+
+	w.start_grace = 10.seconds
+	w.restart_grace = 10.seconds
+
+	w.log = "#{APP_DIR}/tmp/tasks.log"
+
+	monitoring(w, :cpu_limit => 20.percent, :memory_limit => 100.megabytes)
 end

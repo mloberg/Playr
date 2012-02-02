@@ -11,15 +11,14 @@ gem "data_mapper"
 gem "dm-mysql-adapter"
 gem "dm-adjust"
 gem "dm-aggregates"
-
 gem "redis"
-gem "json"
+
 gem "bcrypt-ruby"
 gem "ruby-mp3info"
 gem "httparty"
 
-gem "yaml"
 gem "haml"
 gem "sass"
 gem "therubyracer"
 gem "coffee-script"
+gem "barista"

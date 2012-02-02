@@ -8,8 +8,6 @@ require "digest"
 require "yaml"
 require "mp3info"
 require "haml"
-require "sass"
-require "coffee-script"
 
 require "./app/api"
 require "./lib/database"
@@ -21,13 +19,12 @@ require "./lib/worker"
 module Playr
 	class App < Sinatra::Base
 		APP_DIR = File.expand_path(File.dirname(__FILE__) + '/../')
+		set :root, APP_DIR
 		set :views, "#{APP_DIR}/views"
 		set :public_folder, "#{APP_DIR}/public"
 		set :static, true
 		
-		enable :sessions
 		use Rack::Flash, :sweep => true
-
 		use Rack::MethodOverride
 		
 		configure :development, :testing do
@@ -98,16 +95,6 @@ module Playr
 		############
 		## ROUTES ##
 		############
-		
-		get "/application.css" do
-			content_type "text/css"
-			scss :'stylesheets/application'
-		end
-		
-		get '/application.js' do
-			content_type "text/javascript"
-			coffee :'javascripts/application'
-		end
 		
 		get "/", :auth => true do
 			@title = "Home"
@@ -324,13 +311,6 @@ module Playr
 			end
 		end
 
-		get "/now_playing", :auth => true do
-			if Playr::Worker.playing?
-				@song = History.last.song
-				haml :'partials/now-playing', :layout => false
-			end
-		end
-
 		############
 		## Upload ##
 		############
@@ -357,12 +337,6 @@ module Playr
 				File.open(path, "wb") do |f|
 					f.write(params[:qqfile][:tempfile].read)
 				end
-			end
-			# normalize volume via aacgain
-			unless `which aacgain`.empty?
-				Dir.chdir(dir)
-				`aacgain -r -p -t -k *.mp3 *.m4a *.mp4 *.aac`
-				Dir.chdir("..")
 			end
 			
 			ext = File.extname(path)[1..-1].downcase
@@ -425,6 +399,7 @@ module Playr
 			}.merge(tags)
 			
 			if s.save
+				@redis.rpush "tasks", "normalize:#{target + file}"
 				return { :success => true }.to_json
 			else
 				FileUtils.rm(target + file)

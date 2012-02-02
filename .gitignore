@@ -6,3 +6,5 @@
 .sass-cache/*
 
 config/config.yml
+public/stylesheets/*
+public/javascripts/*

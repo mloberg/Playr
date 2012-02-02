@@ -6,6 +6,7 @@ require "yaml"
 require "json"
 
 `rm -f #{APP_DIR}/tmp/ws.pid`
+sleep(5)
 File.open("#{APP_DIR}/tmp/ws.pid", "w") do |file|
 	file.puts Process.pid
 end
