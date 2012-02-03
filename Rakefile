@@ -12,6 +12,30 @@ def load_redis
 	@redis = Redis.new(:host => @config['redis']['host'], :port => @config['redis']['port'])
 end
 
+def start_pause
+	`touch #{APP_DIR}/tmp/pause`
+	kill_afplay
+end
+
+def stop_pause
+	`rm -f #{APP_DIR}/tmp/pause`
+end
+
+def kill_afplay
+	`killall afplay > /dev/null 2>&1`
+end
+
+# Moving ./playr commands over here.
+# I'll need to set a default task to list commands.
+namespace :playr do
+
+	desc "Start Playr and its sub-processes"
+	task :start do
+		# make sure god is running
+	end
+
+end
+
 namespace :setup do
 
 	desc "Get Last.fm Session key"
@@ -76,11 +100,6 @@ desc "Start Nginx"
 task :server do
 	system("sudo nginx -c /usr/local/etc/nginx/playr.conf")
 end
-
-# desc "Add music"
-# task :add, :folder do |t, args|
-# 	folder = args[:folder]
-# end
 
 # Pull latest version of Playr and reboot unicorn
 # This will only work for changes to the Sinatra app
