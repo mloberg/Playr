@@ -1,0 +1,14 @@
+.row
+	%div{ :class => "span15 offset1" }
+		- if @likes.empty?
+			%p #{@u.name} has no likes.
+		- else
+			%ul{ :class => "media-grid grid", :id => "likes" }
+				- @likes.each do |l|
+					%li
+						%a{ :class => "thumbnail album", :href => "/track/#{l.song.id}" }
+							%img{ :src => "#{artwork(l.song.album, l.song.artist)}", :alt => "#{l.song.title}" }
+							= l.song.album
+							%br
+							by
+							= l.song.artist

@@ -255,6 +255,8 @@ class @Playr
 	search: ->
 		this._grid "albums", 2
 		this._grid "artists", 3
+	likes: ->
+		this._grid "likes", 4
 	paginate: (callback) ->
 		self = this
 		url = window.location.pathname

@@ -31,5 +31,4 @@ loop do
 	when "normalize"
 		`aacgain -r -p -t -k "#{args.first}"`
 	end
-	puts "task done"
 end

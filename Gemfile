@@ -11,6 +11,7 @@ gem "data_mapper"
 gem "dm-mysql-adapter"
 gem "dm-adjust"
 gem "dm-aggregates"
+gem "statistics2"
 gem "redis"
 
 gem "bcrypt-ruby"

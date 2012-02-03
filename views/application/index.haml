@@ -1,0 +1,19 @@
+%div{ :class => "row", :id => "now-playing" }
+	- if @playing
+		= partial("partials/now-playing")
+.row
+	.span4
+		%h2 Artists
+		%p There are #{@count[:artists]} uploaded artists.<br />Here are the most popular.
+		%ol
+			- @artists.each do |artist|
+				%li
+					%a{ :href => "/artist/#{uri_encode(artist.artist)}", :title => "#{artist.artist}" }= artist.artist
+		%p
+			%a{ :href => "/artists" } Browse all artists
+	.span4
+		%h2 Albums
+	.span4
+		%h2 Tracks
+	.span4
+		%h2 Uploads

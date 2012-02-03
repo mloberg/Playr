@@ -4,6 +4,7 @@ require "yaml"
 require "data_mapper"
 require "dm-adjust"
 require "dm-aggregates"
+require "statistics2"
 require "lib/auth"
 
 config = YAML.load_file("#{app_dir}/config/config.yml")
@@ -15,6 +16,15 @@ DataMapper::setup(:default, {
 	:password => config["db"]["pass"],
 	:database => config["db"]["db"]
 })
+
+def popularity(pos, n, confidence = 0.95)
+	if n == 0
+		return 0
+	end
+	z = Statistics2.pnormaldist(1 - (1 - confidence) / 2)
+	phat = 1.0 * pos / n
+	(phat + z * z / (2 * n) - z * Math.sqrt((phat * (1 - phat) + z * z / (4 * n)) / n)) / (1 + z * z / n)
+end
 
 module Helper
 	def to_h
@@ -38,7 +48,7 @@ class Song
 	property :tracknum, Integer
 	property :genre, String
 	property :length, Float, :required => true
-	property :vote, Integer, :default => 500
+	property :score, Float, :default => 0.0
 	property :plays, Integer, :default => 0
 	property :created_at, DateTime
 	property :updated_at, DateTime
@@ -129,28 +139,32 @@ class Vote
 	
 	def self.up(sid, uid)
 		vote = get(sid, uid)
+		song = Song.get(sid)
 		if vote and vote.like == false
-			Song.get(sid).adjust!(:vote => 20)
 			vote.update(:like => true)
 		elsif not vote
-			song = Song.get(sid)
 			user = User.get(uid)
-			song.adjust!(:vote => 20)
 			create(:user => user, :song => song, :like => true)
 		end
+		score(song)
 	end
 	
 	def self.down(sid, uid)
 		vote = get(sid, uid)
+		song = Song.get(sid)
 		if vote and vote.like == true
-			Song.get(sid).adjust!(:vote => -20)
 			vote.update(:like => false)
 		elsif not vote
-			song = Song.get(sid)
 			user = User.get(uid)
-			song.adjust!(:vote => -20)
 			create(:user => user, :song => song)
 		end
+		score(song)
+	end
+
+	def self.score(song)
+		likes = all(:song => song)
+		positive = likes.drop_while { |i| i.like == false }
+		song.update(:score => popularity(positive.size, likes.size))
 	end
 
 	def self.song(song)
@@ -161,6 +175,10 @@ class Vote
 		l = get(sid, uid)
 		return nil unless l
 		l.like
+	end
+
+	def self.user(user)
+		all(:user => user)
 	end
 end
 

@@ -98,6 +98,17 @@ module Playr
 		
 		get "/", :auth => true do
 			@title = "Home"
+			@artists = Song.all(:fields => [:artist], :unique => true, :order => [:score.desc], :limit => 10)
+			@albums = Song.all(:fields => [:album, :artist], :unique => true, :order => [:score.desc], :limit => 10)
+			#@tracks = 
+			@uploads = Song.all(:user => @user, :order => [:id.desc])
+			@count = {
+				:artists => Song.artists.size,
+				:albums => Song.albums.size,
+				:tracks => Song.all.size,
+				:uploads => @uploads.size
+			}
+			@uploads = @uploads[0..5]
 			haml :'application/index'
 		end
 
@@ -408,6 +419,18 @@ module Playr
 				FileUtils.rm(target + file)
 				return { :error => true, :message => "Could not save #{name}" }.to_json
 			end
+		end
+
+		###########
+		## Users ##
+		###########
+
+		get "/likes/:user", :auth => true do
+			@u = User.first(:username => params[:user])
+			@title = "#{@u.name} Likes"
+			@js = "app.likes();"
+			@likes = Vote.user(@u)
+			haml :'user/likes'
 		end
 		
 		##################
