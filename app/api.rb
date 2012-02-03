@@ -91,7 +91,7 @@ module Playr
 		
 		post "/api/start-stop", :auth => true do
 			`#{APP_DIR}/playr pause`
-			api_response({ :success => true })
+			api_response({ :success => true, :paused => Playr::Worker.paused? })
 		end
 		
 		post "/api/next", :auth => true do

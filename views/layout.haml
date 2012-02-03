@@ -39,12 +39,9 @@
 										%a{ :href => "#", :id => "mute" }
 											Volume
 											%span{ :id => "volume-label" }= @volume
-									- if @playing
+									- if @playing or @paused
 										%li
-											%a{ :href => "#", :class => "start-stop" } Stop
-									- elsif @paused
-										%li
-											%a{ :href => "#", :class => "start-stop" } Play
+											%a{ :href => "#", :class => "start-stop" } Start / Stop
 									%li{ :class => "divider" }
 									%li
 										%a{ :href => "/likes/#{@user.username}" } Likes

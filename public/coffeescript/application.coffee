@@ -124,10 +124,8 @@ class @Playr
 					method: "post",
 					url: "/api/start-stop",
 					onComplete: (resp) ->
-						if resp.success and that.get "text" is "Stop"
-							that.set "text", "Play"
-						else if resp.success
-							that.set "text", "Stop"
+						if resp.success and resp.paused and $("now-playing") isnt null
+							$("now-playing").fadeAndDestroy()
 				}
 				request.send()
 		$$(".queue-up").removeEvents().addEvent "click", (e) ->
@@ -180,10 +178,7 @@ class @Playr
 			that = this
 			request = new Request.JSON {
 				method: "post",
-				url: "/api/start-stop",
-				onComplete: (resp) ->
-					if resp.success
-						$$(".start-stop").set "text", "Stop"
+				url: "/api/start-stop"
 			}
 			request.send()
 		$$(".skip").addEvent "click", (e) ->

@@ -44,34 +44,43 @@ namespace :setup do
 
 end
 
+namespace :music do
+
+	desc "Normalize all audio files"
+	task :normalize do
+		# normalize all audio files by adding them as a task to redis
+		require "redis"
+		load_redis
+		files = Dir.glob("music/*/*/*")
+		files.each do |f|
+			redis.rpush "tasks", "normalize:./#{f}"
+		end
+	end
+
+	desc "Score songs"
+	task :score do
+		require "lib/database"
+		Song.all.each do |song|
+			Vote.score(song)
+		end
+	end
+
+	# desc "Add music from a folder"
+	# task :add, :folder do |t, args|
+	# 	folder = args[:folder]
+	# end
+
+end
+
 desc "Start Nginx"
 task :server do
 	system("sudo nginx -c /usr/local/etc/nginx/playr.conf")
-end
-
-desc "Normalize all audio files"
-task :normalize do
-	# normalize all audio files by adding them as a task to redis
-	require "redis"
-	load_redis
-	files = Dir.glob("music/*/*/*")
-	files.each do |f|
-		redis.rpush "tasks", "normalize:./#{f}"
-	end
 end
 
 # desc "Add music"
 # task :add, :folder do |t, args|
 # 	folder = args[:folder]
 # end
-
-desc "Score songs"
-task :score do
-	require "lib/database"
-	Song.all.each do |song|
-		Vote.score(song)
-	end
-end
 
 # Pull latest version of Playr and reboot unicorn
 # This will only work for changes to the Sinatra app

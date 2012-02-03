@@ -1,4 +1,4 @@
-/* DO NOT MODIFY. This file was compiled Fri, 03 Feb 2012 17:08:32 GMT from
+/* DO NOT MODIFY. This file was compiled Fri, 03 Feb 2012 20:36:12 GMT from
  * /Users/mloberg/Code/ruby/Playr-dev/public/coffeescript/application.coffee
  */
 
@@ -175,10 +175,8 @@
             method: "post",
             url: "/api/start-stop",
             onComplete: function(resp) {
-              if (resp.success && that.get("text" === "Stop")) {
-                return that.set("text", "Play");
-              } else if (resp.success) {
-                return that.set("text", "Stop");
+              if (resp.success && resp.paused && $("now-playing") !== null) {
+                return $("now-playing").fadeAndDestroy();
               }
             }
           });
@@ -258,10 +256,7 @@
         that = this;
         request = new Request.JSON({
           method: "post",
-          url: "/api/start-stop",
-          onComplete: function(resp) {
-            if (resp.success) return $$(".start-stop").set("text", "Stop");
-          }
+          url: "/api/start-stop"
         });
         return request.send();
       });
