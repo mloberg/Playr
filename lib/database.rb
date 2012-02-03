@@ -5,6 +5,7 @@ require "data_mapper"
 require "dm-adjust"
 require "dm-aggregates"
 require "statistics2"
+require "securerandom"
 require "lib/auth"
 
 config = YAML.load_file("#{app_dir}/config/config.yml")
@@ -98,7 +99,7 @@ class User
 	property :password, String, :length => 1024, :required => true
 	property :secret, String, :length => 1024, :required => true
 	property :name, String
-	property :email, String, :default => 'admin@dkyinc.com', :format => :email_address
+	property :email, String, :default => 'mail@example.com', :format => :email_address
 	property :admin, Boolean, :default => false
 	
 	has n, :votes
@@ -106,13 +107,10 @@ class User
 
 	def self.add(params)
 		u = new
-		u.attributes = {
-			:username => params[:username],
+		u.attributes = params.merge({
 			:password => Auth.hash_password(params[:password]),
-			:secret => SecureRandom.hex(16),
-			:name => params[:name],
-			:email => params[:email]
-		}
+			:secret => SecureRandom.hex(16)
+		})
 		u.save
 	end
 end
