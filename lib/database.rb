@@ -49,7 +49,7 @@ class Song
 	property :tracknum, Integer
 	property :genre, String
 	property :length, Float, :required => true
-	property :score, Float, :default => 0.0
+	property :score, Float, :default => -1.0
 	property :plays, Integer, :default => 0
 	property :created_at, DateTime
 	property :updated_at, DateTime
@@ -162,7 +162,11 @@ class Vote
 	def self.score(song)
 		likes = all(:song => song)
 		positive = likes.drop_while { |i| i.like == false }
-		song.update(:score => popularity(positive.size, likes.size))
+		if likes.size == 0
+			song.update(:score => -1.0)
+		else
+			song.update(:score => popularity(positive.size, likes.size))
+		end
 	end
 
 	def self.song(song)

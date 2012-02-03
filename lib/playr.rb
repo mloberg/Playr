@@ -41,7 +41,7 @@ loop do
 			song = queued.song
 			queued.destroy
 		else
-			sql = "SELECT `id` FROM `songs` AS r1 JOIN(SELECT ROUND(RAND() * (SELECT MAX(id) FROM `songs`)) AS 'tmpid') AS r2 WHERE r1.id >= r2.tmpid AND r1.score > 0.03 AND (r1.last_played < '#{(Time.now - 86400).strftime("%Y-%m-%d %H:%M:%S")}' OR r1.last_played is null)"
+			sql = "SELECT `id` FROM `songs` AS r1 JOIN(SELECT ROUND(RAND() * (SELECT MAX(id) FROM `songs`)) AS 'tmpid') AS r2 WHERE r1.id >= r2.tmpid AND (r1.score > 0.03 OR r1.score = -1) AND (r1.last_played < '#{(Time.now - 86400).strftime("%Y-%m-%d %H:%M:%S")}' OR r1.last_played is null)"
 			# no christmas music
 			time = Time.new
 			week = ((time.day - (time.wday + 1)) / 7) + 1
