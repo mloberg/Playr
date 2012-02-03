@@ -31,3 +31,12 @@ task :score do
 		Vote.score(song)
 	end
 end
+
+# Pull latest version of Playr and reboot unicorn
+# This will only work for changes to the Sinatra app
+#  not updates to any other part of Playr
+desc "Update Playr"
+task :update do
+	system("git pull")
+	system("god restart playr-web")
+end

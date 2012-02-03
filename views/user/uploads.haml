@@ -1,0 +1,8 @@
+.row
+	%div{ :class => "span15 offset1" }
+		%ul{ :class => "media-grid grid", :id => "uploads" }
+			- @songs.each do |song|
+				%li
+					%a{ :class => "thumbnail album", :href => "/track/#{song.id}" }
+						%img{ :src => "#{artwork(song.album, song.artist)}", :alt => "#{song.title}" }
+						#{song.title}<br />by #{song.artist}

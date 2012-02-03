@@ -42,12 +42,14 @@
 									- if @playing
 										%li
 											%a{ :href => "#", :class => "start-stop" } Stop
-									- else
+									- elsif @paused
 										%li
 											%a{ :href => "#", :class => "start-stop" } Play
 									%li{ :class => "divider" }
 									%li
 										%a{ :href => "/likes/#{@user.username}" } Likes
+									%li
+										%a{ :href => "/user/uploads" } Uploads
 									%li
 										%a{ :href => "/logout" } Logout
 		.container

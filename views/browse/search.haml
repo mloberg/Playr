@@ -1,8 +1,8 @@
 .row
 	.span16
 		%h2 Tracks
-	- if @results[:tracks].empty?
-		%p No results
+		- if @results[:tracks].empty?
+			%p No results
 	- @results[:tracks].each do |t|
 		%div{ :class => "span8 song-box", :id => "song-#{t.id}" }
 			%h3

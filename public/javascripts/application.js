@@ -1,4 +1,4 @@
-/* DO NOT MODIFY. This file was compiled Fri, 03 Feb 2012 13:59:30 GMT from
+/* DO NOT MODIFY. This file was compiled Fri, 03 Feb 2012 17:08:32 GMT from
  * /Users/mloberg/Code/ruby/Playr-dev/public/coffeescript/application.coffee
  */
 
@@ -379,6 +379,10 @@
 
     Playr.prototype.likes = function() {
       return this._grid("likes", 4);
+    };
+
+    Playr.prototype.uploads = function() {
+      return this._grid("uploads", 4);
     };
 
     Playr.prototype.paginate = function(callback) {

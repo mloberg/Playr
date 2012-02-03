@@ -98,9 +98,12 @@ module Playr
 		
 		get "/", :auth => true do
 			@title = "Home"
-			@artists = Song.all(:fields => [:artist], :unique => true, :order => [:score.desc], :limit => 10)
-			@albums = Song.all(:fields => [:album, :artist], :unique => true, :order => [:score.desc], :limit => 10)
-			#@tracks = 
+			if Playr::Worker.playing?
+				@song = History.last.song
+			end
+			@artists = repository(:default).adapter.select("SELECT `artist`, AVG(`score`) as 'score' FROM `songs` GROUP BY `artist` ORDER BY `score` DESC LIMIT 10")
+			@albums = repository(:default).adapter.select("SELECT `album`, `artist`, AVG(`score`) as 'score' FROM `songs` GROUP BY `album` ORDER BY `score` DESC LIMIT 10")
+			@tracks = Song.all(:order => [:score.desc], :limit => 10)
 			@uploads = Song.all(:user => @user, :order => [:id.desc])
 			@count = {
 				:artists => Song.artists.size,
@@ -108,7 +111,7 @@ module Playr
 				:tracks => Song.all.size,
 				:uploads => @uploads.size
 			}
-			@uploads = @uploads[0..5]
+			@uploads = @uploads[0..9]
 			haml :'application/index'
 		end
 
@@ -431,6 +434,13 @@ module Playr
 			@js = "app.likes();"
 			@likes = Vote.user(@u)
 			haml :'user/likes'
+		end
+
+		get "/user/uploads", :auth => true do
+			@title = "Your Uploads"
+			@js = "app.uploads();"
+			@songs = Song.all(:user => @user, :order => [:id.desc])
+			haml :'user/uploads'
 		end
 		
 		##################

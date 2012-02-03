@@ -8,12 +8,39 @@
 		%ol
 			- @artists.each do |artist|
 				%li
-					%a{ :href => "/artist/#{uri_encode(artist.artist)}", :title => "#{artist.artist}" }= artist.artist
+					%a{ :href => "/artist/#{uri_encode(artist.artist)}" }= artist.artist
 		%p
-			%a{ :href => "/artists" } Browse all artists
+			%a{ :href => "/browse/artists" } Browse all artists
 	.span4
 		%h2 Albums
+		%p There are #{@count[:albums]} uploaded albums.<br />Here are the most popular.
+		%ol
+			- @albums.each do |album|
+				%li
+					%a{ :href => "/album/#{uri_encode(album.album)}/#{uri_encode(album.artist)}" }= album.album
+					by #{album.artist}
+		%p
+			%a{ :href => "/browse/albums" } Browse all albums
 	.span4
 		%h2 Tracks
+		%p There are #{@count[:tracks]} uploaded tracks.<br />Here are the most popular.
+		%ol
+			- @tracks.each do |track|
+				%li
+					%a{ :href => "/track/#{track.id}" }= track.title
+					by #{track.artist}
+		%p
+			%a{ :href => "/browse" } Browse all tracks
 	.span4
 		%h2 Uploads
+		%p You have uploaded #{@count[:uploads]} tracks.<br />Here are the most recent.
+		%ol
+			- @uploads.each do |upload|
+				%li
+					%a{ :href => "/track/#{upload.id}" }= upload.title
+					by #{upload.artist}
+		%p
+			%a{ :href => "/user/uploads" } See your uploaded tracks
+			or
+			%br
+			%a{ :href => "/upload" } Upload more tracks
