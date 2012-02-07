@@ -4,26 +4,35 @@ require "yaml"
 require "data_mapper"
 require "dm-adjust"
 require "dm-aggregates"
-require "statistics2"
 require "securerandom"
+require "statistics2"
 require "lib/auth"
 
-config = YAML.load_file("#{app_dir}/config/config.yml")
+CONFIG = YAML.load_file("#{app_dir}/config/config.yml")
 
 DataMapper::setup(:default, {
 	:adapter => "mysql",
-	:host => config["db"]["host"],
-	:username => config["db"]["user"],
-	:password => config["db"]["pass"],
-	:database => config["db"]["db"]
+	:host => CONFIG["db"]["host"],
+	:username => CONFIG["db"]["user"],
+	:password => CONFIG["db"]["pass"],
+	:database => CONFIG["db"]["db"]
 })
 
-def popularity(pos, n, confidence = 0.95)
-	if n == 0
-		return 0
+@first_song_uploaded = nil
+
+def popularity(pos, n, y, x)
+	if @first_song_uploaded == nil
+		@first_song_uploaded = Song.first
 	end
-	z = Statistics2.pnormaldist(1 - (1 - confidence) / 2)
-	phat = 1.0 * pos / n
+	m = Time.parse(@first_song_uploaded.created_at.to_s)
+	x = Time.parse(x.to_s)
+	c = (m.to_f / x.to_f)
+	c = 0.99 if c >= 1.0
+	pos = pos + y
+	n = n + y
+	return -1.0 if n == 0
+	z = Statistics2.pnormaldist(1 - (1 - c) / 2)
+	phat = pos.to_f / n
 	(phat + z * z / (2 * n) - z * Math.sqrt((phat * (1 - phat) + z * z / (4 * n)) / n)) / (1 + z * z / n)
 end
 
@@ -56,10 +65,10 @@ class Song
 	property :last_played, DateTime
 	
 	has n, :votes
-	has n, :songQueues
 	has n, :histories
+	has n, :songQueues
 	
-	belongs_to :user
+	belongs_to :user, :required => false
 	
 	def self.artists
 		all(:fields => [:artist], :unique => true, :order => [:artist.asc])
@@ -99,7 +108,7 @@ class User
 	property :password, String, :length => 1024, :required => true
 	property :secret, String, :length => 1024, :required => true
 	property :name, String
-	property :email, String, :default => 'mail@example.com', :format => :email_address
+	property :email, String, :default => CONFIG["default_email"], :format => :email_address
 	property :admin, Boolean, :default => false
 	
 	has n, :votes
@@ -107,8 +116,9 @@ class User
 
 	def self.add(params)
 		u = new
+		password = params[:password]
 		u.attributes = params.merge({
-			:password => Auth.hash_password(params[:password]),
+			:password => Auth.hash_password(password),
 			:secret => SecureRandom.hex(16)
 		})
 		u.save
@@ -117,44 +127,54 @@ end
 
 class SongQueue
 	include DataMapper::Resource
-	property :added_by, Integer
 	property :created_at, DateTime
 	
 	belongs_to :song, :key => true
+	
+	def self.add(song)
+		q = get(song.id)
+		if q
+			return false
+		else
+			create(:song => song, :created_at => Time.now)
+		end
+	end
 
-	def self.in_queue(song)
-		q = all(:song => song)
-		return false if q.empty?
+	def self.in_queue(sid)
+		q = get(sid)
+		return false unless q
 		true
+	end
+
+	def self.remove(sid)
+		q = get(sid)
+		q.destroy
 	end
 end
 
 class Vote
 	include DataMapper::Resource
 	property :like, Boolean, :default => false
+	
 	belongs_to :song, :key => true
 	belongs_to :user, :key => true
 	
-	def self.up(sid, uid)
-		vote = get(sid, uid)
-		song = Song.get(sid)
+	def self.up(song, user)
+		vote = get(song.id, user.id)
 		if vote and vote.like == false
 			vote.update(:like => true)
-		elsif not vote
-			user = User.get(uid)
+		elsif vote == nil
 			create(:user => user, :song => song, :like => true)
 		end
 		score(song)
 	end
 	
-	def self.down(sid, uid)
-		vote = get(sid, uid)
-		song = Song.get(sid)
+	def self.down(song, user)
+		vote = get(song.id, user.id)
 		if vote and vote.like == true
 			vote.update(:like => false)
-		elsif not vote
-			user = User.get(uid)
-			create(:user => user, :song => song)
+		elsif vote == nil
+			create(:user => user, :song => song, :like => false)
 		end
 		score(song)
 	end
@@ -162,11 +182,7 @@ class Vote
 	def self.score(song)
 		likes = all(:song => song)
 		positive = likes.drop_while { |i| i.like == false }
-		if likes.size == 0
-			song.update(:score => -1.0)
-		else
-			song.update(:score => popularity(positive.size, likes.size))
-		end
+		song.update(:score => popularity(positive.size, likes.size, song.plays, song.created_at))
 	end
 
 	def self.song(song)

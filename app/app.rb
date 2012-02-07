@@ -1,3 +1,5 @@
+APP_DIR = File.expand_path(File.dirname(__FILE__) + '/../')
+$: << APP_DIR
 require "sinatra/base"
 require "redis"
 require "fileutils"
@@ -8,16 +10,15 @@ require "yaml"
 require "mp3info"
 require "haml"
 
-require "./app/api"
-require "./lib/database"
-require "./lib/auth"
-require "./lib/aacinfo"
-require "./lib/lastfm"
-require "./lib/worker"
+require "app/api"
+require "lib/database"
+require "lib/auth"
+require "lib/aacinfo"
+require "lib/lastfm"
+require "lib/worker"
 
 module Playr
 	class App < Sinatra::Base
-		APP_DIR = File.expand_path(File.dirname(__FILE__) + '/../')
 		set :root, APP_DIR
 		set :views, "#{APP_DIR}/views"
 		set :public_folder, "#{APP_DIR}/public"
@@ -139,15 +140,7 @@ module Playr
 		put "/queue", :auth => true do
 			return { :error => true, :message => "Missing data" }.to_json unless params[:id]
 			return { :error => true, :message => "Song already in queue" }.to_json if SongQueue.in_queue(params[:id])
-			s = Song.get(params[:id])
-			return { :error => true, :message => "Song doesn't exist" }.to_json unless s
-			q = SongQueue.new
-			q.attributes = {
-				:song => s,
-				:added_by => @user.id,
-				:created_at => Time.now
-			}
-			if q.save
+			if SongQueue.add(Song.get(params[:id]))
 				{ :success => true, :message => "Song added to queue" }.to_json
 			else
 				{ :error => true, :message => "Could not add song to queue" }.to_json
@@ -155,8 +148,7 @@ module Playr
 		end
 
 		delete "/queue", :auth => true do
-			q = SongQueue.first(:song => Song.get(params[:id]))
-			if q.destroy
+			if SongQueue.remove(params[:id])
 				{ :success => true }.to_json
 			else
 				{ :error => true, :message => "Could not remove track from queue" }.to_json
@@ -404,7 +396,7 @@ module Playr
 			# move file
 			file = tags[:title].gsub(/[^A-Za-z0-9 ]/, '_') + "." + ext
 			target = './music/' + tags[:artist].gsub(/[^A-Za-z0-9 ]/, '_') + '/' + tags[:album].gsub(/[^A-Za-z0-9 ]/, '_') + '/'
-			FileUtils.mkdir_p(target) unless File.exists?(target)
+			FileUtils.mkdir_p(target)
 			FileUtils.mv(path, target + file)
 			# add to db
 			s = Song.new
@@ -453,15 +445,13 @@ module Playr
 		end
 		
 		post "/login" do
-			username = params[:username]
-			password = params[:password]
-			user = User.first(:username => username)
+			user = User.first(:username => params[:username])
 			unless user
 				flash[:error] = "Invalid username/password combination"
 				redirect '/login'
 			end
 			@auth = Auth.new(user.password, user.secret, session, request.env)
-			if @auth.validate(password)
+			if @auth.validate(params[:password])
 				session[:user_id] = user.id
 				flash[:info] = "Welcome back #{user.name}"
 				redirect '/'

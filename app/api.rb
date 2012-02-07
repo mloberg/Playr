@@ -79,23 +79,23 @@ module Playr
 		
 		post "/api/like", :auth => true do
 			return error_response "Missing data" unless params[:song]
-			Vote.up(params[:song], @user.id)
+			Vote.up(Song.get(params[:song]), @user)
 			api_response({ :success => true, :message => "Liked song" })
 		end
 		
 		post "/api/dislike", :auth => true do
 			return error_response "Missing data" unless params[:song]
-			Vote.down(params[:song], @user.id)
+			Vote.down(Song.get(params[:song]), @user)
 			api_response({ :success => true, :message => "Disliked song" })
 		end
 		
 		post "/api/start-stop", :auth => true do
-			`#{APP_DIR}/playr pause`
+			`rake playr:pause`
 			api_response({ :success => true, :paused => Playr::Worker.paused? })
 		end
 		
 		post "/api/next", :auth => true do
-			`#{APP_DIR}/playr skip`
+			`rake playr:skip`
 		end
 		
 		post "/api/skip", :auth => true do
@@ -111,7 +111,7 @@ module Playr
 		
 		post "/api/volume", :auth => true do
 			return error_response "Missing data" unless params[:level]
-			`#{APP_DIR}/playr volume #{params[:level]}`
+			`rake playr:volume[#{params[:level]}]`
 		end
 	end
 end

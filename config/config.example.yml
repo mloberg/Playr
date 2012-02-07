@@ -11,3 +11,4 @@ db:
   pass: root
   db: playr
 ws_key: r@nd0mChaR@cT3r$
+default_email: mail@example.com

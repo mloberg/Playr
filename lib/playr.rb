@@ -57,6 +57,7 @@ loop do
 			History.create(:song => song, :played_at => Time.now)
 			song.update(:last_played => Time.now)
 			song.adjust!(:plays => 1)
+			# we need score the song
 			begin
 				update = WebSocket.new("ws://127.0.0.1:10081/update?key=#{config["ws_key"]}")
 				update.send(song.to_h.to_json)
