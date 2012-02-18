@@ -11,4 +11,5 @@ db:
   pass: root
   db: playr
 ws_key: r@nd0mChaR@cT3r$
+lower_bound: 0.2
 default_email: mail@example.com

@@ -4,6 +4,7 @@ require "lib/web_socket"
 require "thread"
 require "yaml"
 require "json"
+require "redis"
 
 `rm -f #{APP_DIR}/tmp/ws.pid`
 sleep(5)
@@ -24,10 +25,12 @@ Signal.trap("USR2") do # god restart
 end
 
 config = YAML.load_file("#{APP_DIR}/config/config.yml")
-
+redis = Redis.new(:host => config['redis']['host'], :port => config['redis']['port'])
 server = WebSocketServer.new(:port => 10081, :accepted_domains => ["*"])
 web_conn = []
 desk_conn = []
+
+Thread.abort_on_exception = true
 
 server.run do |ws|
 	if ws.path == "/"

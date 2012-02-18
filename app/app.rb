@@ -45,16 +45,17 @@ module Playr
 			elsif flash[:info]
 				@flash = 'humane.info("' + flash[:info].gsub('"', '\"') + '");'
 			end
-			if session[:user_id]
-				@user = User.get(session[:user_id])
-				@auth = Auth.new(@user.password, @user.secret, session, request.env)
-			end
 			@config = YAML.load_file("#{APP_DIR}/config/config.yml")
 			@redis = Redis.new(:host => @config['redis']['host'], :port => @config['redis']['port'])
 			@lfm = Playr::Lastfm.new(@config['lastfm'], @redis)
 			@volume = Playr::Worker.volume
 			@playing = Playr::Worker.playing?
 			@paused = Playr::Worker.paused?
+			if session[:user_id]
+				@redis.hset "active:users", session[:user_id], Time.now.to_i
+				@user = User.get(session[:user_id])
+				@auth = Auth.new(@user.password, @user.secret, session, request.env)
+			end
 		end
 
 		helpers do
@@ -96,7 +97,7 @@ module Playr
 		############
 		## ROUTES ##
 		############
-		
+
 		get "/", :auth => true do
 			@title = "Home"
 			if Playr::Worker.playing?

@@ -6,6 +6,7 @@ require "lib/lastfm"
 require "lib/web_socket"
 require "yaml"
 require "json"
+require "redis"
 
 `rm -f #{APP_DIR}/tmp/music.pid`
 sleep(5)
@@ -28,12 +29,15 @@ Signal.trap("USR2") do # god restart
 end
 
 config = YAML.load_file("#{APP_DIR}/config/config.yml")
-
 lastfm = Playr::Lastfm.new(config['lastfm'])
+redis = Redis.new(:host => config['redis']['host'], :port => config['redis']['port'])
 
 # auto-play thread
 loop do
-	if Playr::Worker.playing? or Playr::Worker.paused?
+	active = redis.hvals "active:users"
+	last_active = active.max.to_i
+	limit = (Time.now.hour > 6 or Time.now.hour < 17) ? (Time.now - 3600).to_i : (Time.now - 1800).to_i
+	if Playr::Worker.playing? or Playr::Worker.paused? or limit > last_active
 		sleep(1)
 	else
 		queued = SongQueue.first(:order => [:created_at.asc])
@@ -41,7 +45,7 @@ loop do
 			song = queued.song
 			queued.destroy
 		else
-			sql = "SELECT `id` FROM `songs` AS r1 JOIN(SELECT ROUND(RAND() * (SELECT MAX(id) FROM `songs`)) AS 'tmpid') AS r2 WHERE r1.id >= r2.tmpid AND (r1.score > 0.03 OR r1.score = -1) AND (r1.last_played < '#{(Time.now - 86400).strftime("%Y-%m-%d %H:%M:%S")}' OR r1.last_played is null)"
+			sql = "SELECT `id` FROM `songs` AS r1 JOIN(SELECT ROUND(RAND() * (SELECT MAX(id) FROM `songs`)) AS 'tmpid') AS r2 WHERE r1.id >= r2.tmpid AND (r1.score > #{config["lower_bound"]} OR r1.score = -1) AND (r1.last_played < '#{(Time.now - 86400).strftime("%Y-%m-%d %H:%M:%S")}' OR r1.last_played is null)"
 			# no christmas music
 			time = Time.new
 			week = ((time.day - (time.wday + 1)) / 7) + 1
@@ -58,19 +62,24 @@ loop do
 			song.update(:last_played => Time.now)
 			song.adjust!(:plays => 1)
 			# we need score the song
-			begin
-				update = WebSocket.new("ws://127.0.0.1:10081/update?key=#{config["ws_key"]}")
-				update.send(song.to_h.to_json)
-				update.close
-			rescue
-				# our web socket process isn't up yet, let's forget about it
+			count = 0
+			Thread.new do
+				begin
+					update = WebSocket.new("ws://127.0.0.1:10081/update?key=#{config["ws_key"]}")
+					update.send(song.to_h.to_json)
+					update.close
+				rescue
+					# couldn't connect to websocket, just ignore it
+				end
 			end
-			if config['lastfm']['session'] != nil
-				lastfm.update({
-					:album => song.album,
-					:track => song.title,
-					:artist => song.artist
-				})
+			Thread.new do
+				if config['lastfm']['session'] != nil
+					lastfm.update({
+						:album => song.album,
+						:track => song.title,
+						:artist => song.artist
+					})
+				end
 			end
 			song_path = song.path.to_s
 			path = APP_DIR + song_path[1..song_path.length]

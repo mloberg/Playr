@@ -1,4 +1,4 @@
-require 'iconv'
+require "iconv"
 
 class AACInfo
 
@@ -22,6 +22,7 @@ class AACInfo
 	private
 	
 	def parse_info
+		# get rid of those silly characters that don't belong
 		ic = Iconv.new('UTF-8//IGNORE', 'UTF-8')
 		# get info with faad
 		info = ic.iconv(`faad -i "#{@file}" 2>&1` + ' ').split(@file + " file info:\n\n").last.split("\n")
@@ -29,8 +30,8 @@ class AACInfo
 		# get the track length
 		@tags[:length] = info.shift[/\d+\.\d{1,3}/]
 		
-		# there is a blank line, delete it
-		info.shift
+		# if there is a blank line, delete it
+		info.shift if info =~ /^$/
 		
 		# go through each tag and save it to the instance variable
 		info.each do |tag|

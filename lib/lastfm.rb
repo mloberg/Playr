@@ -1,7 +1,7 @@
-require 'httparty'
-require 'digest/md5'
-require 'json'
-require 'redis'
+require "httparty"
+require "digest/md5"
+require "json"
+require "redis"
 
 module Playr
 	class Lastfm
